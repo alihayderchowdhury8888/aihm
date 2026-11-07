@@ -740,6 +740,7 @@ function vDir(){
  const T_=(ic,n,go_,c,dot)=>{const col={g:['#E1F5EE','#0F6E56'],b:['#E6F1FB','#185FA5'],p:['#EEEDFE','#534AB7']}[c];return `<div class="tile" onclick="${go_}"><div class="ic" style="background:${col[0]};color:${col[1]};width:36px;height:36px;font-size:18px">${ic}</div><b style="font-size:12px">${n}</b>${dot?`<small style="color:#A32D2D">${dot}</small>`:''}</div>`};
  return `<div class="top"><button class="btn s" onclick="ses=null;go('home')">বের হন</button><div class="t"><b>কর্তৃপক্ষ</b><span>${dBn(today())}</span></div></div><div class="wrap">
  <div class="big" style="background:#FCEBEB;border-color:#F09595;margin-top:4px" onclick="go('dtoday')"><div class="ic" style="background:#E24B4A">⚠️</div><div style="flex:1"><b style="color:#791F1F">আজকের অবস্থা</b><div style="font-size:12px;color:#A32D2D">${al.length?bn(al.length)+'টি সতর্কতা দেখুন':'কোনো সতর্কতা নেই'}</div></div><span style="color:#A32D2D">›</span></div>
+ <div class="big" style="background:#E1F5EE;border-color:#5DCAA5;margin-top:8px" onclick="tmp={};go('admit')"><div class="ic" style="background:#0F6E56">➕</div><div style="flex:1"><b style="color:#085041">নতুন ভর্তি</b><div style="font-size:12px;color:#0F6E56">নতুন ছাত্র ভর্তি করুন</div></div><span style="color:#0F6E56">›</span></div>
  <div class="sec">রিপোর্ট</div><div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
  ${T_('📋','মাসিক রিপোর্ট',"go('drep',{mode:'m'})",'g')}${T_('📊','বাৎসরিক রিপোর্ট',"go('drep',{mode:'y'})",'g')}${T_('📑','উস্তাদের হিসাব',"go('dtrep',{mode:'m'})",'g')}${T_('🏆','পরীক্ষার ফলাফল',"go('exam')",'g')}${T_('💰','জরিমানা',"go('dfine')",'g',dueF?bn(dueF)+'টি বাকি':'')}${T_('⭐','আচরণ',"go('dbeh')",'g')}${T_('📝','প্রস্তুতির প্রশ্ন',"go('dprepq')",'g')}</div>
  <div class="sec">ঠিক করার জায়গা</div><div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
@@ -896,7 +897,7 @@ function vDstu(){
  if(V.sid)return vStuProfile(SID(V.sid));
  return dirTop('ছাত্র')+`<div class="wrap">${['ক','খ','both'].map(g=>`<div class="sec">${g==='both'?'তাকমিল (দুই উস্তাদ)':'গ্রুপ '+g+' · '+esc(gTeacher(g).name)}</div><div class="card">${S.students.filter(s=>s.group===g).map(s=>`<div class="li" style="cursor:pointer" onclick="go('dstu',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}${s.probation&&!s.probation.dec?'<span class="tag y">পর্যবেক্ষণে</span>':''}${s.status==='out'?'<span class="tag r">ভর্তি হলো না</span>':''}</b><small>${s.id} · ${esc(s.jamat)}</small></div><span>›</span></div>`).join('')}</div>`).join('')}
  <button class="btn pri w" onclick="addStu()">+ নতুন ছাত্র যোগ করুন</button></div>`}
-function addStu(){const n=S.students.filter(s=>s.group==='ক').length+1;const id='ক-'+bn(pad(n));S.students.push({id,name:'নতুন ছাত্র',group:'ক',type:'hifz',jamat:'হিফয প্রথম',status:'ok',startMem:'০',startYad:'০',startKacha:'০',curMem:'০',curYad:'০',curKacha:'০',probation:{from:today(),to:addD(today(),30),c1:'',c2:'',c3:'',dec:''},para:1,page:1});save();go('dstu',{sid:id})}
+function addStu(){tmp={};go('admit')}
 function vStuProfile(s){
  const i=S.students.indexOf(s);const F=(f,lab,ph,w)=>`<div style="${w?'flex:1 1 100%':''}"><label class="l">${lab}</label><input value="${esc(s[f]||'')}" placeholder="${ph||''}" onchange="S.students[${i}]['${f}']=this.value;save()"></div>`;
  const ex=['e1','e2','e3'].map(e=>[e,examRow(e,s.id)]);const pb=s.probation;
@@ -923,6 +924,27 @@ function vStuProfile(s){
  <div class="sec">ছ. এই শিক্ষাবর্ষের হিসাব</div>${(()=>{const o=stat(s.id,S.year.from,S.year.to);return `<div class="card"><div class="li"><span class="n">কার্যদিবস · উপস্থিত · অনুপস্থিত</span><b>${bn(o.days)} · ${bn(o.P)} · ${bn(o.A+o.L+o.S)}</b></div><div class="li"><span class="n">অসুস্থ · ছুটি</span><b>${bn(o.S)} · ${bn(o.L)}</b></div><div class="li"><span class="n">সবক পেরেছে · পারেনি</span><b>${bn(o.les.sabak.ok)} · ${bn(o.les.sabak.no)}</b></div></div>`})()}
  <button class="btn w" onclick="go('drep',{mode:'y',sid:'${s.id}'})">📊 বাৎসরিক রিপোর্ট দেখুন</button></div>`}
 function pbDec(i,d){const p=S.students[i].probation;p.dec=d;if(d==='ext'){p.to=addD(p.to,15);p.dec=''}if(d==='no')S.students[i].status='out';if(d==='ok'){S.students[i].status='ok'}save();render()}
+
+/* ---------- নতুন ভর্তি ---------- */
+const AF=['a_name','a_by','a_addr','a_f','a_fm','a_wa','a_mem','a_kacha'];
+function nextId(g){const p=g==='both'?'ত':g;let mx=0;S.students.forEach(s=>{if(s.id.startsWith(p+'-')){const n=parseInt(en(s.id.slice(2)));if(n>mx)mx=n}});return p+'-'+bn(pad(mx+1))}
+function admKeep(){AF.forEach(f=>{const e=document.getElementById(f);if(e)tmp[f]=e.value})}
+function vAdmit(){const g=tmp.ag||'ক';const I=(f,ph,w)=>`<input id="${f}" placeholder="${ph}" value="${esc(tmp[f]||'')}" style="margin-bottom:6px${w?'':';width:100%'}">`;
+ return dirTop('নতুন ভর্তি')+`<div class="wrap">
+ <div class="card"><b style="font-size:13px;color:var(--mut)">১. কোন গ্রুপে ভর্তি</b><div class="row" style="margin-top:8px">${[['ক','গ্রুপ ক'],['খ','গ্রুপ খ'],['both','তাকমিল']].map(([k,n])=>`<span class="ch ${g===k?'on-g':''}" onclick="admKeep();tmp.ag='${k}';render()">${n}</span>`).join('')}</div>
+ <div style="margin-top:8px;font-size:14px">নতুন আইডি: <b style="color:#085041">${nextId(g)}</b></div></div>
+ <div class="card"><b style="font-size:13px;color:var(--mut)">২. ছাত্রের তথ্য</b><div style="margin-top:8px">${I('a_name','ছাত্রের নাম')}${I('a_by','জন্মের সাল')}${I('a_addr','ঠিকানা')}</div></div>
+ <div class="card"><b style="font-size:13px;color:var(--mut)">৩. অভিভাবকের তথ্য</b><div style="margin-top:8px">${I('a_f','পিতার নাম')}${I('a_fm','মোবাইল নম্বর')}${I('a_wa','WhatsApp নম্বর')}</div></div>
+ <div class="card"><b style="font-size:13px;color:var(--mut)">৪. ভর্তির সময় হিফযের অবস্থা</b><div class="row" style="margin-top:8px">${I('a_mem','মুখস্থ (পারা)',1)}${I('a_kacha','কাঁচা পারা',1)}</div></div>
+ <div class="err" id="aerr"></div><button class="btn pri w" onclick="doAdmit()">ভর্তি করুন</button>
+ <p class="mut" style="text-align:center">ভর্তির পর ৩০ দিনের পর্যবেক্ষণকাল নিজে নিজে শুরু হবে · বাকি তথ্য ছাত্রের পাতা থেকে যোগ করা যাবে</p></div>`}
+function doAdmit(){admKeep();const g=tmp.ag||'ক';const nm=(tmp.a_name||'').trim();if(!nm){document.getElementById('aerr').textContent='ছাত্রের নাম লিখুন';return}
+ const id=nextId(g);const mem=bn(en(tmp.a_mem||'').trim()||'0'),kc=bn(en(tmp.a_kacha||'').trim()||'0');const yad=bn(Math.max(0,(parseInt(en(mem))||0)-(parseInt(en(kc))||0)));
+ S.students.push({id,name:nm,group:g,type:g==='both'?'takmil':'hifz',jamat:g==='both'?'হিফয তাকমিল':'হিফয প্রথম',status:'ok',weak:false,
+  birthYear:tmp.a_by||'',addr:tmp.a_addr||'',father:tmp.a_f||'',fatherMob:tmp.a_fm||'',wa:tmp.a_wa||'',guardian:'পিতা',admDate:today(),boarding:'সাধারণ বোর্ডিং',
+  admMem:mem,admKacha:kc,startMem:mem,startYad:yad,startKacha:kc,curMem:mem,curYad:yad,curKacha:kc,para:Math.max(1,(parseInt(en(mem))||0)+1),page:1,
+  probation:{from:today(),to:addD(today(),30),c1:'',c2:'',c3:'',dec:''}});
+ save();tmp={};go('dstu',{sid:id})}
 
 /* ---------- উস্তাদ ও পিন ---------- */
 function vDtch(){
@@ -978,7 +1000,7 @@ function texSet(ex,sid,j,v){const x=parseFloat(en(v));const r=S.exams[ex][sid];r
 function texAb(ex,sid){const r=S.exams[ex][sid];r.ab=!r.ab;r.by=(me()||{}).name;save();render()}
 
 /* ===================== যুক্ত করা ===================== */
-Object.assign(VIEWS,{texam:vTexam,trep:vTrep,contact:vContact,prepq:vPrepq,dir:vDir,dtoday:vDtoday,drep:vDrep,dtrep:vDtrep,exam:vExam,dfine:vDfine,dbeh:vDbeh,dprepq:vDprepq,dyear:vDyear,dcal:vDcal,dspec:vDspec,drules:vDrules,dgrade:vDgrade,dstu:vDstu,dtch:vDtch,dinfo:vDinfo,dlog:vDlog,dbak:vDbak,routine:vRoutine});
+Object.assign(VIEWS,{admit:vAdmit,texam:vTexam,trep:vTrep,contact:vContact,prepq:vPrepq,dir:vDir,dtoday:vDtoday,drep:vDrep,dtrep:vDtrep,exam:vExam,dfine:vDfine,dbeh:vDbeh,dprepq:vDprepq,dyear:vDyear,dcal:vDcal,dspec:vDspec,drules:vDrules,dgrade:vDgrade,dstu:vDstu,dtch:vDtch,dinfo:vDinfo,dlog:vDlog,dbak:vDbak,routine:vRoutine});
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
