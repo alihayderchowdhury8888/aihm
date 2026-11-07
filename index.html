@@ -127,11 +127,12 @@ let tmp={};
 function go(p,o){V=Object.assign({p},o||{});tmp={};if(p!=='home'&&p!=='pin')window.scrollTo(0,0);render()}
 function T(id){return S.teachers.find(t=>t.id===id)}
 function gTeacher(g){return S.teachers.find(t=>t.group===g&&t.active)}
-function me(){return ses?T(ses.tid):null}
+function me(){return ses?(ses.role==='dir'?{id:null,name:'পরিচালক'}:T(ses.tid)):null}
 function stOf(g){return S.students.filter(s=>(s.group===g||s.group==='both')&&s.status!=='out')}
 function SID(id){return S.students.find(s=>s.id===id)}
 function isToday(){return D===today()}
-function ro(){return D!==today()}
+function ro(){const h=new Date().getHours(),t=today();if(ses&&ses.role==='dir')return !(D===t||(h<4&&D===addD(t,-1)));return !(D===t&&h>=4)}
+function nightLock(){return !(ses&&ses.role==='dir')&&new Date().getHours()<4}
 function logA(txt,kind){S.alerts.unshift({date:today(),time:nowT(),txt,kind:kind||'r'});save()}
 
 /* ছুটি ও অসুস্থ থেকে আজকের অবস্থা */
@@ -172,7 +173,7 @@ function topBar(title,back){
  return `<div class="top"><button class="btn s" onclick="${back||"go('g')"}">‹ ফিরুন</button><div class="t"><b>${title}</b><span>গ্রুপ ${ses.g} · ${esc(t?t.name:'')}${sub?' · বদলি':''}</span></div></div>`}
 function dateBar(){
  return `<div class="datebar"><button class="btn s" onclick="D=addD(D,-1);render()">‹ আগের দিন</button><b>${dBn(D)}</b><button class="btn s" onclick="D=addD(D,1);render()">পরের দিন ›</button></div>
- ${D<today()?'<div class="ban b">আগের দিনের হিসাব · শুধু দেখা যাবে, বদলানো যাবে না</div>':D>today()?'<div class="ban b">সামনের দিন · এখন লেখা যাবে না</div>':''}${specBan(D)}`}
+ ${nightLock()&&D===today()?'<div class="ban b">রাত ১২টা থেকে ভোর ৪টা পর্যন্ত শুধু কর্তৃপক্ষ বদলাতে পারবেন</div>':ro()&&D<today()?'<div class="ban b">আগের দিনের হিসাব · শুধু দেখা যাবে, বদলানো যাবে না</div>':D>today()?'<div class="ban b">সামনের দিন · এখন লেখা যাবে না</div>':''}${specBan(D)}`}
 function dayBanner(){
  const w=dow(D);let h='';
  if(w===5)h+='<div class="ban g">আজ শুক্রবার: পড়া নেই, শুধু হাজিরা</div>';
@@ -189,7 +190,7 @@ function vGroup(){
  const fines=S.fines.filter(f=>!f.paid&&L.some(s=>s.id===f.sid)).length;
  const sent=Object.keys(S.sent[k]||{}).filter(id=>L.some(s=>s.id===id)).length;
  const tile=(ic,bg,col,n,sm,on)=>`<div class="tile" onclick="${on}"><div class="ic" style="background:${bg};color:${col}">${ic}</div><b>${n}</b>${sm?`<small>${sm}</small>`:''}</div>`;
- return `<div class="top"><button class="btn s" onclick="ses=null;go('home')">বের হন</button><div class="t"><b>গ্রুপ ${g}</b><span>${esc(t?t.name:'')}</span></div></div>
+ return `<div class="top">${ses.role==='dir'?`<button class="btn s" onclick="ses={role:'dir'};go('dir')">‹ কর্তৃপক্ষ</button>`:`<button class="btn s" onclick="ses=null;go('home')">বের হন</button>`}<div class="t"><b>গ্রুপ ${g}</b><span>${esc(t?t.name:'')}</span></div></div>
  <div class="wrap">
  ${specBan(k)}${calOn(k)&&calOn(k).type==='prep'?`<div class="ban r"><b>${esc(calOn(k).name)}-এর প্রস্তুতি চলছে</b><br>সাধারণভাবে শুধু আমুখতা. কারও সব পড়া চালাতে তার পড়ার পাতায় "সব পড়া চলবে" টিপুন.</div>`:''}${calOn(k)&&calOn(k).type==='holiday'?`<div class="ban y">আজ ছুটি: ${esc(calOn(k).name||'')}</div>`:''}
  ${sub?`<div class="ban y"><b>বদলি ক্লাস · গ্রুপ ${g}</b><br>বদলি উস্তাদ: ${esc(t?t.name:'')}. সব কাজ গ্রুপ ${g}-এর খাতায় জমা হবে.</div>`:''}
@@ -215,7 +216,7 @@ function vGroup(){
  ${tile(IC.rep,'#E1F5EE','#0F6E56','রিপোর্ট','মাসিক ও বাৎসরিক',"go('trep')")}
  ${tile('📞','#E6F1FB','#185FA5','যোগাযোগ','অভিভাবকের সাথে',"go('contact')")}
  ${tile(IC.exam,'#E1F5EE','#0F6E56','পরীক্ষার নম্বর','পরীক্ষার সময়',"go('texam')")}
- ${sub?'':tile(IC.sub,'#FAEEDA','#854F0B','বদলি ক্লাস','গ্রুপ '+(g==='ক'?'খ':'ক'),"ses=null;go('pin',{to:'g',g:'"+(g==='ক'?'খ':'ক')+"',sub:1})")}
+ ${sub||ses.role==='dir'?'':tile(IC.sub,'#FAEEDA','#854F0B','বদলি ক্লাস','গ্রুপ '+(g==='ক'?'খ':'ক'),"ses=null;go('pin',{to:'g',g:'"+(g==='ক'?'খ':'ক')+"',sub:1})")}
  ${calOn(today())&&calOn(today()).type==='prep'?tile('📝','#FCEBEB','#A32D2D','প্রস্তুতির প্রশ্ন','',"go('prepq')"):''}
  </div>
  </div>`}
@@ -234,7 +235,7 @@ function vAtt(){
  const rows=L.map(s=>{const v=tmp.a[s.id],aw=awayOn(s.id,D);
   if(aw)return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div><span class="tag y">${aw==='L'?'ছুটি':'অসুস্থ'}</span></div>`;
   return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div>
-  <span class="ch ${v==='P'?'on-g':''}" onclick="${ro()?'':`tmp.a['${s.id}']='P';render()`}">উপস্থিত</span><span class="ch ${v==='A'?'on-r':''}" onclick="${ro()?'':`tmp.a['${s.id}']='A';render()`}">অনুপস্থিত</span>
+  <span class="ch ${v==='P'?'on-g':''}" onclick="${ro()?'':`tmp.a['${s.id}']=tmp.a['${s.id}']==='P'?'':'P';render()`}">উপস্থিত</span><span class="ch ${v==='A'?'on-r':''}" onclick="${ro()?'':`tmp.a['${s.id}']=tmp.a['${s.id}']==='A'?'':'A';render()`}">অনুপস্থিত</span>
   ${v==='A'?`<input style="flex-basis:100%;margin-top:6px" placeholder="কেন অনুপস্থিত? (অবশ্যই লিখুন)" value="${esc(tmp.r[s.id])}" oninput="tmp.r['${s.id}']=this.value" ${ro()?'disabled':''}>`:''}</div>`}).join('');
  return topBar('হাজিরা')+`<div class="wrap">${dateBar()}
  <div class="chs" style="margin-bottom:10px">${sl.map(([k,n])=>{const done=((S.att[D]||{})[k]||{})[k==='n'?'all':g];return `<span class="ch ${k===cur?'on-g':''}" onclick="V.slot='${k}';render()">${n}${done?' ✓':''}</span>`}).join('')}</div>
@@ -246,7 +247,7 @@ function vAtt(){
 function saveAtt(slot,sk){
  const miss=Object.keys(tmp.a).filter(id=>tmp.a[id]==='A'&&!tmp.r[id].trim());
  if(miss.length){document.getElementById('aerr').textContent='অনুপস্থিত ছাত্রের কারণ লিখুন';return}
- const list={};Object.keys(tmp.a).forEach(id=>list[id]={v:tmp.a[id],r:tmp.r[id]});
+ const list={};Object.keys(tmp.a).forEach(id=>{if(tmp.a[id])list[id]={v:tmp.a[id],r:tmp.r[id]}});
  S.att[D]=S.att[D]||{};S.att[D][slot]=S.att[D][slot]||{};
  const t=me();S.att[D][slot][sk]={list,at:nowT(),by:t?t.name:'',sub:ses.role==='sub'};
  Object.keys(list).forEach(id=>{if(list[id].v==='A'){const s=SID(id);logA(`${s.name} (${id}) অনুপস্থিত · কারণ: ${list[id].r}`)}});
@@ -295,7 +296,7 @@ function vLesOne(s){
   // st===1 চলছে
   const cnt=(f,lab,max)=>{const v=x[f]||0,red=max!==null&&v>max;return `<div class="cnt ${red?'red':''}"><span>${lab}${red?' (সীমা পার)':''} <span class="mut">${max===null?'':max===0?'(চলবে না)':'('+bn(max)+' পর্যন্ত)'}</span></span><span style="display:flex;align-items:center;gap:8px"><span class="bt" onclick="lesCnt('${s.id}','${k}','${f}',-1)">−</span><span class="v">${bn(v)}</span><span class="bt" onclick="lesCnt('${s.id}','${k}','${f}',1)">+</span></span></div>`};
   const d=defaults(s,k);
-  return `<div class="card">${head}<div class="okm" style="margin-top:2px">শুরু হয়েছে ${x.t1}</div>
+  return `<div class="card">${head}<div class="okm" style="margin-top:2px">শুরু হয়েছে ${x.t1} · <span style="color:#55615c;text-decoration:underline;cursor:pointer" onclick="delete S.les[D]['${s.id}']['${k}'];save();render()">শুরু বাতিল</span></div>
   <div class="row" style="margin-top:4px"><div><label class="l">পারা</label><input value="${esc(x.para!=null?x.para:d.para)}" oninput="S.les[D]['${s.id}']['${k}'].para=this.value;save()">${d.from&&x.para==null?`<div class="mut" style="color:#0F6E56">${d.from}</div>`:''}</div>
   <div><label class="l">পৃষ্ঠা</label><input value="${esc(x.page!=null?x.page:d.page)}" oninput="S.les[D]['${s.id}']['${k}'].page=this.value;save()"></div></div>
   ${k==='tk'?`<div class="chs" style="margin-top:8px"><span class="ch ${s.stage!=='full'?'on-b':''}" onclick="SID('${s.id}').stage='half';save();render()">আধা পারা</span><span class="ch ${s.stage==='full'?'on-b':''}" onclick="SID('${s.id}').stage='full';save();render()">এক পারা</span></div>`:''}
@@ -327,7 +328,7 @@ function vTil(){
  <div class="row" style="margin-bottom:10px"><span class="ch ${m==='namaz'?'on-g':''}" style="flex:1" onclick="V.m='namaz';render()">নামাজে তিলাওয়াত</span><span class="ch ${m==='til'?'on-g':''}" style="flex:1" onclick="V.m='til';render()">তিলাওয়াত</span></div>
  ${ro()?'':`<div style="text-align:right;margin-bottom:6px"><button class="btn s" style="color:#085041;border-color:#5DCAA5" onclick="tilAll('${m}')">সবাই করেছে</button></div>`}
  <div class="card">${rows}</div>${m==='til'?'<p class="mut">পারা লেখা ঐচ্ছিক</p>':''}</div>`}
-function tilSet(id,f,v){S.til[D][id]=S.til[D][id]||{};S.til[D][id][f]=v;save();if(f!=='para')render()}
+function tilSet(id,f,v){S.til[D][id]=S.til[D][id]||{};if(f!=='para'&&S.til[D][id][f]===v)delete S.til[D][id][f];else S.til[D][id][f]=v;save();if(f!=='para')render()}
 function tilAll(m){stOf(ses.g).forEach(s=>{if(!awayOn(s.id,D)){S.til[D][s.id]=S.til[D][s.id]||{};S.til[D][s.id][m]=1}});save();render()}
 
 /* ---------- শবিনা ও প্রশ্ন ---------- */
@@ -352,7 +353,7 @@ function vShab(){
  <div class="datebar"><button class="btn s" onclick="D=addD(thuOf(D),-7);render()">‹ আগের সপ্তাহ</button><b>বৃহস্পতিবার, ${dShort(wk)}</b><button class="btn s" onclick="D=addD(thuOf(D),7);render()" ${wk>=thuOf(today())?'disabled':''}>পরের ›</button></div>
  ${isThu?'':'<div class="ban b">প্রশ্ন হয় বৃহস্পতিবার বাদ মাগরিব. এই সপ্তাহের যেকোনো দিন লেখা যাবে.</div>'}
  <div class="card"><b style="font-size:14px">উপস্থিত উস্তাদ</b>${tch}</div>${rows}</div>`}
-function shTc(wk,tid,p){S.shab[wk].tc[tid]={p,time:nowT(),r:''};save();render()}
+function shTc(wk,tid,p){const o=S.shab[wk].tc[tid];if(o&&o.p===p)delete S.shab[wk].tc[tid];else S.shab[wk].tc[tid]={p,time:nowT(),r:''};save();render()}
 function shQ(wk,sid,j,v){const x=S.shab[wk].st[sid];x.q[j]=x.q[j]===v?null:v;save();render()}
 
 /* ---------- মশক ---------- */
@@ -360,8 +361,8 @@ function vMashq(){
  const g=ses.g;S.mashq[D]=S.mashq[D]||{};const x=S.mashq[D][g]||{};
  let body;
  if(x.off)body=`<div class="ban y">আজ মশক হয়নি</div><label class="l">কারণ</label><input value="${esc(x.reason||'')}" oninput="S.mashq[D]['${g}'].reason=this.value;save()" ${ro()?'disabled':''}>${ro()?'':`<button class="btn s" style="margin-top:8px" onclick="delete S.mashq[D]['${g}'];save();render()">ভুল হয়েছে, মুছুন</button>`}`;
- else if(x.end)body=`<div class="ban g">মশক হয়েছে · ${x.start} থেকে ${x.end}<br>করিয়েছেন: ${esc(x.by)}</div>`;
- else if(x.start)body=`<div class="ban g">মশক চলছে · শুরু ${x.start} · ${esc(x.by)}</div>${ro()?'':`<button class="btn pri w" onclick="S.mashq[D]['${g}'].end=nowT();save();render()">মশক শেষ</button>`}`;
+ else if(x.end)body=`<div class="ban g">মশক হয়েছে · ${x.start} থেকে ${x.end}<br>করিয়েছেন: ${esc(x.by)}</div>${ro()?'':`<button class="btn s" onclick="delete S.mashq[D]['${g}'].end;save();render()">বদলান</button>`}`;
+ else if(x.start)body=`<div class="ban g">মশক চলছে · শুরু ${x.start} · ${esc(x.by)}</div>${ro()?'':`<button class="btn pri w" onclick="S.mashq[D]['${g}'].end=nowT();save();render()">মশক শেষ</button><button class="btn s" style="margin-top:8px" onclick="delete S.mashq[D]['${g}'];save();render()">শুরু বাতিল</button>`}`;
  else body=ro()?'<div class="mut">সেদিন মশকের হিসাব লেখা হয়নি</div>':`<button class="btn pri w" onclick="S.mashq[D]['${g}']={start:nowT(),by:(me()||{}).name};save();render()">মশক শুরু</button><button class="btn w" style="margin-top:8px" onclick="S.mashq[D]['${g}']={off:1,reason:'',by:(me()||{}).name};save();render()">আজ মশক হয়নি</button>`;
  return topBar('মশক')+`<div class="wrap">${dateBar()}<div class="card">${body}</div><p class="mut">মশকের হিসাব শুধু উস্তাদের হিসাবে যাবে</p></div>`}
 
@@ -372,7 +373,7 @@ function vKitab(){
   return `<div class="card"><b>${esc(b)}</b><div class="row" style="margin-top:8px"><span class="ch ${x.ok===1?'on-g':''}" onclick="${ro()?'':`kSet('${b}',1)`}">পড়ানো হয়েছে</span><span class="ch ${x.ok===0?'on-r':''}" onclick="${ro()?'':`kSet('${b}',0)`}">হয়নি</span></div>
   ${x.ok===0?`<input style="margin-top:8px" placeholder="কেন হয়নি" value="${esc(x.reason||'')}" oninput="S.kitab[D]['${g}']['${b}'].reason=this.value;save()" ${ro()?'disabled':''}>`:''}</div>`}).join('');
  return topBar('কিতাব')+`<div class="wrap">${dateBar()}${rows}<p class="mut">কিতাবের হিসাব শুধু উস্তাদের হিসাবে যাবে</p></div>`}
-function kSet(b,ok){S.kitab[D][ses.g][b]={ok,reason:'',by:(me()||{}).name};save();render()}
+function kSet(b,ok){const o=S.kitab[D][ses.g][b];if(o&&o.ok===ok)delete S.kitab[D][ses.g][b];else S.kitab[D][ses.g][b]={ok,reason:'',by:(me()||{}).name};save();render()}
 
 /* ---------- ছাত্র খোঁজা ---------- */
 function pickBox(cb){return `<label class="l">ছাত্রের নাম বা আইডি</label><input id="sq" placeholder="যেমন রেদওয়ান বা ক-০১" oninput="sugg('${cb}')" autocomplete="off"><div id="sg"></div><div id="pk">${tmp.pick?pickedHtml():''}</div>`}
@@ -386,7 +387,7 @@ function noop(){}
 function vBeh(){
  const L=stOf(ses.g);const list=S.beh.filter(b=>L.some(s=>s.id===b.sid)).slice(0,15);
  return topBar('আচরণ')+`<div class="wrap"><div class="card">${pickBox('noop')}
- <label class="l">আচরণ</label><div class="row"><span class="ch ${tmp.kind===1?'on-g':''}" id="k1" onclick="tmp.kind=1;behK()">ভালো আচরণ</span><span class="ch ${tmp.kind===0?'on-r':''}" id="k0" onclick="tmp.kind=0;behK()">খারাপ আচরণ</span></div>
+ <label class="l">আচরণ</label><div class="row"><span class="ch ${tmp.kind===1?'on-g':''}" id="k1" onclick="tmp.kind=tmp.kind===1?null:1;behK()">ভালো আচরণ</span><span class="ch ${tmp.kind===0?'on-r':''}" id="k0" onclick="tmp.kind=tmp.kind===0?null:0;behK()">খারাপ আচরণ</span></div>
  <label class="l">বিস্তারিত</label><textarea id="bt" rows="3" placeholder="কী হয়েছে লিখুন"></textarea><div class="err" id="berr"></div>
  <button class="btn pri w" onclick="saveBeh()">জমা দিন</button></div>
  <div class="sec">আগের লেখা</div><div class="card">${list.map(b=>{const s=SID(b.sid);return `<div class="li"><div class="n"><b>${esc(s?s.name:b.sid)} <span class="tag ${b.kind?'g':'r'}">${b.kind?'ভালো':'খারাপ'}</span></b><small>${dShort(b.date)} · ${esc(b.text)}</small></div></div>`}).join('')||'<div class="mut">এখনো কিছু লেখা হয়নি</div>'}</div></div>`}
@@ -410,7 +411,7 @@ function vAway(){
  if(ty==='hsick')f=`<div class="row"><div><label class="l">যাওয়ার তারিখ</label><input id="aw_from" type="date" value="${k}"></div><div><label class="l">কী অসুখ</label><input id="aw_ill"></div></div>${who}`;
  if(ty==='leave')f=`<div class="row"><div><label class="l">যাওয়ার তারিখ</label><input id="aw_from" type="date" value="${k}"></div><div><label class="l">ফেরার তারিখ</label><input id="aw_to" type="date" value="${addD(k,1)}"></div></div><label class="l">কারণ</label><input id="aw_rs">${who}`;
  return topBar('ছুটি ও অসুস্থ')+`<div class="wrap"><div class="sec" style="margin-top:4px">এখন যারা</div>${curH||'<div class="card mut">এখন কেউ ছুটিতে বা অসুস্থ নেই</div>'}
- <div class="sec">নতুন লিখুন</div><div class="card"><div class="chs"><span class="ch ${ty==='msick'?'on-y':''}" onclick="tmp.ty='msick';render()">মাদ্রাসায় অসুস্থ</span><span class="ch ${ty==='hsick'?'on-y':''}" onclick="tmp.ty='hsick';render()">অসুস্থ হয়ে বাড়িতে</span><span class="ch ${ty==='leave'?'on-y':''}" onclick="tmp.ty='leave';render()">ছুটি</span></div>
+ <div class="sec">নতুন লিখুন</div><div class="card"><div class="chs"><span class="ch ${ty==='msick'?'on-y':''}" onclick="tmp.ty=tmp.ty==='msick'?null:'msick';render()">মাদ্রাসায় অসুস্থ</span><span class="ch ${ty==='hsick'?'on-y':''}" onclick="tmp.ty=tmp.ty==='hsick'?null:'hsick';render()">অসুস্থ হয়ে বাড়িতে</span><span class="ch ${ty==='leave'?'on-y':''}" onclick="tmp.ty=tmp.ty==='leave'?null:'leave';render()">ছুটি</span></div>
  ${pickBox('noop')}${f}<div class="err" id="awerr"></div><button class="btn pri w" onclick="saveAway()">জমা দিন</button></div></div>`}
 function v(id){const e=document.getElementById(id);return e?e.value.trim():''}
 function saveAway(){const ty=tmp.ty||'leave',e=document.getElementById('awerr');if(!tmp.pick){e.textContent='ছাত্র বেছে নিন';return}
@@ -420,7 +421,7 @@ function saveAway(){const ty=tmp.ty||'leave',e=document.getElementById('awerr');
  if(ty==='leave'){a.to=v('aw_to');a.reason=v('aw_rs');if(!a.reason){e.textContent='কারণ লিখুন';return}if(a.to<a.from){e.textContent='ফেরার তারিখ ঠিক নেই';return}a.days=Math.round((pk(a.to)-pk(a.from))/864e5)+1;a.app=null}
  S.away.push(a);save();tmp={};render()}
 function awClose(i){S.away[i].closed=today();save();render()}
-function awApp(i,v){S.away[i].app=v;if(v===0){const s=SID(S.away[i].sid);logA(`${s.name}: ${bn(S.away[i].days)} দিনের ছুটি, দরখাস্ত জমা হয়নি`,'r')}save();render()}
+function awApp(i,v){if(S.away[i].app===v){S.away[i].app=null;save();render();return}S.away[i].app=v;if(v===0){const s=SID(S.away[i].sid);logA(`${s.name}: ${bn(S.away[i].days)} দিনের ছুটি, দরখাস্ত জমা হয়নি`,'r')}save();render()}
 
 /* ---------- ফেরার হাজিরা ---------- */
 function vRet(){
@@ -431,7 +432,7 @@ function vRet(){
   ${x.st==='N'?`<div class="err">জরিমানা ${bn(S.settings.rules.fine)} টাকা · জরিমানার তালিকায় উঠেছে</div>`:''}
   ${x.st==='X'?`<div class="row"><div><label class="l">নতুন ফেরার তারিখ</label><input type="date" value="${x.nd||addD(D,2)}" onchange="S.ret[D]['${s.id}'].nd=this.value;save()"></div><div><label class="l">কে ফোন করেছেন</label><input value="${esc(x.who||'')}" oninput="S.ret[D]['${s.id}'].who=this.value;save()"></div></div><label class="l">কারণ</label><input value="${esc(x.rs||'')}" oninput="S.ret[D]['${s.id}'].rs=this.value;save()">`:''}</div>`}).join('');
  return topBar('ফেরার হাজিরা')+`<div class="wrap">${dateBar()}<div class="ban b">ছুটি শেষে ফেরার দিন মাগরিবের আগে নেবেন. আসল সফটওয়্যারে ক্যালেন্ডারে ফেরার দিন থাকলে নিজে নিজে আসবে.</div>${rows}</div>`}
-function retSet(sid,st){const old=(S.ret[D][sid]||{}).st;S.ret[D][sid]={st,nd:addD(D,2)};
+function retSet(sid,st){const old=(S.ret[D][sid]||{}).st;if(old===st){delete S.ret[D][sid];const lv=S.away.filter(a=>a.sid===sid&&a.type==='leave'&&a.from<=D);const a=lv[lv.length-1];if(a&&a.closed===D)delete a.closed;S.fines=S.fines.filter(f=>!(f.sid===sid&&f.auto===D&&!f.paid));save();render();return}S.ret[D][sid]={st,nd:addD(D,2)};
  const lv=S.away.filter(a=>a.sid===sid&&a.type==='leave'&&a.from<=D);const a=lv[lv.length-1];if(a){if(st==='R')a.closed=D;else if(a.closed===D)delete a.closed}
  S.fines=S.fines.filter(f=>!(f.sid===sid&&f.auto===D&&!f.paid));
  if(st==='N'){S.fines.push({sid,reason:'ছুটি শেষে ফেরেনি',date:D,amt:S.settings.rules.fine,paid:false,auto:D,informed:true});const s=SID(sid);logA(`${s.name} ছুটি শেষে ফেরেনি · জরিমানা ${bn(S.settings.rules.fine)} টাকা`)}
@@ -473,7 +474,7 @@ function vFine(){
  ${F.map(f=>{const s=SID(f.sid);const i=S.fines.indexOf(f);return `<div class="card"><div class="row"><b>${esc(s.name)}</b><b style="text-align:right">${bn(f.amt)} টাকা</b></div><div class="mut">${esc(f.reason)} · ${dShort(f.date)} · অভিভাবককে আগে জানানো: ${f.informed?'হ্যাঁ':'না'}</div>
  <div style="margin-top:6px">${f.paid?`<span class="okm">✓ আদায় হয়েছে · ${dShort(f.pdate)}</span>`:`<span class="err" style="margin-right:8px">বাকি</span><button class="btn s" style="color:#085041;border-color:#5DCAA5" onclick="S.fines[${i}].paid=true;S.fines[${i}].pdate=today();S.fines[${i}].by=(me()||{}).name;save();render()">আদায় হয়েছে</button>`}</div></div>`}).join('')||'<div class="card mut">কোনো জরিমানা নেই</div>'}
  <div class="sec">নতুন জরিমানা লিখুন</div><div class="card">${pickBox('noop')}<label class="l">কারণ</label><div class="mut">অনুমতি ছাড়া মাদ্রাসা ত্যাগ · ${bn(S.settings.rules.fine)} টাকা</div>
- <div class="row" style="margin-top:8px;justify-content:flex-start"><span class="mut" style="flex:0 0 auto">অভিভাবককে আগে জানানো হয়েছিল?</span><span class="ch ${tmp.inf===true?'on-g':''}" style="flex:0 0 auto" onclick="tmp.inf=true;render()">হ্যাঁ</span><span class="ch ${tmp.inf===false?'on-r':''}" style="flex:0 0 auto" onclick="tmp.inf=false;render()">না</span></div>
+ <div class="row" style="margin-top:8px;justify-content:flex-start"><span class="mut" style="flex:0 0 auto">অভিভাবককে আগে জানানো হয়েছিল?</span><span class="ch ${tmp.inf===true?'on-g':''}" style="flex:0 0 auto" onclick="tmp.inf=tmp.inf===true?null:true;render()">হ্যাঁ</span><span class="ch ${tmp.inf===false?'on-r':''}" style="flex:0 0 auto" onclick="tmp.inf=tmp.inf===false?null:false;render()">না</span></div>
  <div class="err" id="ferr"></div><button class="btn pri w" onclick="saveFine()">জমা দিন</button></div>
  <p class="mut">"ছুটি শেষে ফেরেনি" জরিমানা ফেরার হাজিরা থেকে নিজে নিজে ওঠে.</p></div>`}
 function saveFine(){const e=document.getElementById('ferr');if(!tmp.pick){e.textContent='ছাত্র বেছে নিন';return}
@@ -709,10 +710,10 @@ function vTrep(){
 function vContact(){
  const L=stOf(ses.g);const list=S.contact.filter(c=>L.some(s=>s.id===c.sid));
  return topBar('অভিভাবকের সাথে যোগাযোগ')+`<div class="wrap"><div class="card">${pickBox('noop')}
- <label class="l">কী করা হয়েছে</label><div class="row"><span class="ch ${tmp.ck==='warn'?'on-y':''}" onclick="tmp.ck='warn';render()">সতর্ক করা হয়েছে</span><span class="ch ${tmp.ck==='call'?'on-y':''}" onclick="tmp.ck='call';render()">মাদ্রাসায় ডাকা হয়েছে</span></div>
- <label class="l">কারণ</label><div class="row">${['পড়া','হাজিরা','আচরণ'].map(x=>`<span class="ch ${tmp.cr===x?'on-b':''}" onclick="tmp.cr='${x}';render()">${x}</span>`).join('')}</div>
+ <label class="l">কী করা হয়েছে</label><div class="row"><span class="ch ${tmp.ck==='warn'?'on-y':''}" onclick="tmp.ck=tmp.ck==='warn'?null:'warn';render()">সতর্ক করা হয়েছে</span><span class="ch ${tmp.ck==='call'?'on-y':''}" onclick="tmp.ck=tmp.ck==='call'?null:'call';render()">মাদ্রাসায় ডাকা হয়েছে</span></div>
+ <label class="l">কারণ</label><div class="row">${['পড়া','হাজিরা','আচরণ'].map(x=>`<span class="ch ${tmp.cr===x?'on-b':''}" onclick="tmp.cr=tmp.cr==='${x}'?null:'${x}';render()">${x}</span>`).join('')}</div>
  <div class="err" id="cerr"></div><button class="btn pri w" onclick="saveContact()">জমা দিন</button></div>
- <div class="sec">আগের লেখা</div><div class="card">${list.map(c=>{const s=SID(c.sid);const i=S.contact.indexOf(c);return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(s.name)}</b><small>${dShort(c.date)} · ${c.kind==='warn'?'সতর্ক করা হয়েছে':'মাদ্রাসায় ডাকা হয়েছে'} · ${esc(c.reason)}</small></div>${c.kind==='call'?(c.came==null?`<span class="ch" onclick="S.contact[${i}].came=true;save();render()">এসেছিলেন</span><span class="ch" onclick="S.contact[${i}].came=false;save();render()">আসেননি</span>`:`<span class="tag ${c.came?'g':'r'}">${c.came?'এসেছিলেন':'আসেননি'}</span>`):''}</div>`}).join('')||'<div class="mut">এখনো কিছু লেখা হয়নি</div>'}</div></div>`}
+ <div class="sec">আগের লেখা</div><div class="card">${list.map(c=>{const s=SID(c.sid);const i=S.contact.indexOf(c);return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(s.name)}</b><small>${dShort(c.date)} · ${c.kind==='warn'?'সতর্ক করা হয়েছে':'মাদ্রাসায় ডাকা হয়েছে'} · ${esc(c.reason)}</small></div>${c.kind==='call'?(c.came==null?`<span class="ch" onclick="S.contact[${i}].came=S.contact[${i}].came===true?null:true;save();render()">এসেছিলেন</span><span class="ch" onclick="S.contact[${i}].came=S.contact[${i}].came===false?null:false;save();render()">আসেননি</span>`:`<span class="tag ${c.came?'g':'r'}">${c.came?'এসেছিলেন':'আসেননি'}</span>`):''}</div>`}).join('')||'<div class="mut">এখনো কিছু লেখা হয়নি</div>'}</div></div>`}
 function saveContact(){const e=document.getElementById('cerr');if(!tmp.pick){e.textContent='ছাত্র বেছে নিন';return}if(!tmp.ck){e.textContent='কী করা হয়েছে বেছে নিন';return}if(!tmp.cr){e.textContent='কারণ বেছে নিন';return}
  S.contact.unshift({date:today(),sid:tmp.pick,kind:tmp.ck,reason:tmp.cr,came:null,by:(me()||{}).name});save();tmp={};render()}
 
@@ -741,6 +742,7 @@ function vDir(){
  return `<div class="top"><button class="btn s" onclick="ses=null;go('home')">বের হন</button><div class="t"><b>কর্তৃপক্ষ</b><span>${dBn(today())}</span></div></div><div class="wrap">
  <div class="big" style="background:#FCEBEB;border-color:#F09595;margin-top:4px" onclick="go('dtoday')"><div class="ic" style="background:#E24B4A">⚠️</div><div style="flex:1"><b style="color:#791F1F">আজকের অবস্থা</b><div style="font-size:12px;color:#A32D2D">${al.length?bn(al.length)+'টি সতর্কতা দেখুন':'কোনো সতর্কতা নেই'}</div></div><span style="color:#A32D2D">›</span></div>
  <div class="big" style="background:#E1F5EE;border-color:#5DCAA5;margin-top:8px" onclick="tmp={};go('admit')"><div class="ic" style="background:#0F6E56">➕</div><div style="flex:1"><b style="color:#085041">নতুন ভর্তি</b><div style="font-size:12px;color:#0F6E56">নতুন ছাত্র ভর্তি করুন</div></div><span style="color:#0F6E56">›</span></div>
+ <div class="sec">গ্রুপের পাতা</div><div class="row" style="margin-bottom:4px"><button class="btn" onclick="ses={role:'dir',g:'ক'};tmp={};D=today();go('g')">গ্রুপ ক</button><button class="btn" onclick="ses={role:'dir',g:'খ'};tmp={};D=today();go('g')">গ্রুপ খ</button></div>
  <div class="sec">রিপোর্ট</div><div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
  ${T_('📋','মাসিক রিপোর্ট',"go('drep',{mode:'m'})",'g')}${T_('📊','বাৎসরিক রিপোর্ট',"go('drep',{mode:'y'})",'g')}${T_('📑','উস্তাদের হিসাব',"go('dtrep',{mode:'m'})",'g')}${T_('🏆','পরীক্ষার ফলাফল',"go('exam')",'g')}${T_('💰','জরিমানা',"go('dfine')",'g',dueF?bn(dueF)+'টি বাকি':'')}${T_('⭐','আচরণ',"go('dbeh')",'g')}${T_('📝','প্রস্তুতির প্রশ্ন',"go('dprepq')",'g')}</div>
  <div class="sec">ঠিক করার জায়গা</div><div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
@@ -908,10 +910,10 @@ function vStuProfile(s){
  <div><label class="l">জামাত</label><select onchange="S.students[${i}].jamat=this.value;save()">${['হিফয প্রথম','হিফয দ্বিতীয়','হিফয তাকমিল'].map(j=>`<option ${s.jamat===j?'selected':''}>${j}</option>`).join('')}</select></div></div>
  <div class="row">${F('birthYear','জন্মের সাল')}${F('blood','রক্তের গ্রুপ')}</div>${F('addr','ঠিকানা','গ্রাম, ডাকঘর, উপজেলা, জেলা')}${F('ill','কোনো অসুখ')}</div>
  <div class="sec">খ. অভিভাবকের তথ্য</div><div class="card"><div class="row">${F('father','পিতার নাম')}${F('fatherJob','পেশা')}</div>${F('fatherMob','পিতার মোবাইল')}<div class="row">${F('mother','মাতার নাম')}${F('motherMob','মাতার মোবাইল')}</div>
- <label class="l">অভিভাবক</label><div class="chs">${['পিতা','মাতা','অন্য কেউ'].map(x=>`<span class="ch ${s.guardian===x?'on-g':''}" onclick="S.students[${i}].guardian='${x}';save();render()">${x}</span>`).join('')}</div>
+ <label class="l">অভিভাবক</label><div class="chs">${['পিতা','মাতা','অন্য কেউ'].map(x=>`<span class="ch ${s.guardian===x?'on-g':''}" onclick="S.students[${i}].guardian=S.students[${i}].guardian==='${x}'?'':'${x}';save();render()">${x}</span>`).join('')}</div>
  ${s.guardian==='অন্য কেউ'?`<div class="row">${F('guardianName','নাম')}${F('guardianRel','সম্পর্ক')}</div>`:''}${F('wa','WhatsApp নম্বর (খবর ও রিপোর্ট এখানে যাবে)','যেমন ০১৭১২৩৪৫৬৭৮')}</div>
  <div class="sec">গ. ভর্তি ও অফিস</div><div class="card"><div class="row"><div><label class="l">ভর্তির তারিখ</label><input type="date" value="${s.admDate||''}" onchange="S.students[${i}].admDate=this.value;save()"></div>${F('admTest','ভর্তি পরীক্ষার নম্বর')}</div>${F('prevMadrasa','আগে কোথায় পড়ত')}
- <label class="l">বোর্ডিং</label><div class="chs">${['সাধারণ বোর্ডিং','বিশেষ বোর্ডিং'].map(x=>`<span class="ch ${s.boarding===x?'on-g':''}" onclick="S.students[${i}].boarding='${x}';save();render()">${x}</span>`).join('')}</div>
+ <label class="l">বোর্ডিং</label><div class="chs">${['সাধারণ বোর্ডিং','বিশেষ বোর্ডিং'].map(x=>`<span class="ch ${s.boarding===x?'on-g':''}" onclick="S.students[${i}].boarding=S.students[${i}].boarding==='${x}'?'':'${x}';save();render()">${x}</span>`).join('')}</div>
  <div class="row">${F('admMem','ভর্তির সময় মুখস্থ (পারা)')}${F('admKacha','ভর্তির সময় কাঁচা পারা')}</div></div>
  <div class="sec">ঘ. পর্যবেক্ষণকাল</div><div class="card">${pb?`<div class="row"><div><label class="l" style="margin-top:0">শুরু</label><input type="date" value="${pb.from}" onchange="S.students[${i}].probation.from=this.value;save()"></div><div><label class="l" style="margin-top:0">শেষ</label><input type="date" value="${pb.to}" onchange="S.students[${i}].probation.to=this.value;save()"></div></div>
  ${[['c1','শুরুতে উস্তাদের মন্তব্য'],['c2','অগ্রগতি ও মূল্যায়ন'],['c3','শেষে উস্তাদের মন্তব্য']].map(([f,n])=>`<label class="l">${n}</label><input value="${esc(pb[f])}" onchange="S.students[${i}].probation['${f}']=this.value;save()">`).join('')}
@@ -923,7 +925,7 @@ function vStuProfile(s){
  ${S.boards.filter(b=>b.st[s.id]).map(b=>{const x=b.st[s.id];return `<div class="li"><span class="n">${esc(b.n)}</span><span class="mut">রোল ${esc(x.roll||'—')} · ${esc(x.g||'ফল আসেনি')}${x.pos?' · স্থান '+esc(x.pos):''}</span></div>`}).join('')}</div>
  <div class="sec">ছ. এই শিক্ষাবর্ষের হিসাব</div>${(()=>{const o=stat(s.id,S.year.from,S.year.to);return `<div class="card"><div class="li"><span class="n">কার্যদিবস · উপস্থিত · অনুপস্থিত</span><b>${bn(o.days)} · ${bn(o.P)} · ${bn(o.A+o.L+o.S)}</b></div><div class="li"><span class="n">অসুস্থ · ছুটি</span><b>${bn(o.S)} · ${bn(o.L)}</b></div><div class="li"><span class="n">সবক পেরেছে · পারেনি</span><b>${bn(o.les.sabak.ok)} · ${bn(o.les.sabak.no)}</b></div></div>`})()}
  <button class="btn w" onclick="go('drep',{mode:'y',sid:'${s.id}'})">📊 বাৎসরিক রিপোর্ট দেখুন</button></div>`}
-function pbDec(i,d){const p=S.students[i].probation;p.dec=d;if(d==='ext'){p.to=addD(p.to,15);p.dec=''}if(d==='no')S.students[i].status='out';if(d==='ok'){S.students[i].status='ok'}save();render()}
+function pbDec(i,d){const p=S.students[i].probation;if(p.dec===d&&d!=='ext'){p.dec='';S.students[i].status='ok';save();render();return}p.dec=d;if(d==='ext'){p.to=addD(p.to,15);p.dec=''}if(d==='no')S.students[i].status='out';if(d==='ok'){S.students[i].status='ok'}save();render()}
 
 /* ---------- নতুন ভর্তি ---------- */
 const AF=['a_name','a_by','a_addr','a_f','a_fm','a_wa','a_mem','a_kacha'];
