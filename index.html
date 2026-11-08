@@ -139,7 +139,8 @@ function logA(txt,kind){S.alerts.unshift({date:today(),time:nowT(),txt,kind:kind
 function awayOn(sid,k){
  for(const a of S.away){if(a.sid!==sid)continue;
   if(a.type==='leave'){if(k>=a.from&&(a.closed?k<a.closed:(k<=a.to||k<=today())))return 'L'}
-  else{if(k>=a.from&&(!a.closed||k<a.closed))return 'S'}}
+  else if(a.type==='msick')continue;
+  else{if(k>=a.from&&(!a.closed||k<a.closed))return a.type==='run'?'R':'S'}}
  return null}
 function overdue(a){return a.type==='leave'&&!a.closed&&today()>a.to}
 
@@ -155,13 +156,16 @@ function vHome(){
   <div class="tile" style="background:#FAEEDA;border-color:#EF9F27;padding:14px 6px" onclick="go('pin',{to:'dir'})"><div class="ic" style="background:#BA7517;color:#fff">${IC.dir}</div><b style="color:#633806;font-size:15px">কর্তৃপক্ষ</b></div>
   <div class="tile" style="background:#EEEDFE;border-color:#AFA9EC;padding:14px 6px" onclick="go('pin',{to:'routine'})"><div class="ic" style="background:#7F77DD;color:#fff">${IC.rout}</div><b style="color:#3C3489;font-size:15px">রুটিন</b></div>
  </div>
+ <div class="tiles" style="grid-template-columns:1fr;margin-top:10px">
+  <div class="tile" style="background:#F1EFE8;border-color:#B4B2A9;padding:12px 6px;flex-direction:row;gap:10px;justify-content:center" onclick="go('pin',{to:'office'})"><div class="ic" style="background:#5F5E5A;color:#fff">🗄️</div><b style="color:#444441;font-size:15px">অফিস সহকারী</b></div>
+ </div>
  <div class="tiles" style="grid-template-columns:1fr 1fr;margin-top:10px">
   <div class="tile" style="background:#E1F5EE;border-color:#5DCAA5;padding:22px 6px" onclick="go('pin',{to:'g',g:'ক'})"><div class="ic" style="background:#1D9E75;color:#fff">${IC.book}</div><b style="color:#085041;font-size:16px">গ্রুপ ক</b><small>${esc(t1?t1.name:'')}</small></div>
   <div class="tile" style="background:#E6F1FB;border-color:#85B7EB;padding:22px 6px" onclick="go('pin',{to:'g',g:'খ'})"><div class="ic" style="background:#378ADD;color:#fff">${IC.book}</div><b style="color:#0C447C;font-size:16px">গ্রুপ খ</b><small>${esc(t2?t2.name:'')}</small></div>
  </div>
  </div>`}
 function vPin(){
- const lab=V.to==='dir'?'কর্তৃপক্ষ':V.to==='routine'?'রুটিন':V.sub?'বদলি ক্লাস · গ্রুপ '+V.g:'গ্রুপ '+V.g;
+ const lab=V.to==='dir'?'কর্তৃপক্ষ':V.to==='routine'?'রুটিন':V.to==='office'?'অফিস সহকারী':V.sub?'বদলি ক্লাস · গ্রুপ '+V.g:'গ্রুপ '+V.g;
  return `<div class="top"><button class="btn s" onclick="go('home')">‹ ফিরুন</button><div class="t"><b>${lab}</b></div></div>
  <div class="pinbox"><div style="font-size:15px;margin-bottom:10px">${V.sub?"পরিচালকের দেওয়া বদলি PIN দিন":"PIN দিন"}</div>
  <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" onkeydown="if(event.key==='Enter')doPin()">
@@ -185,37 +189,37 @@ function vGroup(){
  const t=me(),sub=ses.role==='sub',g=ses.g,k=today(),w=dow(k);
  const L=stOf(g);
  const att=S.att[k]||{};const taken=Object.keys(att).filter(s=>att[s][g]).length;
- const les=S.les[k]||{};const done=L.filter(s=>les[s.id]&&['sabak','sat','amu','tk'].some(x=>les[s.id][x]&&(les[s.id][x].st===2||les[s.id][x].st===3))).length;
- const away=L.filter(s=>awayOn(s.id,k)).length;
+ const les=S.les[k]||{};const done=L.filter(s=>les[s.id]&&['sabak','sat','amu','tk','kp'].some(x=>les[s.id][x]&&(les[s.id][x].st===2||les[s.id][x].st===3))).length;
+ const away=S.away.filter(a=>!a.closed&&L.some(s=>s.id===a.sid)).length;
  const fines=S.fines.filter(f=>!f.paid&&L.some(s=>s.id===f.sid)).length;
  const sent=Object.keys(S.sent[k]||{}).filter(id=>L.some(s=>s.id===id)).length;
  const tile=(ic,bg,col,n,sm,on)=>`<div class="tile" onclick="${on}"><div class="ic" style="background:${bg};color:${col}">${ic}</div><b>${n}</b>${sm?`<small>${sm}</small>`:''}</div>`;
  return `<div class="top">${ses.role==='dir'?`<button class="btn s" onclick="ses={role:'dir'};go('dir')">‹ কর্তৃপক্ষ</button>`:`<button class="btn s" onclick="ses=null;go('home')">বের হন</button>`}<div class="t"><b>গ্রুপ ${g}</b><span>${esc(t?t.name:'')}</span></div></div>
  <div class="wrap">
- ${specBan(k)}${calOn(k)&&calOn(k).type==='prep'?`<div class="ban r"><b>${esc(calOn(k).name)}-এর প্রস্তুতি চলছে</b><br>সাধারণভাবে শুধু আমুখতা. কারও সব পড়া চালাতে তার পড়ার পাতায় "সব পড়া চলবে" টিপুন.</div>`:''}${calOn(k)&&calOn(k).type==='holiday'?`<div class="ban y">আজ ছুটি: ${esc(calOn(k).name||'')}</div>`:''}
+ ${specBan(k)}${evalBan()}${calOn(k)&&calOn(k).type==='prep'?`<div class="ban r"><b>${esc(calOn(k).name)}-এর প্রস্তুতি চলছে</b><br>সাধারণভাবে শুধু আমুখতা. কারও সব পড়া চালাতে তার পড়ার পাতায় "সব পড়া চলবে" টিপুন.</div>`:''}${calOn(k)&&calOn(k).type==='holiday'?`<div class="ban y">আজ ছুটি: ${esc(calOn(k).name||'')}</div>`:''}
  ${sub?`<div class="ban y"><b>বদলি ক্লাস · গ্রুপ ${g}</b><br>বদলি উস্তাদ: ${esc(t?t.name:'')}. সব কাজ গ্রুপ ${g}-এর খাতায় জমা হবে.</div>`:''}
- <div class="card" style="text-align:center"><b>${dBn(k)}</b><div class="mut">${w===5?'শুক্রবার, পড়া নেই':w===4?'বৃহস্পতিবার':'পড়ার দিন'} · ছাত্র ${bn(L.length)} জন</div></div>
+ <div class="card" style="text-align:center"><b>${dBn(k)}</b><div class="mut">${w===5?'শুক্রবার, পড়া নেই':w===4?'বৃহস্পতিবার':'পড়ার দিন'} · শিক্ষার্থী ${bn(L.length)} জন</div></div>
  <div class="sec">প্রতিদিন</div>
  <div class="tiles">
  ${tile(IC.att,'#E1F5EE','#0F6E56','হাজিরা',bn(taken)+' বেলা নেওয়া',"go('att')")}
- ${tile(IC.les,'#E6F1FB','#185FA5','ছাত্রের পড়া',w===5?'আজ নেই':bn(done)+'/'+bn(L.length)+' শুনিয়েছে',"go('les')")}
+ ${tile(IC.les,'#E6F1FB','#185FA5','দৈনিক পাঠ গ্রহণ',w===5?'আজ নেই':bn(done)+'/'+bn(L.length)+' শুনিয়েছে',"go('les')")}
+ ${tile('🗂️','#E6F1FB','#185FA5','পড়া সাজানো','কার কোন পড়া বন্ধ',"go('plan')")}
  ${tile(IC.til,'#E1F5EE','#0F6E56','তিলাওয়াত','',"go('til')")}
  ${tile(IC.mashq,'#EEEDFE','#534AB7','মশক','',"go('mashq')")}
  ${tile(IC.kitab,'#EEEDFE','#534AB7','কিতাব','',"go('kitab')")}
- ${tile(IC.news,'#E1F5EE','#0F6E56','আজকের খবর',bn(sent)+'/'+bn(L.length)+' পাঠানো',"go('news')")}
+ ${tile(IC.news,'#E1F5EE','#0F6E56','অভিভাবক বার্তা','WhatsApp · '+bn(sent)+'/'+bn(L.length),"go('news')")}
  </div>
  <div class="sec">সাপ্তাহিক ও অন্যান্য</div>
  <div class="tiles">
- ${tile(IC.shab,'#EEEDFE','#534AB7','শবিনা ও প্রশ্ন',w===4?'আজ বৃহস্পতিবার':'বৃহস্পতিবার',"go('shab')")}
- ${tile(IC.away,'#FAEEDA','#854F0B','ছুটি ও অসুস্থ','এখন '+bn(away)+' জন',"go('away')")}
- ${tile(IC.ret,'#FAEEDA','#854F0B','ফেরার হাজিরা','',"go('ret')")}
+ ${tile(IC.shab,'#EEEDFE','#534AB7','শবিনা','বাদ মাগরিব প্রশ্ন',"go('shab')")}
+ ${tile(IC.away,'#FAEEDA','#854F0B','ছুটি ও অসুস্থতা','এখন '+bn(away)+' জন',"go('away')")}
+ ${tile(IC.ret,'#FAEEDA','#854F0B','ছুটি-পরবর্তী উপস্থিতি','বন্ধ শেষে কে ফিরল',"go('ret')")}
  ${tile(IC.beh,'#FAEEDA','#854F0B','আচরণ','',"go('beh')")}
  ${tile(IC.nocls,'#FCEBEB','#A32D2D','ক্লাস হয়নি','',"go('nocls')")}
- ${tile(IC.target,'#E6F1FB','#185FA5','লক্ষ্য','',"go('target')")}
+ ${tile(IC.target,'#E6F1FB','#185FA5','মাসিক লক্ষ্যমাত্রা','',"go('target')")}
  ${tile(IC.fine,'#FAEEDA','#854F0B','জরিমানা',fines?'<span style="color:#A32D2D">'+bn(fines)+'টি বাকি</span>':'',"go('fine')")}
- ${tile(IC.rep,'#E1F5EE','#0F6E56','রিপোর্ট','মাসিক ও বাৎসরিক',"go('trep')")}
  ${tile('📞','#E6F1FB','#185FA5','যোগাযোগ','অভিভাবকের সাথে',"go('contact')")}
- ${tile(IC.exam,'#E1F5EE','#0F6E56','পরীক্ষার নম্বর','পরীক্ষার সময়',"go('texam')")}
+ ${tile(IC.exam,'#E1F5EE','#0F6E56','পরীক্ষার নম্বর প্রদান','পরীক্ষার সময়',"go('texam')")}
  ${sub||ses.role==='dir'?'':tile(IC.sub,'#FAEEDA','#854F0B','বদলি ক্লাস','গ্রুপ '+(g==='ক'?'খ':'ক'),"ses=null;go('pin',{to:'g',g:'"+(g==='ক'?'খ':'ক')+"',sub:1})")}
  ${calOn(today())&&calOn(today()).type==='prep'?tile('📝','#FCEBEB','#A32D2D','প্রস্তুতির প্রশ্ন','',"go('prepq')"):''}
  </div>
@@ -233,42 +237,44 @@ function vAtt(){
  const rec=((S.att[D]||{})[cur]||{})[sk];
  if(!tmp.a||tmp.slot!==cur){tmp.slot=cur;tmp.a={};tmp.r={};L.forEach(s=>{const aw=awayOn(s.id,D);const o=rec&&rec.list[s.id];tmp.a[s.id]=aw||(o?o.v:'P');tmp.r[s.id]=o?o.r||'':''})}
  const rows=L.map(s=>{const v=tmp.a[s.id],aw=awayOn(s.id,D);
-  if(aw)return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div><span class="tag y">${aw==='L'?'ছুটি':'অসুস্থ'}</span></div>`;
+  if(aw)return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div><span class="tag y">${awL(aw)}</span></div>`;
   return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div>
   <span class="ch ${v==='P'?'on-g':''}" onclick="${ro()?'':`tmp.a['${s.id}']=tmp.a['${s.id}']==='P'?'':'P';render()`}">উপস্থিত</span><span class="ch ${v==='A'?'on-r':''}" onclick="${ro()?'':`tmp.a['${s.id}']=tmp.a['${s.id}']==='A'?'':'A';render()`}">অনুপস্থিত</span>
   ${v==='A'?`<input style="flex-basis:100%;margin-top:6px" placeholder="কেন অনুপস্থিত? (অবশ্যই লিখুন)" value="${esc(tmp.r[s.id])}" oninput="tmp.r['${s.id}']=this.value" ${ro()?'disabled':''}>`:''}</div>`}).join('');
  return topBar('হাজিরা')+`<div class="wrap">${dateBar()}
  <div class="chs" style="margin-bottom:10px">${sl.map(([k,n])=>{const done=((S.att[D]||{})[k]||{})[k==='n'?'all':g];return `<span class="ch ${k===cur?'on-g':''}" onclick="V.slot='${k}';render()">${n}${done?' ✓':''}</span>`}).join('')}</div>
- ${isN?'<div class="ban b">রাতের হাজিরা: দুই গ্রুপের সব ছাত্র</div>':''}
+ ${isN?'<div class="ban b">রাতের হাজিরা: দুই গ্রুপের সব শিক্ষার্থী</div>':''}
  ${rec?`<div class="ban g">নেওয়া হয়েছে ${rec.at} · ${esc(rec.by)}</div>`:''}
  <div class="card">${rows}</div>
  <div class="err" id="aerr"></div>
  ${ro()?'':`<button class="btn pri w" onclick="saveAtt('${cur}','${sk}')">জমা দিন</button>`}</div>`}
 function saveAtt(slot,sk){
  const miss=Object.keys(tmp.a).filter(id=>tmp.a[id]==='A'&&!tmp.r[id].trim());
- if(miss.length){document.getElementById('aerr').textContent='অনুপস্থিত ছাত্রের কারণ লিখুন';return}
+ if(miss.length){document.getElementById('aerr').textContent='অনুপস্থিত শিক্ষার্থীর কারণ লিখুন';return}
  const list={};Object.keys(tmp.a).forEach(id=>{if(tmp.a[id])list[id]={v:tmp.a[id],r:tmp.r[id]}});
  S.att[D]=S.att[D]||{};S.att[D][slot]=S.att[D][slot]||{};
  const t=me();S.att[D][slot][sk]={list,at:nowT(),by:t?t.name:'',sub:ses.role==='sub'};
  Object.keys(list).forEach(id=>{if(list[id].v==='A'){const s=SID(id);logA(`${s.name} (${id}) অনুপস্থিত · কারণ: ${list[id].r}`)}});
  save();tmp={};render();setTimeout(()=>{const e=document.querySelector('.wrap');e&&e.insertAdjacentHTML('afterbegin','<div class="ban g">জমা হয়েছে</div>')},0)}
 
-/* ---------- ছাত্রের পড়া ---------- */
+/* ---------- শিক্ষার্থীর পড়া ---------- */
 function lastLes(sid,kind,before){
  const ks=Object.keys(S.les).filter(k=>k<before).sort().reverse();
  for(const k of ks){const x=(S.les[k][sid]||{})[kind];if(x&&x.st===2)return x}return null}
 function defaults(s,kind){
+ if(kind==='kp'){const p=planOf(s.id).kp||{};return{para:p.para||'',page:p.pages?bn(en(p.pages))+' পৃষ্ঠা':'',from:'কাঁচা পারা'}}
  if(kind==='sabak'){const l=lastLes(s.id,'sabak',D);if(l&&l.para){const pg=parseInt(en(l.page))||0;if(pg>=20)return{para:bn((parseInt(en(l.para))||0)+1),page:'১',from:'আগের পারা শেষ, নতুন পারা'};return{para:l.para,page:bn(pg+1),from:'আগের দিন থেকে'}}return{para:'',page:'',from:''}}
  if(kind==='sat'){const sb=((S.les[D]||{})[s.id]||{}).sabak;const src=sb&&sb.para?sb:defaults(s,'sabak');const pg=parseInt(en(src.page))||0;if(src.para&&pg>1)return{para:src.para,page:'১ থেকে '+bn(pg-1),from:'সবকের পারা থেকে'};return{para:src.para||'',page:'',from:src.para?'সবকের পারা থেকে':''}}
  if(kind==='amu'||kind==='tk'){const l=lastLes(s.id,kind,D);if(l&&l.para&&/প্রথম/.test(l.page||''))return{para:l.para,page:'দ্বিতীয় অর্ধেক',from:'গতকাল প্রথম অর্ধেক হয়েছে'};return{para:'',page:'',from:''}}
  return{para:'',page:'',from:''}}
-function kindsFor(s){const w=dow(D);if(w===5)return[];const c=calOn(D);if(c&&(c.type==='holiday'||c.type==='exam'))return[];
+function baseKinds(s){const w=dow(D);if(w===5)return[];const c=calOn(D);if(c&&(OFFT.includes(c.type)||c.type==='exam'))return[];
  let k=s.type==='takmil'?(w===4?[]:['tk']):(w===4?['sabak','sat']:['sabak','sat','amu']);
  if(c&&c.type==='prep'){const all=s.prepAll||(c.board&&!(c.boardList||[]).includes(s.id));if(!all)k=k.filter(x=>x==='amu'||x==='tk')}
  const sp=specOn(D,ses?ses.g:s.group);if(sp)k=k.filter(x=>sp.run.includes(x==='tk'?'আমুখতা':KN[x]));
  return k}
-const KN={sabak:'সবক',sat:'সাতসবক',amu:'আমুখতা',tk:'খতমির পড়া'};
+const KN={sabak:'সবক',sat:'সাতসবক',amu:'আমুখতা',tk:'খতমির পড়া',kp:'কাঁচা পারা'};
 function limits(s,kind){const R=S.settings.rules;
+ if(kind==='kp')return{lok:R.amuLok,doh:R.amuDoh};
  if(kind==='sabak')return{lok:null,doh:s.weak?R.sabakDohWeak:0};
  if(kind==='sat')return{lok:R.satLok,doh:R.satDoh};
  if(kind==='amu')return{lok:R.amuLok,doh:R.amuDoh};
@@ -277,13 +283,13 @@ function vLes(){
  const g=ses.g,L=stOf(g);
  if(V.sid)return vLesOne(SID(V.sid));
  const les=S.les[D]||{};
- const rows=L.map(s=>{const r=les[s.id]||{},ks=kindsFor(s),aw=awayOn(s.id,D);
+ const rows=L.map(s=>{const aw=offNow(s.id),r=les[s.id]||{},ks=aw?[]:visKinds(s);
   const st=ks.map(k=>{const x=r[k];return x?(x.st===2?(x.ok?'✓':'✗'):x.st===3?'বন্ধ':x.st===4?'—':'…'):'·'});
   const done=ks.length&&ks.every(k=>r[k]&&r[k].st>=2);
-  return `<div class="li" style="cursor:pointer" onclick="go('les',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}${s.type==='takmil'?'<span class="tag b">তাকমিল</span>':''}${s.weak?'<span class="tag y">দুর্বল</span>':''}</b><small>${s.id}${aw?' · '+(aw==='L'?'ছুটিতে':'অসুস্থ'):''}</small></div><span class="mut">${ks.map((k,i)=>KN[k]+' '+st[i]).join(' · ')||'আজ পড়া নেই'}</span><span style="color:${done?'#0F6E56':'#6b7772'}">${done?'✓':'›'}</span></div>`}).join('');
- return topBar('ছাত্রের পড়া')+`<div class="wrap">${dateBar()}${dayBanner()}<div class="card">${rows}</div><p class="mut">নাম টিপে পড়া লিখুন</p></div>`}
+  return `<div class="li" style="cursor:pointer" onclick="go('les',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}${s.type==='takmil'?'<span class="tag b">তাকমিল</span>':''}${s.weak?'<span class="tag y">দুর্বল</span>':''}</b><small>${s.id}${aw?' · '+awL(aw):''}</small></div><span class="mut">${ks.map((k,i)=>KN[k]+' '+st[i]).join(' · ')||'আজ পড়া নেই'}</span><span style="color:${done?'#0F6E56':'#6b7772'}">${done?'✓':'›'}</span></div>`}).join('');
+ return topBar('দৈনিক পাঠ গ্রহণ')+`<div class="wrap">${dateBar()}${dayBanner()}${lesWinBan()}<div class="card">${rows}</div><p class="mut">নাম টিপে পড়া লিখুন · কার কোন পড়া কত দিন বন্ধ, তা ঠিক করুন "পড়া সাজানো" পাতায়</p></div>`}
 function vLesOne(s){
- const ks=kindsFor(s);S.les[D]=S.les[D]||{};const r=S.les[D][s.id]=S.les[D][s.id]||{};
+ const ks=offNow(s.id)?[]:visKinds(s);S.les[D]=S.les[D]||{};const r=S.les[D][s.id]=S.les[D][s.id]||{};
  const nc=((S.nocls[D]||{})[ses.g]||{items:[]}).items;
  const cards=ks.map(k=>{
   const x=r[k]||{st:0};const lim=limits(s,k);const nm=KN[k];
@@ -304,11 +310,11 @@ function vLesOne(s){
   ${k==='tk'?cnt('q','মোট প্রশ্ন (২–৫)',null)+cnt('qok','পেরেছে',null):''}
   <div class="row" style="margin-top:10px"><button class="btn" style="color:#085041;border-color:#5DCAA5;${x.st===2&&x.ok?'background:#E1F5EE;font-weight:600':''}" onclick="lesFin('${s.id}','${k}',1)">${x.st===2&&x.ok?'✓ ':''}পেরেছে</button><button class="btn" style="color:#791F1F;border-color:#F09595;${x.st===2&&!x.ok?'background:#FCEBEB;font-weight:600':''}" onclick="lesFin('${s.id}','${k}',0)">${x.st===2&&!x.ok?'✓ ':''}পারেনি</button></div></div>`}).join('');
  const sidx=stOf(ses.g).findIndex(x=>x.id===s.id),L=stOf(ses.g);
- return topBar(esc(s.name),"go('les')")+`<div class="wrap">${dateBar()}${dayBanner()}
- <div class="card row"><div><b>${esc(s.name)}</b><div class="mut">${s.id} · ${esc(s.jamat||'')}</div></div><div style="flex:0 0 auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><span class="ch ${s.weak?'on-y':''}" onclick="SID('${s.id}').weak=!SID('${s.id}').weak;save();render()">দুর্বল ছাত্র</span>${calOn(D)&&calOn(D).type==='prep'?`<span class="ch ${s.prepAll?'on-g':''}" onclick="SID('${s.id}').prepAll=!SID('${s.id}').prepAll;save();render()">সব পড়া চলবে</span>`:''}</div></div>
- ${awayOn(s.id,D)?`<div class="ban y">আজ ${awayOn(s.id,D)==='L'?'ছুটিতে':'অসুস্থ'}</div>`:''}
- ${cards||'<div class="card mut">আজ এই ছাত্রের পড়া নেই</div>'}
- <div class="row">${sidx>0?`<button class="btn" onclick="go('les',{sid:'${L[sidx-1].id}'})">‹ আগের ছাত্র</button>`:'<span></span>'}${sidx<L.length-1?`<button class="btn" onclick="go('les',{sid:'${L[sidx+1].id}'})">পরের ছাত্র ›</button>`:'<span></span>'}</div></div>`}
+ return topBar(esc(s.name),"go('les')")+`<div class="wrap">${dateBar()}${dayBanner()}${lesWinBan()}
+ <div class="card row"><div><b>${esc(s.name)}</b><div class="mut">${s.id} · ${esc(s.jamat||'')}</div></div><div style="flex:0 0 auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><span class="ch ${s.weak?'on-y':''}" onclick="SID('${s.id}').weak=!SID('${s.id}').weak;save();render()">দুর্বল শিক্ষার্থী</span>${calOn(D)&&calOn(D).type==='prep'?`<span class="ch ${s.prepAll?'on-g':''}" onclick="SID('${s.id}').prepAll=!SID('${s.id}').prepAll;save();render()">সব পড়া চলবে</span>`:''}</div></div>
+ ${offNow(s.id)?`<div class="ban y">এখন ${awL(offNow(s.id))}</div>`:''}
+ ${cards||'<div class="card mut">আজ এই শিক্ষার্থীর পড়া নেই</div>'}
+ <div class="row">${sidx>0?`<button class="btn" onclick="go('les',{sid:'${L[sidx-1].id}'})">‹ আগের শিক্ষার্থী</button>`:'<span></span>'}${sidx<L.length-1?`<button class="btn" onclick="go('les',{sid:'${L[sidx+1].id}'})">পরের শিক্ষার্থী ›</button>`:'<span></span>'}</div></div>`}
 function lesStart(sid,k){const s=SID(sid),d=defaults(s,k);S.les[D][sid][k]={st:1,t1:nowT(),para:d.para,page:d.page,l:0,d:0,by:(me()||{}).name,sub:ses.role==='sub'};save();render()}
 function lesCnt(sid,k,f,v){const x=S.les[D][sid][k];x[f]=Math.max(0,(x[f]||0)+v);save();render()}
 function lesFin(sid,k,ok){const x=S.les[D][sid][k];if(x.st===2&&x.ok===ok){x.st=1;delete x.ok;delete x.t2;save();render();return}const was=x.st===2;x.st=2;x.ok=ok;if(!was)x.t2=nowT();
@@ -319,8 +325,8 @@ function lesOff(sid,k){const x=S.les[D][sid][k];if(x&&x.st===3){delete S.les[D][
 /* ---------- তিলাওয়াত ---------- */
 function vTil(){
  const g=ses.g,L=stOf(g),m=V.m||'namaz';S.til[D]=S.til[D]||{};const R=S.til[D];
- const rows=L.map(s=>{const r=R[s.id]||{},v=r[m];const aw=awayOn(s.id,D);
-  if(aw)return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div><span class="tag y">${aw==='L'?'ছুটি':'অসুস্থ'}</span></div>`;
+ const rows=L.map(s=>{const r=R[s.id]||{},v=r[m];const aw=offNow(s.id);
+  if(aw)return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div><span class="tag y">${awL(aw)}</span></div>`;
   return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div>
   ${m==='til'?`<input style="width:72px;flex:0 0 72px;text-align:center" placeholder="পারা" value="${esc(r.para||'')}" oninput="tilSet('${s.id}','para',this.value)" ${ro()?'disabled':''}>`:''}
   <span class="ch ${v===1?'on-g':''}" onclick="${ro()?'':`tilSet('${s.id}','${m}',1)`}">করেছে</span><span class="ch ${v===0?'on-r':''}" onclick="${ro()?'':`tilSet('${s.id}','${m}',0)`}">করেনি</span></div>`}).join('');
@@ -329,7 +335,7 @@ function vTil(){
  ${ro()?'':`<div style="text-align:right;margin-bottom:6px"><button class="btn s" style="color:#085041;border-color:#5DCAA5" onclick="tilAll('${m}')">সবাই করেছে</button></div>`}
  <div class="card">${rows}</div>${m==='til'?'<p class="mut">পারা লেখা ঐচ্ছিক</p>':''}</div>`}
 function tilSet(id,f,v){S.til[D][id]=S.til[D][id]||{};if(f!=='para'&&S.til[D][id][f]===v)delete S.til[D][id][f];else S.til[D][id][f]=v;save();if(f!=='para')render()}
-function tilAll(m){stOf(ses.g).forEach(s=>{if(!awayOn(s.id,D)){S.til[D][s.id]=S.til[D][s.id]||{};S.til[D][s.id][m]=1}});save();render()}
+function tilAll(m){stOf(ses.g).forEach(s=>{if(!offNow(s.id)){S.til[D][s.id]=S.til[D][s.id]||{};S.til[D][s.id][m]=1}});save();render()}
 
 /* ---------- শবিনা ও প্রশ্ন ---------- */
 function thuOf(k){let d=pk(k);while(d.getDay()!==4)d.setDate(d.getDate()-1);return key(d)}
@@ -341,7 +347,7 @@ function vShab(){
   return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(t.name)}</b><small>গ্রুপ ${t.group}</small></div>
   ${x.p===1?`<span class="okm" style="margin:0">✓ উপস্থিত ${x.time}</span>`:`<span class="ch" onclick="${lock?'':`shTc('${wk}','${t.id}',1)`}">উপস্থিত</span><span class="ch ${x.p===0?'on-r':''}" onclick="${lock?'':`shTc('${wk}','${t.id}',0)`}">নেই</span>`}
   ${x.p===0?`<input style="flex-basis:100%;margin-top:6px" placeholder="কেন উপস্থিত নেই" value="${esc(x.r||'')}" oninput="S.shab['${wk}'].tc['${t.id}'].r=this.value;save()">`:''}</div>`}).join('');
- const rows=L.map(s=>{if(awayOn(s.id,wk))return `<div class="card row"><b>${esc(s.name)}</b><span class="tag y" style="flex:0 0 auto">${awayOn(s.id,wk)==='L'?'ছুটিতে':'অসুস্থ'}</span></div>`;const x=W.st[s.id]=W.st[s.id]||{q:[null,null,null]};
+ const rows=L.map(s=>{if(awayOn(s.id,wk))return `<div class="card row"><b>${esc(s.name)}</b><span class="tag y" style="flex:0 0 auto">${awL(awayOn(s.id,wk))}</span></div>`;const x=W.st[s.id]=W.st[s.id]||{q:[null,null,null]};
   const cur=x.paras!=null?x.paras:(P&&P.st[s.id]&&P.st[s.id].next)||'';
   const ok=x.q.filter(v=>v===1).length,no=x.q.filter(v=>v===0).length;
   const top=(!cur||x.edit)?`<label class="l">এই সপ্তাহের শবিনা (পারা)</label><input value="${esc(cur)}" placeholder="যেমন ৫ ও ৬" oninput="S.shab['${wk}'].st['${s.id}'].paras=this.value;save()" ${lock?'disabled':''}>`
@@ -349,7 +355,7 @@ function vShab(){
   return `<div class="card"><div class="row"><b>${esc(s.name)}</b><span class="mut" style="text-align:right">পেরেছে ${bn(ok)} · পারেনি ${bn(no)}</span></div>${top}
   ${[0,1,2].map(j=>`<div class="row" style="margin-top:6px;justify-content:flex-start"><span class="mut" style="flex:0 0 60px">প্রশ্ন ${bn(j+1)}</span><span class="ch ${x.q[j]===1?'on-g':''}" style="flex:0 0 auto" onclick="${lock?'':`shQ('${wk}','${s.id}',${j},1)`}">হ্যাঁ</span><span class="ch ${x.q[j]===0?'on-r':''}" style="flex:0 0 auto" onclick="${lock?'':`shQ('${wk}','${s.id}',${j},0)`}">না</span></div>`).join('')}
   <label class="l">পরের সপ্তাহের শবিনা (পারা)</label><input value="${esc(x.next||'')}" placeholder="যেমন ৭ ও ৮" oninput="S.shab['${wk}'].st['${s.id}'].next=this.value;save()" ${lock?'disabled':''}></div>`}).join('');
- return topBar('শবিনা ও প্রশ্ন')+`<div class="wrap">
+ return topBar('শবিনা')+`<div class="wrap">
  <div class="datebar"><button class="btn s" onclick="D=addD(thuOf(D),-7);render()">‹ আগের সপ্তাহ</button><b>বৃহস্পতিবার, ${dShort(wk)}</b><button class="btn s" onclick="D=addD(thuOf(D),7);render()" ${wk>=thuOf(today())?'disabled':''}>পরের ›</button></div>
  ${isThu?'':'<div class="ban b">প্রশ্ন হয় বৃহস্পতিবার বাদ মাগরিব. এই সপ্তাহের যেকোনো দিন লেখা যাবে.</div>'}
  <div class="card"><b style="font-size:14px">উপস্থিত উস্তাদ</b>${tch}</div>${rows}</div>`}
@@ -375,8 +381,8 @@ function vKitab(){
  return topBar('কিতাব')+`<div class="wrap">${dateBar()}${rows}<p class="mut">কিতাবের হিসাব শুধু উস্তাদের হিসাবে যাবে</p></div>`}
 function kSet(b,ok){const o=S.kitab[D][ses.g][b];if(o&&o.ok===ok)delete S.kitab[D][ses.g][b];else S.kitab[D][ses.g][b]={ok,reason:'',by:(me()||{}).name};save();render()}
 
-/* ---------- ছাত্র খোঁজা ---------- */
-function pickBox(cb){return `<label class="l">ছাত্রের নাম বা আইডি</label><input id="sq" placeholder="যেমন রেদওয়ান বা ক-০১" oninput="sugg('${cb}')" autocomplete="off"><div id="sg"></div><div id="pk">${tmp.pick?pickedHtml():''}</div>`}
+/* ---------- শিক্ষার্থী খোঁজা ---------- */
+function pickBox(cb){return `<label class="l">শিক্ষার্থীর নাম বা আইডি</label><input id="sq" placeholder="যেমন রেদওয়ান বা ক-০১" oninput="sugg('${cb}')" autocomplete="off"><div id="sg"></div><div id="pk">${tmp.pick?pickedHtml():''}</div>`}
 function pickedHtml(){const s=SID(tmp.pick);return `<div class="ban g" style="margin-top:8px;display:flex;justify-content:space-between"><b>${esc(s.name)}</b><span>${s.id}</span></div>`}
 function sugg(cb){const v=document.getElementById('sq').value.trim();const b=document.getElementById('sg');if(!v){b.innerHTML='';return}
  const L=stOf(ses.g).filter(s=>s.name.includes(v)||en(s.id).includes(en(v))||s.id.includes(v));
@@ -393,7 +399,7 @@ function vBeh(){
  <div class="sec">আগের লেখা</div><div class="card">${list.map(b=>{const s=SID(b.sid);return `<div class="li"><div class="n"><b>${esc(s?s.name:b.sid)} <span class="tag ${b.kind?'g':'r'}">${b.kind?'ভালো':'খারাপ'}</span></b><small>${dShort(b.date)} · ${esc(b.text)}</small></div></div>`}).join('')||'<div class="mut">এখনো কিছু লেখা হয়নি</div>'}</div></div>`}
 function behK(){document.getElementById('k1').className='ch '+(tmp.kind===1?'on-g':'');document.getElementById('k0').className='ch '+(tmp.kind===0?'on-r':'')}
 function saveBeh(){const t=document.getElementById('bt').value.trim();const e=document.getElementById('berr');
- if(!tmp.pick){e.textContent='ছাত্র বেছে নিন';return}if(tmp.kind==null){e.textContent='ভালো না খারাপ, বেছে নিন';return}if(!t){e.textContent='বিস্তারিত লিখুন';return}
+ if(!tmp.pick){e.textContent='শিক্ষার্থী বেছে নিন';return}if(tmp.kind==null){e.textContent='ভালো না খারাপ, বেছে নিন';return}if(!t){e.textContent='বিস্তারিত লিখুন';return}
  S.beh.unshift({date:today(),sid:tmp.pick,kind:tmp.kind,text:t,by:(me()||{}).name});save();tmp={};render()}
 
 /* ---------- ছুটি ও অসুস্থ ---------- */
@@ -410,11 +416,11 @@ function vAway(){
  if(ty==='msick')f=`<div class="row"><div><label class="l">কবে থেকে</label><input id="aw_from" type="date" value="${k}"></div><div><label class="l">কী অসুখ</label><input id="aw_ill"></div></div>`;
  if(ty==='hsick')f=`<div class="row"><div><label class="l">যাওয়ার তারিখ</label><input id="aw_from" type="date" value="${k}"></div><div><label class="l">কী অসুখ</label><input id="aw_ill"></div></div>${who}`;
  if(ty==='leave')f=`<div class="row"><div><label class="l">যাওয়ার তারিখ</label><input id="aw_from" type="date" value="${k}"></div><div><label class="l">ফেরার তারিখ</label><input id="aw_to" type="date" value="${addD(k,1)}"></div></div><label class="l">কারণ</label><input id="aw_rs">${who}`;
- return topBar('ছুটি ও অসুস্থ')+`<div class="wrap"><div class="sec" style="margin-top:4px">এখন যারা</div>${curH||'<div class="card mut">এখন কেউ ছুটিতে বা অসুস্থ নেই</div>'}${S.away.filter(x=>x.closed===today()&&L.some(s=>s.id===x.sid)).map(x=>`<div class="card row"><div><b>${esc(SID(x.sid).name)}</b><div class="mut">আজ ${x.type==='msick'?'সুস্থ হয়েছে':'ফিরেছে'} লেখা হয়েছে</div></div><button class="btn s" style="flex:0 0 auto" onclick="delete S.away[${S.away.indexOf(x)}].closed;save();render()">বাতিল</button></div>`).join('')}
+ return topBar('ছুটি ও অসুস্থতা')+`<div class="wrap"><div class="sec" style="margin-top:4px">এখন যারা</div>${curH||'<div class="card mut">এখন কেউ ছুটিতে বা অসুস্থ নেই</div>'}${S.away.filter(x=>x.closed===today()&&L.some(s=>s.id===x.sid)).map(x=>`<div class="card row"><div><b>${esc(SID(x.sid).name)}</b><div class="mut">আজ ${x.type==='msick'?'সুস্থ হয়েছে':'ফিরেছে'} লেখা হয়েছে</div></div><button class="btn s" style="flex:0 0 auto" onclick="delete S.away[${S.away.indexOf(x)}].closed;save();render()">বাতিল</button></div>`).join('')}
  <div class="sec">নতুন লিখুন</div><div class="card"><div class="chs"><span class="ch ${ty==='msick'?'on-y':''}" onclick="tmp.ty='msick';render()">মাদ্রাসায় অসুস্থ</span><span class="ch ${ty==='hsick'?'on-y':''}" onclick="tmp.ty='hsick';render()">অসুস্থ হয়ে বাড়িতে</span><span class="ch ${ty==='leave'?'on-y':''}" onclick="tmp.ty='leave';render()">ছুটি</span></div>
  ${pickBox('noop')}${f}<div class="err" id="awerr"></div><button class="btn pri w" onclick="saveAway()">জমা দিন</button></div></div>`}
 function v(id){const e=document.getElementById(id);return e?e.value.trim():''}
-function saveAway(){const ty=tmp.ty||'leave',e=document.getElementById('awerr');if(!tmp.pick){e.textContent='ছাত্র বেছে নিন';return}
+function saveAway(){const ty=tmp.ty||'leave',e=document.getElementById('awerr');if(!tmp.pick){e.textContent='শিক্ষার্থী বেছে নিন';return}
  const a={sid:tmp.pick,type:ty,from:v('aw_from'),by:(me()||{}).name};
  if(ty!=='leave'){a.ill=v('aw_ill');if(!a.ill){e.textContent='কী অসুখ লিখুন';return}}
  if(ty!=='msick'){a.who=v('aw_who');a.rel=v('aw_rel')}
@@ -431,7 +437,7 @@ function vRet(){
   <div class="row" style="margin-top:8px"><span class="ch ${x.st==='R'?'on-g':''}" onclick="${ro()?'':`retSet('${s.id}','R')`}">ফিরেছে</span><span class="ch ${x.st==='N'?'on-r':''}" onclick="${ro()?'':`retSet('${s.id}','N')`}">ফেরেনি</span><span class="ch ${x.st==='X'?'on-y':''}" onclick="${ro()?'':`retSet('${s.id}','X')`}">ছুটি বাড়িয়েছে</span></div>
   ${x.st==='N'?`<div class="err">জরিমানা ${bn(S.settings.rules.fine)} টাকা · জরিমানার তালিকায় উঠেছে</div>`:''}
   ${x.st==='X'?`<div class="row"><div><label class="l">নতুন ফেরার তারিখ</label><input type="date" value="${x.nd||addD(D,2)}" onchange="S.ret[D]['${s.id}'].nd=this.value;save()"></div><div><label class="l">কে ফোন করেছেন</label><input value="${esc(x.who||'')}" oninput="S.ret[D]['${s.id}'].who=this.value;save()"></div></div><label class="l">কারণ</label><input value="${esc(x.rs||'')}" oninput="S.ret[D]['${s.id}'].rs=this.value;save()">`:''}</div>`}).join('');
- return topBar('ফেরার হাজিরা')+`<div class="wrap">${dateBar()}<div class="ban b">ছুটি শেষে ফেরার দিন মাগরিবের আগে নেবেন. আসল সফটওয়্যারে ক্যালেন্ডারে ফেরার দিন থাকলে নিজে নিজে আসবে.</div>${rows}</div>`}
+ return topBar('ছুটি-পরবর্তী উপস্থিতি')+`<div class="wrap">${dateBar()}<div class="ban b">ছুটি শেষে ফেরার দিন মাগরিবের আগে নেবেন. আসল সফটওয়্যারে ক্যালেন্ডারে ফেরার দিন থাকলে নিজে নিজে আসবে.</div>${rows}</div>`}
 function retSet(sid,st){const old=(S.ret[D][sid]||{}).st;if(old===st){delete S.ret[D][sid];const lv=S.away.filter(a=>a.sid===sid&&a.type==='leave'&&a.from<=D);const a=lv[lv.length-1];if(a&&a.closed===D)delete a.closed;S.fines=S.fines.filter(f=>!(f.sid===sid&&f.auto===D&&!f.paid));save();render();return}S.ret[D][sid]={st,nd:addD(D,2)};
  const lv=S.away.filter(a=>a.sid===sid&&a.type==='leave'&&a.from<=D);const a=lv[lv.length-1];if(a){if(st==='R')a.closed=D;else if(a.closed===D)delete a.closed}
  S.fines=S.fines.filter(f=>!(f.sid===sid&&f.auto===D&&!f.paid));
@@ -446,7 +452,7 @@ function vNocls(){
  <div class="chs">${items.map(i=>`<span class="ch ${tmp.sel.includes(i)?'on-y':''}" onclick="${ro()?'':`ncT('${i}')`}">${tmp.sel.includes(i)?'✓ ':''}${i}</span>`).join('')}</div>
  <label class="l">কেন হয়নি (অবশ্যই লিখুন)</label><textarea id="ncr" rows="2" ${ro()?'disabled':''}>${esc(cur?cur.reason:'')}</textarea><div class="err" id="ncerr"></div>
  ${ro()?'':`<button class="btn pri w" onclick="saveNc()">জমা দিন</button>${cur?`<button class="btn w" style="margin-top:8px" onclick="delete S.nocls[D]['${g}'];save();tmp={};render()">মুছে ফেলুন</button>`:''}`}</div>
- <p class="mut">জমা দিলে সব ছাত্রের সেই পড়ায় "ক্লাস হয়নি" লেখা হবে, কাউকে "পারেনি" ধরা হবে না.</p></div>`}
+ <p class="mut">জমা দিলে সব শিক্ষার্থীর সেই পড়ায় "ক্লাস হয়নি" লেখা হবে, কাউকে "পারেনি" ধরা হবে না.</p></div>`}
 function ncT(i){const a=tmp.sel;const x=a.indexOf(i);x<0?a.push(i):a.splice(x,1);const r=document.getElementById('ncr').value;render();document.getElementById('ncr').value=r}
 function saveNc(){const r=document.getElementById('ncr').value.trim(),e=document.getElementById('ncerr');if(!tmp.sel.length){e.textContent='অন্তত একটি পড়া বেছে নিন';return}if(!r){e.textContent='কারণ না লিখলে জমা হবে না';return}
  S.nocls[D]=S.nocls[D]||{};S.nocls[D][ses.g]={items:tmp.sel.slice(),reason:r,by:(me()||{}).name};save();tmp={};go('g')}
@@ -461,7 +467,7 @@ function vTarget(){
  :`<div class="card"><b>সবক</b><div class="row">${fld('sf','কোথা থেকে','১৩ পারা, পৃষ্ঠা ১১')}${fld('st','কোথা পর্যন্ত','১৪ পারা, পৃষ্ঠা ২০')}</div>${fld('sp','মোট পৃষ্ঠা','৩০')}</div>
   <div class="card"><b>আমুখতা</b><div class="row">${fld('af','কোন পারা থেকে','১')}${fld('at','কোন পারা পর্যন্ত','৫')}</div></div>
   <div class="card"><b>কাঁচা পারা</b>${fld('k','এই মাসে কত পারা ইয়াদ করবে','২')}</div>`;
- return topBar('লক্ষ্য')+`<div class="wrap"><div class="row" style="margin-bottom:10px"><span class="ch ${m==='year'?'on-b':''}" onclick="V.m='year';render()">বাৎসরিক লক্ষ্য</span><span class="ch ${m==='month'?'on-b':''}" onclick="V.m='month';render()">মাসিক লক্ষ্য</span></div>
+ return topBar('মাসিক লক্ষ্যমাত্রা')+`<div class="wrap"><div class="row" style="margin-bottom:10px"><span class="ch ${m==='year'?'on-b':''}" onclick="V.m='year';render()">বাৎসরিক লক্ষ্য</span><span class="ch ${m==='month'?'on-b':''}" onclick="V.m='month';render()">মাসিক লক্ষ্য</span></div>
  <div class="card row"><button class="btn s" style="flex:0 0 auto" onclick="V.i=${Math.max(0,i-1)};render()" ${i===0?'disabled':''}>‹</button><div style="text-align:center"><b>${esc(s.name)}</b><div class="mut">${s.id} · ${bn(i+1)} / ${bn(L.length)}</div></div><button class="btn s" style="flex:0 0 auto" onclick="V.i=${i+1};render()" ${i>=L.length-1?'disabled':''}>›</button></div>
  <div class="mut" style="margin:0 2px 8px">${m==='month'?'মাস: '+MON[new Date().getMonth()]+' '+bn(new Date().getFullYear()):'শিক্ষাবর্ষের শুরুতে একবার'} · লিখলেই জমা হয়ে যায়</div>${body}</div>`}
 function tgSet(m,sid,f,val){const k=m==='month'?today().slice(0,7):'year';S.target[k][sid][f]=val;save()}
@@ -477,23 +483,23 @@ function vFine(){
  <div class="row" style="margin-top:8px;justify-content:flex-start"><span class="mut" style="flex:0 0 auto">অভিভাবককে আগে জানানো হয়েছিল?</span><span class="ch ${tmp.inf===true?'on-g':''}" style="flex:0 0 auto" onclick="tmp.inf=tmp.inf===true?null:true;render()">হ্যাঁ</span><span class="ch ${tmp.inf===false?'on-r':''}" style="flex:0 0 auto" onclick="tmp.inf=tmp.inf===false?null:false;render()">না</span></div>
  <div class="err" id="ferr"></div><button class="btn pri w" onclick="saveFine()">জমা দিন</button></div>
  <p class="mut">"ছুটি শেষে ফেরেনি" জরিমানা ফেরার হাজিরা থেকে নিজে নিজে ওঠে.</p></div>`}
-function saveFine(){const e=document.getElementById('ferr');if(!tmp.pick){e.textContent='ছাত্র বেছে নিন';return}
+function saveFine(){const e=document.getElementById('ferr');if(!tmp.pick){e.textContent='শিক্ষার্থী বেছে নিন';return}
  S.fines.push({sid:tmp.pick,reason:'অনুমতি ছাড়া মাদ্রাসা ত্যাগ',date:today(),amt:S.settings.rules.fine,paid:false,informed:!!tmp.inf});const s=SID(tmp.pick);logA(`${s.name}: অনুমতি ছাড়া মাদ্রাসা ত্যাগ, জরিমানা`);save();tmp={};render()}
 
 /* ---------- আজকের খবর ---------- */
 function newsMsg(s){const r=(S.les[D]||{})[s.id]||{};const t=me();const nc=((S.nocls[D]||{})[ses.g]||{items:[]}).items;
  const it=s.type==='takmil'?[['tk','খতমির পড়া']]:[['sabak','সবক'],['sat','সাতসবক'],['amu','আমুখতা']];
  const aw=awayOn(s.id,D);
- const lines=aw?['• '+(aw==='L'?'ছুটিতে আছে':'অসুস্থ')]:it.map(([k,n])=>{const x=r[k];if(nc.includes(n))return '• '+n+': ক্লাস হয়নি';if(!x)return '• '+n+': এখনো লেখা হয়নি';if(x.st===3)return '• '+n+': আজ বন্ধ';if(x.st===2)return '• '+n+': '+(x.ok?'পেরেছে':'পারেনি');return '• '+n+': চলছে'});
+ const lines=aw?['• '+awL(aw)]:it.map(([k,n])=>{const x=r[k];if(nc.includes(n))return '• '+n+': ক্লাস হয়নি';if(!x)return '• '+n+': এখনো লেখা হয়নি';if(x.st===3)return '• '+n+': আজ বন্ধ';if(x.st===2)return '• '+n+': '+(x.ok?'পেরেছে':'পারেনি');return '• '+n+': চলছে'});
  return `আসসালামু আলাইকুম।\n${s.name}-এর আজকের খবর\n${dBn(D)}\n\n${lines.join('\n')}\n\n${t?t.name:''}\n${S.settings.madrasa}`}
 function vNews(){
  const L=stOf(ses.g);S.sent[D]=S.sent[D]||{};const sn=S.sent[D];
- return topBar('আজকের খবর')+`<div class="wrap">${dateBar()}<div class="ban b">জোহরের পর পাঠাবেন: সবক, সাতসবক, আমুখতা</div>
+ return topBar('অভিভাবক বার্তা')+`<div class="wrap">${dateBar()}<div class="ban b">জোহরের পর পাঠাবেন: সবক, সাতসবক, আমুখতা</div>
  <div class="card row"><span>পাঠানো হয়েছে</span><b style="text-align:right">${bn(Object.keys(sn).filter(id=>L.some(s=>s.id===id)).length)} / ${bn(L.length)} জন</b></div>
  ${L.map(s=>{const open=tmp.o===s.id;const m=newsMsg(s);return `<div class="card"><div class="row"><div style="cursor:pointer" onclick="tmp.o=${open?'null':`'${s.id}'`};render()"><b>${esc(s.name)}</b><div class="mut" style="text-decoration:underline">${open?'বার্তা লুকান':'বার্তা দেখুন'}</div></div>
  <div style="flex:0 0 auto">${sn[s.id]?`<span class="okm">✓ পাঠানো হয়েছে</span>${ro()?'':` <span style="color:#55615c;text-decoration:underline;cursor:pointer;font-size:12px" onclick="delete S.sent[D]['${s.id}'];save();render()">বাতিল</span>`}`:ro()?'<span class="mut">পাঠানো হয়নি</span>':`<a class="btn s" style="color:#085041;border-color:#5DCAA5;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent(m)}" target="_blank" onclick="S.sent[D]['${s.id}']=nowT();save();setTimeout(render,300)">WhatsApp-এ পাঠান</a>`}</div></div>
  ${open?`<div class="msg">${esc(m)}</div>`:''}</div>`}).join('')}
- <p class="mut">অভিভাবকের নম্বর ছাত্রের বিস্তারিত পাতায় বসালে সরাসরি তাঁর WhatsApp খুলবে (২য় ভাগে).</p></div>`}
+ <p class="mut">অভিভাবকের নম্বর শিক্ষার্থীর বিস্তারিত পাতায় বসালে সরাসরি তাঁর WhatsApp খুলবে (২য় ভাগে).</p></div>`}
 
 /* ---------- পরে আসবে ---------- */
 function vSoon(){return `<div class="top"><button class="btn s" onclick="${ses&&ses.role!=='dir'&&ses.role!=='routine'?"go('g')":"ses=null;go('home')"}">‹ ফিরুন</button><div class="t"><b>${esc(V.n||'')}</b></div></div><div class="wrap"><div class="card" style="text-align:center;padding:30px 14px"><div style="font-size:30px">🛠️</div><b>${esc(V.n||'')}</b><p class="mut">এই অংশ ${V.n==='রিপোর্ট'?'৩য়':'২য়'} ভাগে বানানো হবে, ইনশাআল্লাহ</p></div></div>`}
@@ -514,8 +520,8 @@ function render(){
 function calOn(k){return (S.cal||[]).find(c=>k>=c.from&&k<=c.to)||null}
 function specOn(k,g){return (S.spec||[]).find(x=>k>=x.from&&k<=x.to&&(x.groups||[]).includes(g))||null}
 function specBan(k){if(!ses||!ses.g)return'';const x=specOn(k||D,ses.g);if(!x)return'';
- return `<div class="ban p"><b>📢 পরিচালকের নির্দেশ</b><br>${esc(x.note)}<br><span style="font-size:12px">${dShort(x.from)} থেকে ${dShort(x.to)} · চলবে: ${x.run.join(', ')||'কিছুই না'}</span></div>`}
-const CALT={holiday:'ছুটি',monthly:'মাসিক ছুটি',prep:'পরীক্ষার প্রস্তুতি',exam:'পরীক্ষা',special:'বিশেষ দিন'};
+ return `<div class="ban p"><b>📢 নোটিশ</b><br>${esc(x.note)}<br><span style="font-size:12px">${dShort(x.from)} থেকে ${dShort(x.to)} · চলবে: ${x.run.join(', ')||'কিছুই না'}</span></div>`}
+const CALT={holiday:'ছুটি',monthly:'মাসিক ছুটি',eid:'ঈদের ছুটি',examh:'পরীক্ষার ছুটি',prep:'পরীক্ষার প্রস্তুতি',exam:'পরীক্ষা',special:'বিশেষ দিন'};
 
 /* ===================== নমুনা তথ্য ===================== */
 const EX2={'রেদওয়ান মাহমুদ':[64,39,35],'আমিনুল ইসলাম':[65,44,35],'আব্দুল্লাহ আল মাসউদ':[60,48,35],'মুনায়েম ইসহাক':[68,40,33],'ফারহান আহমদ':[77,49,39],'শরিফ আহমদ':[64,49,33],'ইয়াসিন চৌধুরী':[53,40,30],'হেলাল আহমদ':[58,35,30],
@@ -581,17 +587,17 @@ const _saveAtt=saveAtt;saveAtt=function(slot,sk){_saveAtt(slot,sk);const x=((S.a
 
 /* ===================== হিসাবের যন্ত্র ===================== */
 function rangeDays(from,to){const out=[];let k=from;const end=to<today()?to:today();while(k<=end){out.push(k);k=addD(k,1)}return out}
-function workDays(from,to){return rangeDays(from,to).filter(k=>{if(k===today()&&!Object.keys(S.att[k]||{}).length)return false;if(dow(k)===5)return false;const c=calOn(k);return !(c&&(c.type==='holiday'||c.type==='monthly'||c.type==='exam'))})}
+function workDays(from,to){return rangeDays(from,to).filter(k=>{if(k===today()&&!Object.keys(S.att[k]||{}).length)return false;if(dow(k)===5)return false;const c=calOn(k);return !(c&&(OFFT.includes(c.type)||c.type==='monthly'||c.type==='exam'))})}
 function stuGroups(s){return s.group==='both'?['ক','খ']:[s.group]}
 function stat(sid,from,to){
  const s=SID(sid),days=workDays(from,to);const o={days:days.length,P:0,A:0,L:0,S:0,U:0,les:{},til:{namaz:[0,0],til:[0,0]},prepOff:0,shab:{held:0,took:0,q:0,qok:0},beh:[],contact:[],fines:[]};
- ['sabak','sat','amu','tk'].forEach(k=>o.les[k]={ok:0,no:0,off:0,nc:0});
+ ['sabak','sat','amu','tk','kp'].forEach(k=>o.les[k]={ok:0,no:0,off:0,nc:0});
  days.forEach(k=>{
   const aw=awayOn(sid,k);let v=null;
   for(const g of stuGroups(s)){const z=((S.att[k]||{}).z||{})[g]||((S.att[k]||{}).ja||{})[g];if(z&&z.list[sid]){v=z.list[sid].v;break}}
-  if(aw)o[aw]++;else if(v)o[v==='P'?'P':v==='A'?'A':v]++;else o.U++;
+  if(aw)o[aw==='R'?'A':aw]++;else if(v)o[v==='P'?'P':v==='A'?'A':v]++;else o.U++;
   const R=(S.les[k]||{})[sid]||{};const c=calOn(k);
-  ['sabak','sat','amu','tk'].forEach(kd=>{const x=R[kd];const nc=stuGroups(s).some(g=>(((S.nocls[k]||{})[g]||{}).items||[]).includes(KN[kd]));
+  ['sabak','sat','amu','tk','kp'].forEach(kd=>{const x=R[kd];const nc=stuGroups(s).some(g=>(((S.nocls[k]||{})[g]||{}).items||[]).includes(KN[kd]));
    if(nc)o.les[kd].nc++;else if(x){if(x.st===2)o.les[kd][x.ok?'ok':'no']++;else if(x.st===3)o.les[kd].off++}});
   if(c&&c.type==='prep'&&!s.prepAll)o.prepOff++;
   const t=(S.til[k]||{})[sid];if(t){['namaz','til'].forEach(f=>{if(t[f]===1)o.til[f][0]++;else if(t[f]===0)o.til[f][1]++})}
@@ -626,7 +632,7 @@ function tstat(tid,from,to){
  Object.keys(S.given||{}).forEach(mk=>{Object.keys(S.given[mk]).forEach(sid=>{const g=S.given[mk][sid];if(g.byId===tid){o.given++;if(g.ret)o.ret++}})});
  S.fines.forEach(f=>{if(f.paid&&f.by===t.name&&f.pdate>=from&&f.pdate<=to)o.fine+=f.amt});
  return o}
-function kindsForDay(k){const w=dow(k);if(w===5)return[];const c=calOn(k);if(c&&(c.type==='holiday'||c.type==='monthly'||c.type==='exam'))return[];return w===4?['sabak','sat']:['sabak','sat','amu']}
+function kindsForDay(k){const w=dow(k);if(w===5)return[];const c=calOn(k);if(c&&(OFFT.includes(c.type)||c.type==='monthly'||c.type==='exam'))return[];return w===4?['sabak','sat']:['sabak','sat','amu']}
 
 /* ===================== রিপোর্টের নকশা ===================== */
 const RCSS=`<style>.rp{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;max-width:720px;margin:0 auto 12px;color:#1d2622}.rp .h{text-align:center;padding-bottom:10px;border-bottom:1px solid var(--line)}.rp .h .a{font-size:12px;color:#6b7772}.rp .h .n{font-size:20px;font-weight:700}.rp .h .k{display:inline-block;margin-top:8px;color:#fff;font-size:13px;font-weight:600;padding:4px 16px;border-radius:99px}.rp table{width:100%;border-collapse:collapse;font-size:13px}.rp th{font-weight:600;padding:6px 5px;text-align:center;border:1px solid}.rp td{padding:6px 5px;text-align:center;border:1px solid #e3e8e6}.rp td:first-child{text-align:left;color:#55615c}.rp .s{margin-top:16px}.rp .st{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;padding-bottom:5px;margin-bottom:8px;border-bottom:2px solid}.rp .st span{width:22px;height:22px;border-radius:50%;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px}.rp .bg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.rp .bg.f{grid-template-columns:repeat(4,1fr)}.rp .bc{border:1px solid #e3e8e6;border-radius:10px;padding:8px;text-align:center}.rp .bc b{display:block;font-size:20px}.rp .bc span{font-size:12px;color:#6b7772}.rp .nt{font-size:12px;color:#55615c;margin-top:6px}.rp .ok{color:#0F6E56}.rp .bad{color:#A32D2D}.rp .mid{color:#854F0B}.rp .sig{display:flex;gap:24px;margin-top:34px}.rp .sig div{flex:1;border-top:1px solid #9aa5a0;padding-top:6px;text-align:center;font-size:12px;color:#55615c}.rp textarea{border:1px solid #5DCAA5}.rp input.ln{border:none;border-bottom:1px dashed #9aa5a0;border-radius:0;padding:2px;width:60%;font-size:12px}
@@ -714,14 +720,14 @@ function vContact(){
  <label class="l">কারণ</label><div class="row">${['পড়া','হাজিরা','আচরণ'].map(x=>`<span class="ch ${tmp.cr===x?'on-b':''}" onclick="tmp.cr=tmp.cr==='${x}'?null:'${x}';render()">${x}</span>`).join('')}</div>
  <div class="err" id="cerr"></div><button class="btn pri w" onclick="saveContact()">জমা দিন</button></div>
  <div class="sec">আগের লেখা</div><div class="card">${list.map(c=>{const s=SID(c.sid);const i=S.contact.indexOf(c);return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(s.name)}</b><small>${dShort(c.date)} · ${c.kind==='warn'?'সতর্ক করা হয়েছে':'মাদ্রাসায় ডাকা হয়েছে'} · ${esc(c.reason)}</small></div>${c.kind==='call'?(c.came==null?`<span class="ch" onclick="S.contact[${i}].came=S.contact[${i}].came===true?null:true;save();render()">এসেছিলেন</span><span class="ch" onclick="S.contact[${i}].came=S.contact[${i}].came===false?null:false;save();render()">আসেননি</span>`:`<span class="tag ${c.came?'g':'r'}">${c.came?'এসেছিলেন':'আসেননি'}</span>`):''}</div>`}).join('')||'<div class="mut">এখনো কিছু লেখা হয়নি</div>'}</div></div>`}
-function saveContact(){const e=document.getElementById('cerr');if(!tmp.pick){e.textContent='ছাত্র বেছে নিন';return}if(!tmp.ck){e.textContent='কী করা হয়েছে বেছে নিন';return}if(!tmp.cr){e.textContent='কারণ বেছে নিন';return}
+function saveContact(){const e=document.getElementById('cerr');if(!tmp.pick){e.textContent='শিক্ষার্থী বেছে নিন';return}if(!tmp.ck){e.textContent='কী করা হয়েছে বেছে নিন';return}if(!tmp.cr){e.textContent='কারণ বেছে নিন';return}
  S.contact.unshift({date:today(),sid:tmp.pick,kind:tmp.ck,reason:tmp.cr,came:null,by:(me()||{}).name});save();tmp={};render()}
 
 /* ---------- প্রস্তুতির প্রশ্ন ---------- */
 function vPrepq(){
  const L=stOf(ses.g);S.prepq[D]=S.prepq[D]||{};const P=S.prepq[D];const c=calOn(D);
- return topBar('প্রস্তুতির প্রশ্ন')+`<div class="wrap">${dateBar()}<div class="ban r">${esc(c?c.name:'')}-এর প্রস্তুতি · প্রতিদিনের প্রশ্ন</div>
- ${L.map(s=>{if(awayOn(s.id,D))return `<div class="card row"><b>${esc(s.name)}</b><span class="tag y" style="flex:0 0 auto">${awayOn(s.id,D)==='L'?'ছুটিতে':'অসুস্থ'}</span></div>`;const x=P[s.id]=P[s.id]||{q:[null,null,null]};const ok=x.q.filter(v=>v===1).length,no=x.q.filter(v=>v===0).length;return `<div class="card"><div class="row"><b>${esc(s.name)}</b><span class="mut" style="text-align:right">পেরেছে ${bn(ok)} · পারেনি ${bn(no)}</span></div>${[0,1,2].map(j=>`<div class="row" style="margin-top:6px;justify-content:flex-start"><span class="mut" style="flex:0 0 60px">প্রশ্ন ${bn(j+1)}</span><span class="ch ${x.q[j]===1?'on-g':''}" style="flex:0 0 auto" onclick="${ro()?'':`pqQ('${s.id}',${j},1)`}">হ্যাঁ</span><span class="ch ${x.q[j]===0?'on-r':''}" style="flex:0 0 auto" onclick="${ro()?'':`pqQ('${s.id}',${j},0)`}">না</span></div>`).join('')}</div>`}).join('')}
+ return topBar('পরীক্ষা প্রস্তুতি প্রশ্নপত্র')+`<div class="wrap">${dateBar()}<div class="ban r">${esc(c?c.name:'')}-এর প্রস্তুতি · প্রতিদিনের প্রশ্ন</div>
+ ${L.map(s=>{if(awayOn(s.id,D))return `<div class="card row"><b>${esc(s.name)}</b><span class="tag y" style="flex:0 0 auto">${awL(awayOn(s.id,D))}</span></div>`;const x=P[s.id]=P[s.id]||{q:[null,null,null]};const ok=x.q.filter(v=>v===1).length,no=x.q.filter(v=>v===0).length;return `<div class="card"><div class="row"><b>${esc(s.name)}</b><span class="mut" style="text-align:right">পেরেছে ${bn(ok)} · পারেনি ${bn(no)}</span></div>${[0,1,2].map(j=>`<div class="row" style="margin-top:6px;justify-content:flex-start"><span class="mut" style="flex:0 0 60px">প্রশ্ন ${bn(j+1)}</span><span class="ch ${x.q[j]===1?'on-g':''}" style="flex:0 0 auto" onclick="${ro()?'':`pqQ('${s.id}',${j},1)`}">হ্যাঁ</span><span class="ch ${x.q[j]===0?'on-r':''}" style="flex:0 0 auto" onclick="${ro()?'':`pqQ('${s.id}',${j},0)`}">না</span></div>`).join('')}</div>`}).join('')}
  <p class="mut">এই হিসাব অভিভাবকের রিপোর্টে যাবে না, শুধু পরিচালক দেখবেন</p></div>`}
 function pqQ(sid,j,v){const x=S.prepq[D][sid];x.q[j]=x.q[j]===v?null:v;save();render()}
 
@@ -741,19 +747,19 @@ function vDir(){
  const T_=(ic,n,go_,c,dot)=>{const col={g:['#E1F5EE','#0F6E56'],b:['#E6F1FB','#185FA5'],p:['#EEEDFE','#534AB7']}[c];return `<div class="tile" onclick="${go_}"><div class="ic" style="background:${col[0]};color:${col[1]};width:36px;height:36px;font-size:18px">${ic}</div><b style="font-size:12px">${n}</b>${dot?`<small style="color:#A32D2D">${dot}</small>`:''}</div>`};
  return `<div class="top"><button class="btn s" onclick="ses=null;go('home')">বের হন</button><div class="t"><b>কর্তৃপক্ষ</b><span>${dBn(today())}</span></div></div><div class="wrap">
  <div class="big" style="background:#FCEBEB;border-color:#F09595;margin-top:4px" onclick="go('dtoday')"><div class="ic" style="background:#E24B4A">⚠️</div><div style="flex:1"><b style="color:#791F1F">আজকের অবস্থা</b><div style="font-size:12px;color:#A32D2D">${al.length?bn(al.length)+'টি সতর্কতা দেখুন':'কোনো সতর্কতা নেই'}</div></div><span style="color:#A32D2D">›</span></div>
- <div class="big" style="background:#E1F5EE;border-color:#5DCAA5;margin-top:8px" onclick="tmp={};go('admit')"><div class="ic" style="background:#0F6E56">➕</div><div style="flex:1"><b style="color:#085041">নতুন ভর্তি</b><div style="font-size:12px;color:#0F6E56">নতুন ছাত্র ভর্তি করুন</div></div><span style="color:#0F6E56">›</span></div>
+ <div class="big" style="background:#E1F5EE;border-color:#5DCAA5;margin-top:8px" onclick="tmp={};go('admit')"><div class="ic" style="background:#0F6E56">➕</div><div style="flex:1"><b style="color:#085041">নতুন ভর্তি</b><div style="font-size:12px;color:#0F6E56">নতুন শিক্ষার্থী ভর্তি করুন</div></div><span style="color:#0F6E56">›</span></div>
  <div class="sec">গ্রুপের পাতা</div><div class="row" style="margin-bottom:4px"><button class="btn" onclick="ses={role:'dir',g:'ক'};tmp={};D=today();go('g')">গ্রুপ ক</button><button class="btn" onclick="ses={role:'dir',g:'খ'};tmp={};D=today();go('g')">গ্রুপ খ</button></div>
  <div class="sec">রিপোর্ট</div><div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
  ${T_('📋','মাসিক রিপোর্ট',"go('drep',{mode:'m'})",'g')}${T_('📊','বাৎসরিক রিপোর্ট',"go('drep',{mode:'y'})",'g')}${T_('📑','উস্তাদের হিসাব',"go('dtrep',{mode:'m'})",'g')}${T_('🏆','পরীক্ষার ফলাফল',"go('exam')",'g')}${T_('💰','জরিমানা',"go('dfine')",'g',dueF?bn(dueF)+'টি বাকি':'')}${T_('⭐','আচরণ',"go('dbeh')",'g')}${T_('📝','প্রস্তুতির প্রশ্ন',"go('dprepq')",'g')}</div>
  <div class="sec">ঠিক করার জায়গা</div><div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
- ${T_('🗓️','শিক্ষাবর্ষ',"go('dyear')",'b')}${T_('📅','ক্যালেন্ডার',"go('dcal')",'b')}${T_('⏰','রুটিন',"go('routine')",'b')}${T_('📢','বিশেষ নির্দেশ',"go('dspec')",'b')}${T_('⚙️','নিয়ম ও সংখ্যা',"go('drules')",'b')}${T_('🎓','গ্রেড ও বোর্ড',"go('dgrade')",'b')}${T_('📇','ছাত্র',"go('dstu')",'b')}${T_('🔑','উস্তাদ ও পিন',"go('dtch')",'b')}</div>
+ ${T_('🗓️','শিক্ষাবর্ষ',"go('dyear')",'b')}${T_('📅','ক্যালেন্ডার',"go('dcal')",'b')}${T_('⏰','রুটিন',"go('routine')",'b')}${T_('📢','বিশেষ নির্দেশ',"go('dspec')",'b')}${T_('⚙️','নিয়ম ও সংখ্যা',"go('drules')",'b')}${T_('🎓','গ্রেড ও বোর্ড',"go('dgrade')",'b')}${T_('📇','শিক্ষার্থী',"go('dstu')",'b')}${T_('🔑','উস্তাদ ও পিন',"go('dtch')",'b')}</div>
  <div class="sec">অন্যান্য</div><div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
  ${T_('🏫','মাদ্রাসার তথ্য',"go('dinfo')",'p')}${T_('🕘','প্রবেশের খাতা',"go('dlog')",'p')}${T_('💾','ব্যাকআপ',"go('dbak')",'p')}</div></div>`}
 
 function vDtoday(){
  const k=D;const al=k===today()?liveAlerts():S.alerts.filter(a=>a.date===k).map(a=>[a.kind,a.txt]);
  const all=S.students.filter(s=>s.status!=='out');let P=0,L=0,Sk=0,A=0,U=0;
- all.forEach(s=>{const aw=awayOn(s.id,k);if(aw){aw==='L'?L++:Sk++;return}let v=null;for(const g of stuGroups(s)){const z=((S.att[k]||{})[dow(k)===5?'ja':'z']||{})[g];if(z&&z.list[s.id]){v=z.list[s.id].v;break}}if(v==='P')P++;else if(v==='A')A++;else U++});
+ all.forEach(s=>{const aw=awayOn(s.id,k);if(aw){aw==='L'?L++:aw==='R'?A++:Sk++;return}let v=null;for(const g of stuGroups(s)){const z=((S.att[k]||{})[dow(k)===5?'ja':'z']||{})[g];if(z&&z.list[s.id]){v=z.list[s.id].v;break}}if(v==='P')P++;else if(v==='A')A++;else U++});
  const sl=slotsFor(k);const cell=(sk,g)=>{const x=((S.att[k]||{})[sk]||{})[g];return x?`<span style="color:#0F6E56">${x.at}</span>`:'<span style="color:#A32D2D">নেওয়া হয়নি</span>'};
  const grp=g=>{const Ls=stOf(g);const R=S.les[k]||{};let heard=0,no=0,red=0,off=0;const R0=S.settings.rules;
   Ls.forEach(s=>{const r=R[s.id]||{};let any=false;Object.keys(r).forEach(kd=>{const x=r[kd];if(x.st===2){any=true;if(!x.ok)no++;const lim=limits(s,kd);if((lim.lok!==null&&x.l>lim.lok)||x.d>lim.doh)red++}if(x.st===3)off++});if(any)heard++});
@@ -783,12 +789,12 @@ function vDrep(){
  <div class="card"><b style="font-size:13px;color:#0F6E56">একদিনও মিস হয়নি (${bn(good.length)} জন)</b><div style="margin-top:6px">${good.map(x=>chip(x,'g')).join('')||'<span class="mut">কেউ নেই</span>'}</div>
  <b style="font-size:13px;color:#A32D2D;display:block;margin-top:8px">পিছিয়ে আছে, ${bn(S.settings.cmtLimit||3)} দিনের বেশি মিস (${bn(bad.length)} জন)</b><div style="margin-top:6px">${bad.map(x=>chip(x,'r')).join('')||'<span class="mut">কেউ নেই</span>'}</div></div>
  ${mode==='m'?`<div class="row" style="margin-bottom:10px"><div class="card" style="text-align:center;margin:0"><b>${bn(gv)} / ${bn(St.length)}</b><div class="mut">রিপোর্ট দেওয়া হয়েছে</div></div><div class="card" style="text-align:center;margin:0"><b>${bn(rt)} / ${bn(St.length)}</b><div class="mut">স্বাক্ষরসহ ফেরত</div></div></div>`:''}
- <button class="btn w" style="margin-bottom:10px" onclick="go('drep',{mode:'${mode}',mk:'${mk}',all:1})">🖨️ সব ছাত্রের রিপোর্ট একসাথে প্রিন্ট</button>
+ <button class="btn w" style="margin-bottom:10px" onclick="go('drep',{mode:'${mode}',mk:'${mk}',all:1})">🖨️ সব শিক্ষার্থীর রিপোর্ট একসাথে প্রিন্ট</button>
  <div class="card">${['ক','খ','both'].map(g=>St.filter(x=>x.s.group===g).map(x=>`<div class="li" style="cursor:pointer" onclick="go('drep',{mode:'${mode}',mk:'${mk}',sid:'${x.s.id}'})"><div class="n"><b>${esc(x.s.name)}</b><small>${x.s.id} · ${esc(x.s.jamat)}</small></div><span class="btn s">রিপোর্ট দেখুন</span></div>`).join('')).join('')}</div></div>`}
 
 function vDtrep(){
  const mode=V.mode||'m';const mk=V.mk||today().slice(0,7);const tid=V.tid||S.teachers[0].id;
- return dirTop('উস্তাদের হিসাব')+RCSS+`<div class="wrap"><div class="row noprint" style="margin-bottom:10px"><span class="ch ${mode==='m'?'on-y':''}" onclick="go('dtrep',{mode:'m',mk:'${mk}',tid:'${tid}'})">মাসিক</span><span class="ch ${mode==='y'?'on-y':''}" onclick="go('dtrep',{mode:'y',tid:'${tid}'})">বাৎসরিক</span></div>
+ return dirTop('উস্তাদদের কার্যবিবরণী')+RCSS+`<div class="wrap"><div class="row noprint" style="margin-bottom:10px"><span class="ch ${mode==='m'?'on-y':''}" onclick="go('dtrep',{mode:'m',mk:'${mk}',tid:'${tid}'})">মাসিক</span><span class="ch ${mode==='y'?'on-y':''}" onclick="go('dtrep',{mode:'y',tid:'${tid}'})">বাৎসরিক</span></div>
  <div class="chs noprint" style="margin-bottom:10px">${S.teachers.map(t=>`<span class="ch ${t.id===tid?'on-y':''}" onclick="go('dtrep',{mode:'${mode}',mk:'${mk}',tid:'${t.id}'})">${esc(t.name)}</span>`).join('')}</div>
  ${mode==='m'?monthPick():''}${printBar()}${tchReport(tid,mode,mk)}</div>`}
 
@@ -809,7 +815,7 @@ function vExam(){
  <div class="chs" style="margin-bottom:10px">${jms.map(j=>`<span class="ch ${j===jm?'on-b':''}" onclick="go('exam',{ex:'${ex}',jm:'${j}'})">${j}</span>`).join('')}</div>
  ${L.map((s,i)=>{const x=E[s.id];return `<div class="card"><div class="row"><b>${bn(i+1)}. ${esc(s.name)}</b><span class="ch ${x.ab?'on-r':''}" style="flex:0 0 auto" onclick="S.exams['${ex}']['${s.id}'].ab=!S.exams['${ex}']['${s.id}'].ab;save();render()">অনুপস্থিত</span></div>
  ${x.ab?'':`<div class="row" style="margin-top:6px">${['কুরআন শরীফ (১০০)','তালিমুল ইসলাম (৫০)','তাজবীদ (৫০)'].map((n,j)=>`<div><label class="l">${n}</label><input style="text-align:center" value="${x.m[j]==null?'':bn(x.m[j])}" onchange="exSet('${ex}','${s.id}',${j},this.value)"></div>`).join('')}</div>`}
- <div style="font-size:13px;margin-top:8px">${res(s)}</div></div>`}).join('')||'<div class="card mut">এই জামাতে কোনো ছাত্র নেই</div>'}
+ <div style="font-size:13px;margin-top:8px">${res(s)}</div></div>`}).join('')||'<div class="card mut">এই জামাতে কোনো শিক্ষার্থী নেই</div>'}
  <div class="sec">মেধা তালিকা</div><div class="card">${merit.map((x,i)=>`<div class="li"><span class="n">${bn(tots.indexOf(x.t)+1)}. ${esc(x.s.name)}</span><span class="mut">${bn(x.t)} · ${grade(x.t/2)}</span></div>`).join('')||'<div class="mut">নম্বর বসালে মেধা তালিকা আসবে</div>'}</div>
  <button class="btn pri w" onclick="go('exam',{ex:'${ex}',jm:'${jm}',pr:1})">🖨️ ফলাফলের তালিকা প্রিন্ট</button>
  <p class="mut">নম্বর লিখে অন্য ঘরে টিপলে হিসাব হয় · গ্রেডের সীমা "গ্রেড ও বোর্ড" থেকে বদলানো যায়</p></div>`}
@@ -833,7 +839,7 @@ function vBoard(){
  <label class="l">মন্তব্য</label><input value="${esc(x.note)}" onchange="S.boards[${bi}].st['${sid}'].note=this.value;save()">
  <div class="row" style="margin-top:8px"><span class="mut">${t!==null?'প্রাপ্ত '+bn(t)+' / '+bn(full):''}</span><button class="btn s" style="flex:0 0 auto" onclick="delete S.boards[${bi}].st['${sid}'];save();render()">বাদ দিন</button></div></div>`}).join('')}
  <div class="card"><b style="font-size:13px">পরীক্ষার্থী যোগ করুন</b>${pickBoxAll(bi)}</div>
- <p class="mut">ফল ছাত্রের বিস্তারিত পাতা আর বাৎসরিক রিপোর্টে নিজে নিজে যায়</p></div>`}
+ <p class="mut">ফল শিক্ষার্থীর বিস্তারিত পাতা আর বাৎসরিক রিপোর্টে নিজে নিজে যায়</p></div>`}
 function bdSet(bi,sid,j,v){const x=parseFloat(en(v));S.boards[bi].st[sid].m[j]=isNaN(x)?null:x;save();render()}
 function pickBoxAll(bi){return `<input id="sq" placeholder="নাম বা আইডি" oninput="suggAll(${bi})" autocomplete="off" style="margin-top:6px"><div id="sg"></div>`}
 function suggAll(bi){const v=document.getElementById('sq').value.trim();const b=document.getElementById('sg');if(!v){b.innerHTML='';return}
@@ -847,7 +853,7 @@ function vDfine(){const F=S.fines;const paid=F.filter(f=>f.paid).reduce((a,f)=>a
 function vDbeh(){return dirTop('আচরণ')+`<div class="wrap"><div class="card">${S.beh.map(b=>{const s=SID(b.sid);return `<div class="li"><div class="n"><b>${esc(s.name)} <span class="tag ${b.kind?'g':'r'}">${b.kind?'ভালো':'খারাপ'}</span></b><small>${dShort(b.date)} · ${esc(b.text)} · ${esc(b.by||'')}</small></div></div>`}).join('')||'<div class="mut">কিছু লেখা হয়নি</div>'}</div></div>`}
 function vDprepq(){const k=D;const P=S.prepq[k]||{};const st=Object.keys(P);const q=st.reduce((a,s)=>a+P[s].q.filter(v=>v!==null).length,0),ok=st.reduce((a,s)=>a+P[s].q.filter(v=>v===1).length,0);
  const amu=S.students.filter(s=>{const x=((S.les[k]||{})[s.id]||{});return (x.amu&&x.amu.st===2)||(x.tk&&x.tk.st===2)}).length;
- return dirTop('পরীক্ষার প্রস্তুতি')+`<div class="wrap">${dateBar()}${calOn(k)&&calOn(k).type==='prep'?`<div class="ban r">${esc(calOn(k).name)}-এর প্রস্তুতি চলছে</div>`:'<div class="ban b">এই দিন প্রস্তুতির দিন না. ক্যালেন্ডারে "পরীক্ষার প্রস্তুতি" দিলে এখানে হিসাব আসবে.</div>'}
+ return dirTop('পরীক্ষা প্রস্তুতি প্রশ্নপত্র')+`<div class="wrap">${dateBar()}${calOn(k)&&calOn(k).type==='prep'?`<div class="ban r">${esc(calOn(k).name)}-এর প্রস্তুতি চলছে</div>`:'<div class="ban b">এই দিন প্রস্তুতির দিন না. ক্যালেন্ডারে "পরীক্ষার প্রস্তুতি" দিলে এখানে হিসাব আসবে.</div>'}
  <div class="tiles" style="grid-template-columns:repeat(4,1fr);gap:6px">${[['আমুখতা শুনিয়েছে',amu],['জনকে প্রশ্ন',st.filter(s=>P[s].q.some(v=>v!==null)).length],['প্রশ্ন পেরেছে',ok],['পারেনি',q-ok]].map(([n,v])=>`<div class="card" style="margin:0;text-align:center;padding:8px 2px"><b style="font-size:18px">${bn(v)}</b><div class="mut">${n}</div></div>`).join('')}</div></div>`}
 
 /* ---------- শিক্ষাবর্ষ ---------- */
@@ -857,19 +863,19 @@ function vDyear(){return dirTop('শিক্ষাবর্ষ')+`<div class="w
 
 /* ---------- ক্যালেন্ডার ---------- */
 function vDcal(){const L=(S.cal||[]).slice().sort((a,b)=>a.from<b.from?-1:1);const ty=tmp.ty||'monthly';
- return dirTop('ক্যালেন্ডার')+`<div class="wrap"><div class="card">${L.map(c=>{const i=S.cal.indexOf(c);return `<div class="li"><div class="n"><b>${esc(c.name||CALT[c.type])} <span class="tag ${c.type==='prep'||c.type==='exam'?'r':c.type==='special'?'b':'y'}">${CALT[c.type]}</span></b><small>${dShort(c.from)} থেকে ${dShort(c.to)}${c.type==='monthly'?' · ফেরা: '+dShort(addD(c.to,1))+', '+esc(c.ret||''):''}${c.board?' · শুধু বাছাই করা ছাত্র':''}</small></div><button class="btn s" onclick="S.cal.splice(${i},1);save();render()">মুছুন</button></div>`}).join('')||'<div class="mut">কিছু দাগানো হয়নি</div>'}</div>
+ return dirTop('ক্যালেন্ডার')+`<div class="wrap"><div class="card">${L.map(c=>{const i=S.cal.indexOf(c);return `<div class="li"><div class="n"><b>${esc(c.name||CALT[c.type])} <span class="tag ${c.type==='prep'||c.type==='exam'?'r':c.type==='special'?'b':'y'}">${CALT[c.type]}</span></b><small>${dShort(c.from)} থেকে ${dShort(c.to)}${c.type==='monthly'?' · ফেরা: '+dShort(addD(c.to,1))+', '+esc(c.ret||''):''}${c.board?' · শুধু বাছাই করা শিক্ষার্থী':''}</small></div><button class="btn s" onclick="S.cal.splice(${i},1);save();render()">মুছুন</button></div>`}).join('')||'<div class="mut">কিছু দাগানো হয়নি</div>'}</div>
  <div class="sec">নতুন দিন দাগান</div><div class="card"><div class="chs">${Object.entries(CALT).map(([k,n])=>`<span class="ch ${ty===k?'on-b':''}" onclick="tmp.ty='${k}';render()">${n}</span>`).join('')}</div>
  <label class="l">নাম</label><input id="c_n" placeholder="${ty==='prep'||ty==='exam'?'যেমন প্রথম সাময়িক পরীক্ষা':ty==='monthly'?'যেমন নভেম্বরের মাসিক ছুটি':'যেমন ঈদুল আযহার ছুটি'}">
  <div class="row"><div><label class="l">${ty==='monthly'?'বাড়ি যাওয়ার দিন':'কবে থেকে'}</label><input id="c_f" type="date" value="${today()}"></div><div><label class="l">${ty==='monthly'?'ছুটির শেষ দিন':'কবে পর্যন্ত'}</label><input id="c_t" type="date" value="${addD(today(),3)}"></div></div>
  ${ty==='monthly'?'<label class="l">ফেরার সময় (শেষ দিনের পরের দিন)</label><input id="c_r" value="মাগরিবের আগে">':''}
- ${ty==='prep'?'<div class="row" style="margin-top:8px;justify-content:flex-start"><span class="ch '+(tmp.board?'on-b':'')+'" style="flex:0 0 auto" onclick="tmp.board=!tmp.board;render()">বোর্ড পরীক্ষার প্রস্তুতি (শুধু বাছাই করা ছাত্র)</span></div>':''}
+ ${ty==='prep'?'<div class="row" style="margin-top:8px;justify-content:flex-start"><span class="ch '+(tmp.board?'on-b':'')+'" style="flex:0 0 auto" onclick="tmp.board=!tmp.board;render()">বোর্ড পরীক্ষার প্রস্তুতি (শুধু বাছাই করা শিক্ষার্থী)</span></div>':''}
  <div class="err" id="cerr"></div><button class="btn pri w" onclick="saveCal()">জমা দিন</button></div>
  <p class="mut">এখানে দিলে উস্তাদের পাতা, ফেরার হাজিরা, জরিমানা আর নোটিশ সব নিজে নিজে এই তারিখ ধরবে</p></div>`}
 function saveCal(){const c={type:tmp.ty||'monthly',name:v('c_n'),from:v('c_f'),to:v('c_t')};if(c.to<c.from){document.getElementById('cerr').textContent='তারিখ ঠিক নেই';return}if(c.type==='monthly')c.ret=v('c_r');if(c.type==='prep'&&tmp.board){c.board=1;c.boardList=[]}S.cal.push(c);save();tmp={};render()}
 
 /* ---------- বিশেষ নির্দেশ ---------- */
 function vDspec(){const items=['সবক','সাতসবক','আমুখতা'];if(!tmp.g)tmp.g=['ক','খ'];if(!tmp.run)tmp.run=['সবক','সাতসবক'];
- return dirTop('বিশেষ নির্দেশ')+`<div class="wrap"><div class="card">${(S.spec||[]).map((x,i)=>`<div class="li"><div class="n"><b>${esc(x.note)}</b><small>${dShort(x.from)} থেকে ${dShort(x.to)} · গ্রুপ ${x.groups.join(', ')} · চলবে: ${x.run.join(', ')||'কিছুই না'}</small></div><button class="btn s" onclick="S.spec.splice(${i},1);save();render()">মুছুন</button></div>`).join('')||'<div class="mut">কোনো নির্দেশ নেই</div>'}</div>
+ return dirTop('নোটিশ বোর্ড')+`<div class="wrap"><div class="card">${(S.spec||[]).map((x,i)=>`<div class="li"><div class="n"><b>${esc(x.note)}</b><small>${dShort(x.from)} থেকে ${dShort(x.to)} · গ্রুপ ${x.groups.join(', ')} · চলবে: ${x.run.join(', ')||'কিছুই না'}</small></div><button class="btn s" onclick="S.spec.splice(${i},1);save();render()">মুছুন</button></div>`).join('')||'<div class="mut">কোনো নির্দেশ নেই</div>'}</div>
  <div class="sec">নতুন নির্দেশ</div><div class="card"><div class="row"><div><label class="l" style="margin-top:0">কবে থেকে</label><input id="s_f" type="date" value="${today()}"></div><div><label class="l" style="margin-top:0">কবে পর্যন্ত</label><input id="s_t" type="date" value="${addD(today(),2)}"></div></div>
  <label class="l">কোন গ্রুপ</label><div class="chs">${['ক','খ'].map(g=>`<span class="ch ${tmp.g.includes(g)?'on-g':''}" onclick="tg2('g','${g}')">${tmp.g.includes(g)?'✓ ':''}গ্রুপ ${g}</span>`).join('')}</div>
  <label class="l">কোন পড়া চলবে (টিক না দিলে বন্ধ)</label><div class="chs">${items.map(x=>`<span class="ch ${tmp.run.includes(x)?'on-g':''}" onclick="tg2('run','${x}')">${tmp.run.includes(x)?'✓ ':''}${x}</span>`).join('')}</div>
@@ -880,8 +886,8 @@ function saveSpec(){const n=v('s_n');if(!n){document.getElementById('serr').text
 
 /* ---------- নিয়ম ও সংখ্যা ---------- */
 function vDrules(){const R=S.settings.rules;const f=(k,n,u)=>`<div class="li"><span class="n">${n}</span><input style="width:70px;text-align:center" value="${bn(R[k])}" onchange="S.settings.rules['${k}']=+en(this.value)||0;save()"><span class="mut" style="width:40px">${u}</span></div>`;
- return dirTop('নিয়ম ও সংখ্যা')+`<div class="wrap"><p class="mut">এখানে বদলালে সব জায়গায় বদলে যাবে · এর বেশি হলে লাল</p>
- <div class="sec">লোকমা ও দোহরানো</div><div class="card"><div class="li"><span class="n">সবকে লোকমা ও দোহরানো</span><span class="mut">চলবে না</span></div>${f('sabakDohWeak','সবকে দোহরানো (দুর্বল ছাত্র)','বার')}${f('sabakParaDoh','সবকের পারায় দোহরানো','বার')}${f('satLok','সাতসবকে লোকমা','টি')}${f('satDoh','সাতসবকে দোহরানো','বার')}${f('amuLok','আমুখতায় লোকমা','টি')}${f('amuDoh','আমুখতায় দোহরানো','বার')}</div>
+ return dirTop('পাঠ ও ছুটি নীতিমালা')+`<div class="wrap"><p class="mut">এখানে বদলালে সব জায়গায় বদলে যাবে · এর বেশি হলে লাল</p>
+ <div class="sec">লোকমা ও দোহরানো</div><div class="card"><div class="li"><span class="n">সবকে লোকমা ও দোহরানো</span><span class="mut">চলবে না</span></div>${f('sabakDohWeak','সবকে দোহরানো (দুর্বল শিক্ষার্থী)','বার')}${f('sabakParaDoh','সবকের পারায় দোহরানো','বার')}${f('satLok','সাতসবকে লোকমা','টি')}${f('satDoh','সাতসবকে দোহরানো','বার')}${f('amuLok','আমুখতায় লোকমা','টি')}${f('amuDoh','আমুখতায় দোহরানো','বার')}</div>
  <div class="sec">খতমি</div><div class="card">${f('tkHalfLok','আধা পারায় লোকমা','টি')}${f('tkHalfDoh','আধা পারায় দোহরানো','বার')}${f('tkFullDoh','এক পারায় (১ম খতম) দোহরানো','বার')}</div>
  <div class="sec">ছুটি ও জরিমানা</div><div class="card">${f('appDays','দরখাস্ত লাগবে, ছুটি এর বেশি হলে','দিন')}${f('fine','জরিমানা (না ফিরলে বা অনুমতি ছাড়া গেলে)','টাকা')}</div>
  <div class="sec">মাসিক মন্তব্য (মিস দেখে নিজে নিজে বসে)</div><div class="card"><label class="l" style="margin-top:0">একদিনও মিস হয়নি</label><textarea rows="3" onchange="S.settings.cmt[0]=this.value;save()">${esc(S.settings.cmt[0])}</textarea>
@@ -890,24 +896,24 @@ function vDrules(){const R=S.settings.rules;const f=(k,n,u)=>`<div class="li"><s
  <div class="sec">কিতাব</div><div class="card">${S.settings.kitabs.map((b,i)=>`<div class="row" style="margin-bottom:6px"><input value="${esc(b)}" onchange="S.settings.kitabs[${i}]=this.value;save()"><button class="btn s" style="flex:0 0 auto" onclick="S.settings.kitabs.splice(${i},1);save();render()">✕</button></div>`).join('')}<button class="btn s" onclick="S.settings.kitabs.push('নতুন কিতাব');save();render()">+ কিতাব যোগ করুন</button></div></div>`}
 
 /* ---------- গ্রেড ও বোর্ড ---------- */
-function vDgrade(){const G=S.settings.grades;return dirTop('গ্রেড ও বোর্ড')+`<div class="wrap"><div class="sec" style="margin-top:4px">মাদ্রাসার পরীক্ষার গ্রেড</div><div class="card">${G.map((g,i)=>`<div class="li"><input value="${esc(g[0])}" onchange="S.settings.grades[${i}][0]=this.value;save()">${i<G.length-1?`<span class="mut" style="flex:0 0 auto">গড়</span><input style="width:64px;flex:0 0 64px;text-align:center" value="${bn(g[1])}" onchange="S.settings.grades[${i}][1]=+en(this.value)||0;save()"><span class="mut" style="flex:0 0 auto">বা বেশি</span>`:'<span class="mut" style="flex:0 0 auto">বাকি সব</span>'}</div>`).join('')}</div>
+function vDgrade(){const G=S.settings.grades;return dirTop('গ্রেড নির্ধারণ ও বোর্ড পরীক্ষা')+`<div class="wrap"><div class="sec" style="margin-top:4px">মাদ্রাসার পরীক্ষার গ্রেড</div><div class="card">${G.map((g,i)=>`<div class="li"><input value="${esc(g[0])}" onchange="S.settings.grades[${i}][0]=this.value;save()">${i<G.length-1?`<span class="mut" style="flex:0 0 auto">গড়</span><input style="width:64px;flex:0 0 64px;text-align:center" value="${bn(g[1])}" onchange="S.settings.grades[${i}][1]=+en(this.value)||0;save()"><span class="mut" style="flex:0 0 auto">বা বেশি</span>`:'<span class="mut" style="flex:0 0 auto">বাকি সব</span>'}</div>`).join('')}</div>
  <p class="mut">সীমার সংখ্যাগুলো আপাতত বসানো, আপনি ঠিক করে নেবেন</p>
  <div class="sec">বোর্ড</div><div class="card">${S.boards.map((b,i)=>`<div class="li"><span class="n">${esc(b.n||'নাম দেওয়া হয়নি')}</span><button class="btn s" onclick="go('exam',{ex:'board',bi:${i}})">খুলুন</button></div>`).join('')||'<div class="mut">কোনো বোর্ড নেই</div>'}</div><button class="btn w" onclick="go('exam',{ex:'board'})">বোর্ড পরীক্ষার পাতায় যান</button></div>`}
 
-/* ---------- ছাত্র ---------- */
+/* ---------- শিক্ষার্থী ---------- */
 function vDstu(){
  if(V.sid)return vStuProfile(SID(V.sid));
- return dirTop('ছাত্র')+`<div class="wrap">${['ক','খ','both'].map(g=>`<div class="sec">${g==='both'?'তাকমিল (দুই উস্তাদ)':'গ্রুপ '+g+' · '+esc(gTeacher(g).name)}</div><div class="card">${S.students.filter(s=>s.group===g).map(s=>`<div class="li" style="cursor:pointer" onclick="go('dstu',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}${s.probation&&!s.probation.dec?'<span class="tag y">পর্যবেক্ষণে</span>':''}${s.status==='out'?'<span class="tag r">ভর্তি হলো না</span>':''}</b><small>${s.id} · ${esc(s.jamat)}</small></div><span>›</span></div>`).join('')}</div>`).join('')}
- <button class="btn pri w" onclick="addStu()">+ নতুন ছাত্র যোগ করুন</button></div>`}
+ return dirTop('ভর্তি ও শিক্ষার্থী তথ্য')+`<div class="wrap">${['ক','খ','both'].map(g=>`<div class="sec">${g==='both'?'তাকমিল (দুই উস্তাদ)':'গ্রুপ '+g+' · '+esc(gTeacher(g).name)}</div><div class="card">${S.students.filter(s=>s.group===g).map(s=>`<div class="li" style="cursor:pointer" onclick="go('dstu',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}${s.probation&&!s.probation.dec?'<span class="tag y">পর্যবেক্ষণে</span>':''}${s.status==='out'?'<span class="tag r">ভর্তি হলো না</span>':''}</b><small>${s.id} · ${esc(s.jamat)}</small></div><span>›</span></div>`).join('')}</div>`).join('')}
+ <button class="btn pri w" onclick="addStu()">+ নতুন শিক্ষার্থী যোগ করুন</button></div>`}
 function addStu(){tmp={};go('admit')}
 function vStuProfile(s){
  const i=S.students.indexOf(s);const F=(f,lab,ph,w)=>`<div style="${w?'flex:1 1 100%':''}"><label class="l">${lab}</label><input value="${esc(s[f]||'')}" placeholder="${ph||''}" onchange="S.students[${i}]['${f}']=this.value;save()"></div>`;
  const ex=['e1','e2','e3'].map(e=>[e,examRow(e,s.id)]);const pb=s.probation;
  return dirTop(esc(s.name),"go('dstu')")+`<div class="wrap">
  <div class="card row"><div style="flex:0 0 64px;height:76px;border:1px dashed #9aa5a0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6b7772;text-align:center">ছবি<br>(Google Sheet-এ)</div><div><b style="font-size:16px">${esc(s.name)}</b><div class="mut">${s.id} · ${s.group==='both'?'তাকমিল':'গ্রুপ '+s.group}</div>${pb?`<span class="tag ${pb.dec==='ok'?'g':pb.dec==='no'?'r':'y'}">${pb.dec==='ok'?'ভর্তি নিশ্চিত':pb.dec==='no'?'ভর্তি হলো না':'পর্যবেক্ষণে আছে'}</span>`:''}</div></div>
- <div class="sec">ক. ছাত্রের তথ্য</div><div class="card"><div class="row" style="flex-wrap:wrap">${F('name','নাম','',1)}
- <div><label class="l">গ্রুপ</label><select onchange="S.students[${i}].group=this.value;save()">${[['ক','গ্রুপ ক'],['খ','গ্রুপ খ'],['both','তাকমিল (দুই উস্তাদ)']].map(([k,n])=>`<option value="${k}" ${s.group===k?'selected':''}>${n}</option>`).join('')}</select></div>
- <div><label class="l">জামাত</label><select onchange="S.students[${i}].jamat=this.value;save()">${['হিফয প্রথম','হিফয দ্বিতীয়','হিফয তাকমিল'].map(j=>`<option ${s.jamat===j?'selected':''}>${j}</option>`).join('')}</select></div></div>
+ <div class="sec">ক. শিক্ষার্থীর তথ্য</div><div class="card"><div class="row" style="flex-wrap:wrap">${F('name','নাম','',1)}
+ <div><label class="l">গ্রুপ</label><select onchange="setGrp(${i},this.value)">${[['ক','গ্রুপ ক'],['খ','গ্রুপ খ'],['both','তাকমিল (দুই উস্তাদ)']].map(([k,n])=>`<option value="${k}" ${s.group===k?'selected':''}>${n}</option>`).join('')}</select></div>
+ <div><label class="l">জামাত</label><select onchange="setJamat(${i},this.value)">${['হিফয প্রথম','হিফয দ্বিতীয়','হিফয তাকমিল'].map(j=>`<option ${s.jamat===j?'selected':''}>${j}</option>`).join('')}</select></div></div>
  <div class="row">${F('birthYear','জন্মের সাল')}${F('blood','রক্তের গ্রুপ')}</div>${F('addr','ঠিকানা','গ্রাম, ডাকঘর, উপজেলা, জেলা')}${F('ill','কোনো অসুখ')}</div>
  <div class="sec">খ. অভিভাবকের তথ্য</div><div class="card"><div class="row">${F('father','পিতার নাম')}${F('fatherJob','পেশা')}</div>${F('fatherMob','পিতার মোবাইল')}<div class="row">${F('mother','মাতার নাম')}${F('motherMob','মাতার মোবাইল')}</div>
  <label class="l">অভিভাবক</label><div class="chs">${['পিতা','মাতা','অন্য কেউ'].map(x=>`<span class="ch ${s.guardian===x?'on-g':''}" onclick="S.students[${i}].guardian=S.students[${i}].guardian==='${x}'?'':'${x}';save();render()">${x}</span>`).join('')}</div>
@@ -935,12 +941,12 @@ function vAdmit(){const g=tmp.ag||'ক';const I=(f,ph,w)=>`<input id="${f}" plac
  return dirTop('নতুন ভর্তি')+`<div class="wrap">
  <div class="card"><b style="font-size:13px;color:var(--mut)">১. কোন গ্রুপে ভর্তি</b><div class="row" style="margin-top:8px">${[['ক','গ্রুপ ক'],['খ','গ্রুপ খ'],['both','তাকমিল']].map(([k,n])=>`<span class="ch ${g===k?'on-g':''}" onclick="admKeep();tmp.ag='${k}';render()">${n}</span>`).join('')}</div>
  <div style="margin-top:8px;font-size:14px">নতুন আইডি: <b style="color:#085041">${nextId(g)}</b></div></div>
- <div class="card"><b style="font-size:13px;color:var(--mut)">২. ছাত্রের তথ্য</b><div style="margin-top:8px">${I('a_name','ছাত্রের নাম')}${I('a_by','জন্মের সাল')}${I('a_addr','ঠিকানা')}</div></div>
+ <div class="card"><b style="font-size:13px;color:var(--mut)">২. শিক্ষার্থীর তথ্য</b><div style="margin-top:8px">${I('a_name','শিক্ষার্থীর নাম')}${I('a_by','জন্মের সাল')}${I('a_addr','ঠিকানা')}</div></div>
  <div class="card"><b style="font-size:13px;color:var(--mut)">৩. অভিভাবকের তথ্য</b><div style="margin-top:8px">${I('a_f','পিতার নাম')}${I('a_fm','মোবাইল নম্বর')}${I('a_wa','WhatsApp নম্বর')}</div></div>
  <div class="card"><b style="font-size:13px;color:var(--mut)">৪. ভর্তির সময় হিফযের অবস্থা</b><div class="row" style="margin-top:8px">${I('a_mem','মুখস্থ (পারা)',1)}${I('a_kacha','কাঁচা পারা',1)}</div></div>
  <div class="err" id="aerr"></div><button class="btn pri w" onclick="doAdmit()">ভর্তি করুন</button>
- <p class="mut" style="text-align:center">ভর্তির পর ৩০ দিনের পর্যবেক্ষণকাল নিজে নিজে শুরু হবে · বাকি তথ্য ছাত্রের পাতা থেকে যোগ করা যাবে</p></div>`}
-function doAdmit(){admKeep();const g=tmp.ag||'ক';const nm=(tmp.a_name||'').trim();if(!nm){document.getElementById('aerr').textContent='ছাত্রের নাম লিখুন';return}
+ <p class="mut" style="text-align:center">ভর্তির পর ৩০ দিনের পর্যবেক্ষণকাল নিজে নিজে শুরু হবে · বাকি তথ্য শিক্ষার্থীর পাতা থেকে যোগ করা যাবে</p></div>`}
+function doAdmit(){admKeep();const g=tmp.ag||'ক';const nm=(tmp.a_name||'').trim();if(!nm){document.getElementById('aerr').textContent='শিক্ষার্থীর নাম লিখুন';return}
  const id=nextId(g);const mem=bn(en(tmp.a_mem||'').trim()||'0'),kc=bn(en(tmp.a_kacha||'').trim()||'0');const yad=bn(Math.max(0,(parseInt(en(mem))||0)-(parseInt(en(kc))||0)));
  S.students.push({id,name:nm,group:g,type:g==='both'?'takmil':'hifz',jamat:g==='both'?'হিফয তাকমিল':'হিফয প্রথম',status:'ok',weak:false,
   birthYear:tmp.a_by||'',addr:tmp.a_addr||'',father:tmp.a_f||'',fatherMob:tmp.a_fm||'',wa:tmp.a_wa||'',guardian:'পিতা',admDate:today(),boarding:'সাধারণ বোর্ডিং',
@@ -950,12 +956,12 @@ function doAdmit(){admKeep();const g=tmp.ag||'ক';const nm=(tmp.a_name||'').tri
 
 /* ---------- উস্তাদ ও পিন ---------- */
 function vDtch(){
- return dirTop('উস্তাদ ও পিন')+`<div class="wrap">${S.teachers.map((t,i)=>`<div class="card"><div class="row"><b style="font-size:15px">${esc(t.name)}</b><span class="tag ${t.active?'g':'r'}" style="flex:0 0 auto">${t.active?'সক্রিয়':'বন্ধ'}</span></div>
+ return dirTop('পিন ব্যবস্থাপনা')+`<div class="wrap">${S.teachers.map((t,i)=>`<div class="card"><div class="row"><b style="font-size:15px">${esc(t.name)}</b><span class="tag ${t.active?'g':'r'}" style="flex:0 0 auto">${t.active?'সক্রিয়':'বন্ধ'}</span></div>
  <label class="l">নাম</label><input value="${esc(t.name)}" onchange="S.teachers[${i}].name=this.value;save()">
  <div class="row"><div><label class="l">গ্রুপ</label><select onchange="S.teachers[${i}].group=this.value;save()">${['ক','খ'].map(g=>`<option ${t.group===g?'selected':''}>${g}</option>`).join('')}</select></div></div>${pinRow('teacher',t.id,'PIN বদলান')}
  <div class="chs" style="margin-top:8px"><span class="ch ${t.night?'on-g':''}" onclick="S.teachers[${i}].night=!S.teachers[${i}].night;save();render()">রাতের হাজিরার দায়িত্ব</span><span class="ch" onclick="S.teachers[${i}].active=!S.teachers[${i}].active;save();render()">${t.active?'বন্ধ করুন (চলে গেলে)':'আবার চালু করুন'}</span></div>
  <button class="btn s" style="margin-top:8px" onclick="go('dtrep',{mode:'m',tid:'${t.id}'})">হিসাব দেখুন</button></div>`).join('')}
- <div class="sec">অন্য PIN</div><div class="card">${pinRow('dir','','কর্তৃপক্ষ')}${pinRow('routine','','রুটিন')}${pinRow('sub','','বদলি')}<p class="mut">PIN কোথাও দেখা যায় না. নতুন PIN লিখে "বদলান" টিপলে বদলে যাবে. এর জন্য নেট লাগবে.</p></div>
+ <div class="sec">অন্য PIN</div><div class="card">${pinRow('dir','','কর্তৃপক্ষ')}${pinRow('routine','','রুটিন')}${pinRow('sub','','বদলি')}${pinRow('office','','অফিস সহকারী')}<p class="mut">PIN কোথাও দেখা যায় না. নতুন PIN লিখে "বদলান" টিপলে বদলে যাবে. এর জন্য নেট লাগবে.</p></div>
  <div class="sec">উস্তাদের ছুটি ও বদলি</div><div class="card">${(S.tleave||[]).map((l,i)=>`<div class="li"><div class="n"><b>${esc(T(l.tid).name)}</b><small>${dShort(l.from)} থেকে ${dShort(l.to)} · ${esc(l.reason)} · বদলি: ${l.sub?esc(T(l.sub).name):'—'}</small></div><button class="btn s" onclick="S.tleave.splice(${i},1);save();render()">মুছুন</button></div>`).join('')||'<div class="mut">কোনো ছুটি লেখা নেই</div>'}</div>
  <div class="card"><b style="font-size:13px">নতুন ছুটি লিখুন</b><div class="row"><div><label class="l">উস্তাদ</label><select id="tl_t">${S.teachers.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div></div>
  <div class="row"><div><label class="l">কবে থেকে</label><input id="tl_f" type="date" value="${today()}"></div><div><label class="l">কবে পর্যন্ত</label><input id="tl_to" type="date" value="${addD(today(),1)}"></div></div><label class="l">কারণ</label><input id="tl_r">
@@ -976,7 +982,7 @@ function bakUp(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r
 function vRoutine(){
  S.routine=S.routine||[];const ri=Math.min(V.ri||0,S.routine.length-1);const R=S.routine[ri];const di=Math.min(V.di||0,R.days.length-1);const Dd=R.days[di];
  const back=ses.role==='dir'?"go('dir')":"ses=null;go('home')";
- return `<div class="top"><button class="btn s" onclick="${back}">‹ ফিরুন</button><div class="t"><b>রুটিন</b><span>দুই গ্রুপের জন্য একই</span></div></div><div class="wrap">
+ return `<div class="top"><button class="btn s" onclick="${back}">‹ ফিরুন</button><div class="t"><b>রুটিন</b><span>দুই গ্রুপের জন্য একই</span></div></div><div class="wrap">${lwinBlock()}
  <label class="l" style="margin-top:0">কোন রুটিন</label><div class="chs">${S.routine.map((x,i)=>`<span class="ch ${i===ri?'on-p':''}" onclick="go('routine',{ri:${i}})">${esc(x.n)}</span>`).join('')}<span class="ch" onclick="S.routine.push({n:'নতুন রুটিন',days:[{n:'প্রতিদিন',rows:[]}]});save();go('routine',{ri:${S.routine.length}})">+</span></div>
  <div class="row" style="margin-top:6px"><input value="${esc(R.n)}" onchange="S.routine[${ri}].n=this.value;save();render()"></div>
  <label class="l">কোন দিন</label><div class="chs">${R.days.map((x,i)=>`<span class="ch ${i===di?'on-p':''}" onclick="go('routine',{ri:${ri},di:${i}})">${esc(x.n)}</span>`).join('')}<span class="ch" onclick="S.routine[${ri}].days.push({n:'নতুন দিন',rows:[]});save();go('routine',{ri:${ri},di:${R.days.length}})">+</span></div>
@@ -991,7 +997,7 @@ function vTexam(){
  const ex=V.ex||'e2';const g=V.g2||ses.g;S.exams[ex]=S.exams[ex]||{};const E=S.exams[ex];
  const L=stOf(g);L.forEach(s=>{E[s.id]=E[s.id]||{m:[null,null,null]}});
  const done=L.filter(s=>E[s.id].ab||!E[s.id].m.some(v=>v==null)).length;
- return topBar('পরীক্ষার নম্বর')+`<div class="wrap"><div class="chs" style="margin-bottom:8px">${Object.entries(EXN).map(([k,n])=>`<span class="ch ${k===ex?'on-g':''}" onclick="go('texam',{ex:'${k}',g2:'${g}'})">${n}</span>`).join('')}</div>
+ return topBar('পরীক্ষার নম্বর প্রদান')+`<div class="wrap"><div class="chs" style="margin-bottom:8px">${Object.entries(EXN).map(([k,n])=>`<span class="ch ${k===ex?'on-g':''}" onclick="go('texam',{ex:'${k}',g2:'${g}'})">${n}</span>`).join('')}</div>
  <div class="chs" style="margin-bottom:10px">${['ক','খ'].map(x=>`<span class="ch ${x===g?'on-b':''}" onclick="go('texam',{ex:'${ex}',g2:'${x}'})">গ্রুপ ${x}</span>`).join('')}</div>
  <div class="card row"><span>নম্বর বসানো হয়েছে</span><b style="text-align:right">${bn(done)} / ${bn(L.length)} জন</b></div>
  ${L.map((s,i)=>{const x=E[s.id];const t=!x.ab&&!x.m.some(v=>v==null)?x.m.reduce((a,b)=>a+b,0):null;return `<div class="card"><div class="row"><div><b>${bn(i+1)}. ${esc(s.name)}</b><div class="mut">${esc(s.jamat)}</div></div><span class="ch ${x.ab?'on-r':''}" style="flex:0 0 auto" onclick="${ro()?'':`texAb('${ex}','${s.id}')`}">অনুপস্থিত</span></div>
@@ -1004,11 +1010,282 @@ function texAb(ex,sid){const r=S.exams[ex][sid];r.ab=!r.ab;r.by=(me()||{}).name;
 /* ===================== যুক্ত করা ===================== */
 Object.assign(VIEWS,{admit:vAdmit,texam:vTexam,trep:vTrep,contact:vContact,prepq:vPrepq,dir:vDir,dtoday:vDtoday,drep:vDrep,dtrep:vDtrep,exam:vExam,dfine:vDfine,dbeh:vDbeh,dprepq:vDprepq,dyear:vDyear,dcal:vDcal,dspec:vDspec,drules:vDrules,dgrade:vDgrade,dstu:vDstu,dtch:vDtch,dinfo:vDinfo,dlog:vDlog,dbak:vDbak,routine:vRoutine});
 
+/* ===================== ৩য় ধাপ: পড়া সাজানো, সময়, অফিস, সতর্কতা ===================== */
+const OFFT=['holiday','eid','examh'];
+const LWIN_DEF={sabak:['04:00','06:00'],sat:['06:00','11:00'],amu:['11:00','14:00']};
+let ALLK=false;
+function lwin(){return Object.assign({},LWIN_DEF,S.settings.lwin||{})}
+function hm(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())}
+function tmBn(x){const [h,m]=(x||'00:00').split(':').map(Number);const h12=h%12||12;const p=h<4?'রাত':h<6?'ভোর':h<12?'সকাল':h<15?'দুপুর':h<18?'বিকাল':h<20?'সন্ধ্যা':'রাত';return p+' '+bn(h12)+(m?':'+bn(pad(m)):'')+'টা'}
+function curWin(){if(D!==today())return null;const t=hm(),W=lwin();for(const k of ['sabak','sat','amu']){const w=W[k];if(w&&t>=w[0]&&t<w[1])return k}return null}
+function grpName(s){return s.group==='both'?'তাকমিল':'গ্রুপ '+s.group}
+function logA(txt,kind){const g=ses&&ses.g?'গ্রুপ '+ses.g+' · ':'';S.alerts.unshift({date:today(),time:nowT(),txt:g+txt,kind:kind||'r'});save()}
+
+/* ---------- কে এখন নেই ---------- */
+function absentNow(sid,k){k=k||D;const A=S.att[k]||{};let v=null;
+ slotsFor(k).forEach(([sl])=>{const z=A[sl]||{};Object.keys(z).forEach(g=>{const x=z[g];if(x&&x.list&&x.list[sid])v=x.list[sid].v})});return v==='A'}
+function offNow(sid){return awayOn(sid,D)||(absentNow(sid,D)?'A':null)}
+function awL(c){return {L:'ছুটিতে',S:'অসুস্থ হয়ে বাড়িতে',R:'পালিয়ে গেছে',A:'অনুপস্থিত'}[c]||''}
+function msickOn(sid,k){return S.away.find(a=>a.sid===sid&&a.type==='msick'&&k>=a.from&&(!a.closed||k<a.closed))||null}
+
+/* ---------- পড়া সাজানো: বন্ধ ও কাঁচা পারা ---------- */
+function planOf(sid){S.plan=S.plan||{};return S.plan[sid]||{}}
+function planOff(sid,k,day){const o=(planOf(sid).off||{})[k];return o&&day>=o.from&&day<=o.to?o:null}
+function kpOn(sid,day){const p=planOf(sid).kp;return p&&day>=p.from?p:null}
+function kindsFor(s){const ks=baseKinds(s);if(!ks.length)return ks;if(kpOn(s.id,D))return['kp'];return ks.filter(k=>!planOff(s.id,k,D))}
+function visKinds(s){const ks=kindsFor(s);const w=curWin();if(!w||ALLK)return ks;return ks.filter(k=>k===w||k==='kp'||(k==='tk'&&w==='amu'))}
+function lesWinBan(){if(D!==today())return '';const w=curWin(),W=lwin();
+ const sw=`<span style="text-decoration:underline;cursor:pointer;white-space:nowrap" onclick="ALLK=!ALLK;render()">${ALLK?'শুধু এখনকার পড়া':'সব পড়া দেখান'}</span>`;
+ if(!w)return `<div class="ban b">এখন কোনো পড়ার নির্ধারিত সময় নয় · সব পড়া দেখা যাচ্ছে</div>`;
+ return `<div class="ban g" style="display:flex;justify-content:space-between;gap:8px"><span>এখন <b>${KN[w]}</b>-এর সময় (${tmBn(W[w][0])} – ${tmBn(W[w][1])})${ALLK?'':' · শুধু '+KN[w]+' দেখা যাচ্ছে'}</span>${sw}</div>`}
+function planKinds(s){return (s.type==='takmil'?['tk']:['sabak','sat','amu']).concat(['kp'])}
+function daysLeft(to){return Math.round((pk(to)-pk(today()))/864e5)+1}
+function vPlan(){
+ const L=stOf(ses.g),k0=today(),lock=nightLock();S.plan=S.plan||{};const ed=tmp.ed;
+ const rows=L.map(s=>{const kp=kpOn(s.id,k0);
+  const btn=k=>{const o=planOff(s.id,k,k0);const nm=KN[k];let st,cl;
+   if(k==='kp'){st=kp?bn(en(kp.para))+' পারা চলছে':'নেই';cl=kp?'background:#FAEEDA;color:#633806;border-color:#EF9F27':'background:#fff;color:#55615c'}
+   else if(kp){st='কাঁচা পারার জন্য বন্ধ';cl='background:#F1EFE8;color:#888780;border-color:#D3D1C7'}
+   else if(o){st='বন্ধ · '+bn(daysLeft(o.to))+' দিন বাকি';cl='background:#FCEBEB;color:#791F1F;border-color:#F09595'}
+   else{st='চালু';cl='background:#E1F5EE;color:#085041;border-color:#9FE1CB'}
+   const on=ed&&ed.sid===s.id&&ed.k===k;
+   return `<div class="pb" style="${cl};${on?'outline:2px solid #378ADD;':''}" onclick="${lock||(kp&&k!=='kp')?'':`planTap('${s.id}','${k}')`}"><b>${nm}</b><span>${st}</span></div>`};
+  let edh='';
+  if(ed&&ed.sid===s.id){const k=ed.k,o=planOff(s.id,k,k0);
+   if(k==='kp')edh=`<div class="pe"><b>কাঁচা পারা</b><div class="mut">চালু থাকলে সবক, সাতসবক ও আমুখতা বন্ধ থাকবে</div><div class="row"><div><label class="l">কোন পারা</label><input inputmode="numeric" value="${esc(tmp.kpp||'')}" oninput="tmp.kpp=this.value"></div><div><label class="l">প্রতিদিন কত পৃষ্ঠা</label><input inputmode="numeric" value="${esc(tmp.kpg||'')}" oninput="tmp.kpg=this.value"></div></div><div class="err" id="perr2"></div>
+    <div class="row" style="margin-top:8px"><button class="btn pri" onclick="kpSave('${s.id}')">${kp?'বদলান':'কাঁচা পারা শুরু'}</button>${kp?`<button class="btn" style="color:#085041;border-color:#5DCAA5" onclick="kpEnd('${s.id}')">কাঁচা পারা শেষ</button>`:''}<button class="btn" onclick="tmp={};render()">বাতিল</button></div></div>`;
+   else edh=`<div class="pe"><b>${KN[k]} বন্ধ করুন</b><div class="row"><div><label class="l">কত দিন</label><input inputmode="numeric" value="${esc(tmp.pd||'')}" oninput="tmp.pd=this.value"></div></div><label class="l">কারণ (অভিভাবকের বার্তায় যাবে)</label><input value="${esc(tmp.pr||'')}" oninput="tmp.pr=this.value" placeholder="যেমন সবক ইয়াদ নেই"><div class="err" id="perr2"></div>
+    <div class="row" style="margin-top:8px"><button class="btn pri" onclick="offSave('${s.id}','${k}')">বন্ধ করুন</button><button class="btn" onclick="tmp={};render()">বাতিল</button></div></div>`}
+  const off=offNow(s.id);
+  return `<div class="card"><div class="row"><b>${esc(s.name)}</b><span class="mut" style="text-align:right">${s.id}${off?' · '+awL(off):''}</span></div>
+  <div class="pgrid">${planKinds(s).map(btn).join('')}</div>${edh}
+  ${Object.entries(planOf(s.id).off||{}).filter(([k,o])=>o.to>=k0&&!kp).map(([k,o])=>`<div class="mut" style="margin-top:4px">${KN[k]} বন্ধ ${dShort(o.from)} থেকে ${dShort(o.to)}${o.reason?' · কারণ: '+esc(o.reason):''}</div>`).join('')}
+  ${kp?`<div class="mut" style="margin-top:4px">কাঁচা পারা: ${bn(en(kp.para))} পারা · প্রতিদিন ${bn(en(kp.pages||''))} পৃষ্ঠা · ${dShort(kp.from)} থেকে</div>`:''}</div>`}).join('');
+ return topBar('পড়া সাজানো')+`<style>.pgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}.pb{border:1px solid;border-radius:10px;padding:7px 3px;text-align:center;cursor:pointer;user-select:none}.pb b{display:block;font-size:13px}.pb span{display:block;font-size:11px;margin-top:2px;line-height:1.3}.pe{margin-top:10px;padding:10px;border:1px dashed #85B7EB;border-radius:10px;background:#F7FAFE}</style><div class="wrap">
+ <div class="ban b">সবুজ = চালু · লাল = বন্ধ · হলুদ = কাঁচা পারা · বন্ধ করতে চালু ঘরে টিপুন, আবার চালু করতে লাল ঘরে টিপুন · দিন শেষ হলে নিজে থেকে চালু হবে</div>
+ ${lock?'<div class="ban y">রাত ১২টা থেকে ভোর ৪টা পর্যন্ত বদলানো যাবে না</div>':''}${rows}</div>`}
+function planTap(sid,k){const o=planOff(sid,k,today());
+ if(k!=='kp'&&o){const p=S.plan[sid];delete p.off[k];save();logA(`${(me()||{}).name||''} ${SID(sid).name}-এর ${KN[k]} আবার চালু করেছেন`,'y');tmp={};render();return}
+ if(tmp.ed&&tmp.ed.sid===sid&&tmp.ed.k===k){tmp={};render();return}
+ tmp={ed:{sid,k}};if(k==='kp'){const p=kpOn(sid,today());if(p){tmp.kpp=p.para;tmp.kpg=p.pages}}render()}
+function offSave(sid,k){const n=parseInt(en(tmp.pd||''));const e=document.getElementById('perr2');
+ if(!n||n<1){e.textContent='কত দিন বন্ধ থাকবে লিখুন';return}if(!(tmp.pr||'').trim()){e.textContent='কারণ লিখুন';return}
+ S.plan[sid]=S.plan[sid]||{};const p=S.plan[sid];p.off=p.off||{};p.off[k]={from:today(),to:addD(today(),n-1),reason:tmp.pr.trim(),by:(me()||{}).name||''};
+ logA(`${(me()||{}).name||''} ${SID(sid).name}-এর ${KN[k]} ${bn(n)} দিন বন্ধ করেছেন · কারণ: ${tmp.pr.trim()}`,'y');save();tmp={};render()}
+function kpSave(sid){const pa=(tmp.kpp||'').trim(),pg=(tmp.kpg||'').trim();const e=document.getElementById('perr2');
+ if(!pa){e.textContent='কোন পারা লিখুন';return}if(!pg){e.textContent='প্রতিদিন কত পৃষ্ঠা লিখুন';return}
+ S.plan[sid]=S.plan[sid]||{};const old=kpOn(sid,today());S.plan[sid].kp={para:pa,pages:pg,from:old?old.from:today(),by:(me()||{}).name||''};
+ if(!old)logA(`${SID(sid).name}-এর কাঁচা পারা শুরু: ${bn(en(pa))} পারা, প্রতিদিন ${bn(en(pg))} পৃষ্ঠা`,'y');save();tmp={};render()}
+function kpEnd(sid){delete S.plan[sid].kp;logA(`${SID(sid).name}-এর কাঁচা পারা শেষ, সব পড়া আবার চালু`,'y');save();tmp={};render()}
+
+/* ---------- পড়ার সময় (রুটিন পাতায়) ---------- */
+function lwinBlock(){const W=lwin();return `<div class="card" style="margin-bottom:10px"><b>পড়ার সময়</b><div class="mut">এই সময়ে উস্তাদের পাতায় শুধু সেই পড়া দেখা যাবে</div>
+ ${['sabak','sat','amu'].map(k=>`<div class="row" style="margin-top:8px;align-items:center"><span style="flex:0 0 72px">${KN[k]}</span><input type="time" value="${W[k][0]}" onchange="lwSet('${k}',0,this.value)"><span style="flex:0 0 auto">থেকে</span><input type="time" value="${W[k][1]}" onchange="lwSet('${k}',1,this.value)"></div>`).join('')}</div>`}
+function lwSet(k,i,v){if(!v)return;const W=lwin();W[k]=W[k].slice();W[k][i]=v;S.settings.lwin=W;save()}
+
+/* ---------- তাকমিল: জামাত বা গ্রুপ বদলালে নিয়মও বদলায় ---------- */
+function setGrp(i,g){const s=S.students[i];s.group=g;if(g==='both'){s.type='takmil';s.jamat='হিফয তাকমিল';s.stage=s.stage||'half';s.khatm=s.khatm||0}else if(s.type==='takmil'){s.type='hifz';if(s.jamat==='হিফয তাকমিল')s.jamat='হিফয দ্বিতীয়'}save();render()}
+function setJamat(i,j){const s=S.students[i];s.jamat=j;if(j==='হিফয তাকমিল'){s.type='takmil';s.group='both';s.stage=s.stage||'half';s.khatm=s.khatm||0}else if(s.type==='takmil'){s.type='hifz';if(s.group==='both')s.group='ক'}save();render()}
+
+/* ---------- অভিভাবক বার্তা ---------- */
+function waNum(s){let d=en(s.wa||s.fatherMob||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('880'))return d;if(d.startsWith('0'))return '88'+d;if(d.length===10)return '880'+d;return d}
+function newsMsg(s){const r=(S.les[D]||{})[s.id]||{};const t=me();const nc=((S.nocls[D]||{})[ses.g]||{items:[]}).items;
+ const ms=msickOn(s.id,D);const heard=Object.values(r).some(x=>x&&x.st===2);let lines;
+ if(ms&&!heard)lines=['আপনার সন্তান আজ অসুস্থ।'+(ms.ill?' অসুখ: '+ms.ill:'')];
+ else{const kp=kpOn(s.id,D);const ks=kp?['kp']:baseKinds(s);
+  lines=ks.map(k=>{const n=k==='kp'?'কাঁচা পারা ('+bn(en(kp.para))+' পারা)':KN[k];const x=r[k];const o=k==='kp'?null:planOff(s.id,k,D);
+   if(o)return '• '+n+': বন্ধ'+(o.reason?' (কারণ: '+o.reason+')':'');
+   if(nc.includes(KN[k])||(k==='tk'&&nc.includes('আমুখতা')))return '• '+n+': আজ ক্লাস হয়নি';
+   if(!x)return '• '+n+': এখনো শোনানো হয়নি';
+   if(x.st===3)return '• '+n+': আজ বন্ধ'+(x.reason?' (কারণ: '+x.reason+')':'');
+   if(x.st===2)return '• '+n+': '+(x.ok?'পেরেছে':'পারেনি');
+   return '• '+n+': চলছে'});
+  if(!lines.length)lines=['• আজ পড়া নেই']}
+ return `আসসালামু আলাইকুম।\n${s.name}-এর আজকের পড়া\n${dBn(D)}\n\n${lines.join('\n')}\n\n${t?t.name:''}\n${S.settings.madrasa}`}
+function waHref(s){return `https://wa.me/${waNum(s)}?text=${encodeURIComponent(newsMsg(s))}`}
+function vNews(){
+ const all=stOf(ses.g);S.sent[D]=S.sent[D]||{};const sn=S.sent[D];
+ const L=all.filter(s=>!offNow(s.id)),out=all.filter(s=>offNow(s.id));
+ const left=L.filter(s=>!sn[s.id]),done=L.length-left.length;const nx=left[0];
+ const big=ro()||!nx?'':`<a class="btn pri w" style="display:block;text-align:center;text-decoration:none;padding:14px;font-size:16px" target="_blank" href="${waHref(nx)}" onclick="S.sent[D]['${nx.id}']=nowT();save();setTimeout(render,300)">${done?'পরের জন':'সবাইকে পাঠানো শুরু করুন'}: ${esc(nx.name)} (${bn(done+1)}/${bn(L.length)})<br><span style="font-size:13px;font-weight:400">WhatsApp খুলবে · সেখানে পাঠান, তারপর এখানে ফিরে আবার টিপুন</span></a>`;
+ return topBar('অভিভাবক বার্তা')+`<div class="wrap">${dateBar()}
+ <div class="card row"><span>পাঠানো হয়েছে</span><b style="text-align:right">${bn(done)} / ${bn(L.length)} জন</b></div>
+ ${big}${!nx&&L.length?'<div class="ban g">সবার কাছে পাঠানো হয়েছে</div>':''}
+ ${L.map(s=>{const open=tmp.o===s.id;const num=waNum(s);return `<div class="card"><div class="row"><div style="cursor:pointer" onclick="tmp.o=${open?'null':`'${s.id}'`};render()"><b>${esc(s.name)}</b><div class="mut" style="text-decoration:underline">${open?'বার্তা লুকান':'বার্তা দেখুন'}${num?'':' · নম্বর নেই'}</div></div>
+ <div style="flex:0 0 auto">${sn[s.id]?`<span class="okm">✓ পাঠানো হয়েছে</span>${ro()?'':` <span style="color:#55615c;text-decoration:underline;cursor:pointer;font-size:12px" onclick="delete S.sent[D]['${s.id}'];save();render()">বাতিল</span>`}`:ro()?'<span class="mut">পাঠানো হয়নি</span>':`<a class="btn s" style="color:#085041;border-color:#5DCAA5;text-decoration:none" href="${waHref(s)}" target="_blank" onclick="S.sent[D]['${s.id}']=nowT();save();setTimeout(render,300)">পাঠান</a>`}</div></div>
+ ${open?`<div class="msg">${esc(newsMsg(s))}</div>`:''}</div>`}).join('')}
+ ${out.length?`<div class="sec">এখন বার্তা যাবে না</div><div class="card">${out.map(s=>`<div class="li"><span class="n">${esc(s.name)}</span><span class="tag y">${awL(offNow(s.id))}</span></div>`).join('')}</div>`:''}
+ <p class="mut">অভিভাবকের WhatsApp নম্বর না থাকলে পিতার মোবাইল নম্বরে যাবে · কোনোটাই না থাকলে WhatsApp-এ নাম বেছে নিতে হবে</p></div>`}
+
+/* ---------- ছুটি ও অসুস্থতা ---------- */
+const AWT={msick:'মাদ্রাসায় অসুস্থ',hsick:'অসুস্থ হয়ে বাড়িতে',leave:'ছুটি',run:'পালিয়ে গেছে'};
+function vAway(){
+ const L=stOf(ses.g);const k=today();const ty=tmp.ty||'';
+ const cur=S.away.filter(a=>!a.closed&&L.some(s=>s.id===a.sid));
+ const curH=cur.map(a=>{const s=SID(a.sid),od=overdue(a),i=S.away.indexOf(a);
+  const det=[a.type==='leave'?dShort(a.from)+' থেকে '+dShort(a.to)+' পর্যন্ত':dShort(a.from)+' থেকে',a.ill?'অসুখ: '+esc(a.ill):'',a.reason?'কারণ: '+esc(a.reason):'',a.note?esc(a.note):'',a.who?'নিয়ে গেছেন: '+esc(a.who)+(a.rel?' ('+esc(a.rel)+')':''):'',a.by?'লিখেছেন: '+esc(a.by):''].filter(Boolean).join(' · ');
+  const app=a.type==='leave'&&a.days>S.settings.rules.appDays?`<div class="row" style="margin-top:6px;justify-content:flex-start"><span class="mut" style="flex:0 0 auto">দরখাস্ত:</span><span class="ch ${a.app===1?'on-g':''}" style="flex:0 0 auto" onclick="awApp(${i},1)">জমা হয়েছে</span><span class="ch ${a.app===0?'on-r':''}" style="flex:0 0 auto" onclick="awApp(${i},0)">হয়নি</span></div>`:'';
+  return `<div class="card" style="${od||a.type==='run'?'background:#FCEBEB;border-color:#F09595':''}"><div class="row" style="align-items:flex-start"><div><b>${esc(s.name)}</b> <span class="tag ${a.type==='run'||od?'r':'y'}">${AWT[a.type]}${od?' · ফেরেনি':''}</span><div class="mut" style="margin-top:4px">${det}</div></div><button class="btn s" style="flex:0 0 auto;color:#085041;border-color:#5DCAA5" onclick="awClose(${i})">${a.type==='msick'?'সুস্থ হয়েছে':'ফিরেছে'}</button></div>${app}</div>`}).join('');
+ const I=(id,lab,ph,type)=>`<div><label class="l">${lab}</label><input ${type?`type="${type}"`:''} value="${esc(tmp[id]||'')}" placeholder="${ph||''}" oninput="tmp['${id}']=this.value" onchange="tmp['${id}']=this.value"></div>`;
+ if(ty&&!tmp.af)tmp.af=k;if(ty==='leave'&&!tmp.at)tmp.at=addD(k,1);
+ let f='';
+ if(ty==='msick')f=`<div class="row">${I('af','কবে থেকে','','date')}${I('ill','কী অসুখ')}</div>`;
+ if(ty==='hsick')f=`<div class="row">${I('af','যাওয়ার তারিখ','','date')}${I('ill','কী অসুখ')}</div><div class="row">${I('who','কে নিয়ে গেছেন (নাম)')}${I('rel','সম্পর্ক','যেমন বাবা')}</div>`;
+ if(ty==='leave')f=`<div class="row">${I('af','যাওয়ার তারিখ','','date')}${I('at','ফেরার তারিখ','','date')}</div>${I('rs','কারণ')}<div class="row">${I('who','কে নিয়ে গেছেন (নাম)')}${I('rel','সম্পর্ক','যেমন বাবা')}</div>`;
+ if(ty==='run')f=`<div class="row">${I('af','কবে','','date')}</div>${I('note','কী জানা গেছে (ঐচ্ছিক)','যেমন রাতের হাজিরায় পাওয়া যায়নি')}`;
+ const done=S.away.filter(x=>x.closed===today()&&L.some(s=>s.id===x.sid));
+ return topBar('ছুটি ও অসুস্থতা')+`<div class="wrap">${tmp.okm?`<div class="ban g">${esc(tmp.okm)}</div>`:''}
+ <div class="sec" style="margin-top:4px">এখন যারা</div>${curH||'<div class="card mut">এখন কেউ ছুটিতে বা অসুস্থ নেই</div>'}
+ ${done.map(x=>`<div class="card row"><div><b>${esc(SID(x.sid).name)}</b><div class="mut">আজ ${x.type==='msick'?'সুস্থ হয়েছে':'ফিরেছে'} লেখা হয়েছে</div></div><button class="btn s" style="flex:0 0 auto" onclick="delete S.away[${S.away.indexOf(x)}].closed;save();render()">বাতিল</button></div>`).join('')}
+ <div class="sec">নতুন লিখুন</div><div class="card"><label class="l" style="margin-top:0">১. কী হয়েছে</label><div class="chs">${Object.entries(AWT).map(([t,n])=>`<span class="ch ${ty===t?(t==='run'?'on-r':'on-y'):''}" onclick="tmp.ty=tmp.ty==='${t}'?'':'${t}';tmp.okm='';render()">${n}</span>`).join('')}</div>
+ ${ty?`<label class="l">২. শিক্ষার্থী</label>${pickBox('noop')}<label class="l">৩. বিস্তারিত</label>${f}<div class="err" id="awerr"></div><button class="btn pri w" style="margin-top:10px" onclick="saveAway()">জমা দিন</button>`:'<div class="mut" style="margin-top:6px">উপরের যেকোনো একটা বেছে নিন</div>'}</div></div>`}
+function saveAway(){const ty=tmp.ty,e=document.getElementById('awerr');const err=t=>{e.textContent=t;e.scrollIntoView({block:'center'})};
+ if(!ty)return err('কী হয়েছে বেছে নিন');if(!tmp.pick)return err('শিক্ষার্থী বেছে নিন (নাম লিখে তালিকা থেকে টিপুন)');
+ const a={sid:tmp.pick,type:ty,from:tmp.af||today(),by:(me()||{}).name||''};
+ if(ty==='msick'||ty==='hsick'){a.ill=(tmp.ill||'').trim();if(!a.ill)return err('কী অসুখ লিখুন')}
+ if(ty==='hsick'||ty==='leave'){a.who=(tmp.who||'').trim();a.rel=(tmp.rel||'').trim()}
+ if(ty==='leave'){a.to=tmp.at||addD(today(),1);a.reason=(tmp.rs||'').trim();if(!a.reason)return err('কারণ লিখুন');if(a.to<a.from)return err('ফেরার তারিখ যাওয়ার তারিখের আগে হতে পারে না');a.days=Math.round((pk(a.to)-pk(a.from))/864e5)+1;a.app=null}
+ if(ty==='run')a.note=(tmp.note||'').trim();
+ if(S.away.some(x=>x.sid===a.sid&&!x.closed))return err('এই শিক্ষার্থী আগে থেকেই "এখন যারা" তালিকায় আছে');
+ S.away.push(a);const s=SID(a.sid);
+ if(ty!=='leave')logA(`${s.name}: ${AWT[ty]}${a.ill?' · '+a.ill:''}${a.note?' · '+a.note:''}`,'r');
+ save();tmp={okm:`জমা হয়েছে · ${s.name} · ${AWT[ty]}`};render()}
+
+/* ---------- মাসিক ছুটির দিনে উস্তাদের মূল্যায়ন ---------- */
+function evalCal(){const c=calOn(today());return c&&c.type==='monthly'&&new Date().getHours()>=5?c:null}
+function evalMk(c){const d=pk(c.from);if(d.getDate()<=10)d.setMonth(d.getMonth()-1);return key(d).slice(0,7)}
+function evalBan(){if(!ses||!ses.g)return '';const c=evalCal();if(!c)return '';const mk=evalMk(c);const L=stOf(ses.g);S.cmtOv=S.cmtOv||{};const n=L.filter(s=>(S.cmtOv['m'+mk+s.id]||'').trim()).length;
+ return `<div class="big" style="background:#FAEEDA;border-color:#EF9F27;margin-bottom:8px" onclick="go('eval')"><div class="ic" style="background:#BA7517">✍️</div><div style="flex:1"><b style="color:#633806">আজ মাসিক ছুটি · সবার মূল্যায়ন লিখুন</b><div style="font-size:12px;color:#854F0B">${bn(n)} / ${bn(L.length)} জনের লেখা হয়েছে · লিখলেই অফিসে জমা হবে</div></div><span style="color:#854F0B">›</span></div>`}
+function vEval(){const c=evalCal()||calOn(today());const mk=c?evalMk(c):today().slice(0,7);const L=stOf(ses.g);S.cmtOv=S.cmtOv||{};
+ return topBar('মাসিক মূল্যায়ন')+`<div class="wrap"><div class="ban b">${MON[parseInt(mk.slice(5))-1]} মাসের রিপোর্টে "উস্তাদের মন্তব্য" ঘরে যাবে · প্রত্যেক শিক্ষার্থীর সমস্যা বা পরামর্শ সংক্ষেপে লিখুন</div>
+ ${L.map(s=>{const ck='m'+mk+s.id;const v=S.cmtOv[ck]||'';return `<div class="card"><b>${esc(s.name)}</b> <span class="mut">${s.id}</span><textarea rows="2" style="width:100%;margin-top:6px" oninput="S.cmtOv['${ck}']=this.value;save();document.getElementById('ev_${s.id}').textContent=this.value.trim()?'✓ অফিসে জমা হয়েছে':''">${esc(v)}</textarea><div class="okm" id="ev_${s.id}">${v.trim()?'✓ অফিসে জমা হয়েছে':''}</div></div>`}).join('')}</div>`}
+
+/* ---------- অফিস সহকারী ---------- */
+function offTop(t,back){return `<div class="top noprint"><button class="btn s" onclick="${back||(ses.role==='dir'?"go('dir')":"ses=null;go('home')")}">${back||ses.role==='dir'?'‹ ফিরুন':'বের হন'}</button><div class="t"><b>${t}</b><span>অফিস সহকারী</span></div></div>`}
+function gKey(mode,mk){return mode==='m'?mk:'y'+S.year.from}
+function vOffice(){const mode=V.mode||'m';const mk=V.mk||today().slice(0,7);const gk=gKey(mode,mk);S.given[gk]=S.given[gk]||{};const G=S.given[gk];S.cmtOv=S.cmtOv||{};
+ const L=S.students.filter(s=>s.status!=='out');const ev=L.filter(s=>(S.cmtOv[mode+mk+s.id]||'').trim()).length,gv=L.filter(s=>G[s.id]).length,rt=L.filter(s=>G[s.id]&&G[s.id].ret).length;
+ const box=(v,n,c)=>`<div class="card" style="text-align:center;margin:0;padding:8px 2px"><b style="font-size:18px;${c?'color:'+c:''}">${v}</b><div class="mut">${n}</div></div>`;
+ return offTop('রিপোর্ট প্রিন্ট ও ফেরত')+`<div class="wrap"><div class="row" style="margin-bottom:10px"><span class="ch ${mode==='m'?'on-g':''}" onclick="go('office',{mode:'m',mk:'${mk}'})">মাসিক রিপোর্ট</span><span class="ch ${mode==='y'?'on-g':''}" onclick="go('office',{mode:'y',mk:'${mk}'})">বাৎসরিক রিপোর্ট</span></div>
+ ${mode==='m'?monthPick():`<div class="ban b">শিক্ষাবর্ষ: ${esc(S.year.name)} · ${dShort(S.year.from)} থেকে ${dShort(S.year.to)}</div>`}
+ <div class="tiles" style="grid-template-columns:repeat(${mode==='m'?4:3},1fr);gap:6px;margin-bottom:10px">${box(bn(L.length),'মোট')}${mode==='m'?box(bn(ev),'মূল্যায়ন লেখা',ev<L.length?'#854F0B':'#0F6E56'):''}${box(bn(gv),'দেওয়া হয়েছে')}${box(bn(rt),'স্বাক্ষরসহ ফেরত',rt<gv?'#A32D2D':'#0F6E56')}</div>
+ <button class="btn pri w" onclick="go('oprint',{mode:'${mode}',mk:'${mk}'})">🖨️ সবগুলো একসাথে প্রিন্ট</button>
+ ${['ক','খ','both'].map(g=>{const Lg=L.filter(s=>s.group===g);if(!Lg.length)return '';return `<div class="sec">${g==='both'?'তাকমিল':'গ্রুপ '+g}</div>`+Lg.map(s=>{const x=G[s.id];const e=(S.cmtOv[mode+mk+s.id]||'').trim();return `<div class="card"><div class="row"><div><b>${esc(s.name)}</b><div class="mut">${s.id}${mode==='m'?' · '+(e?'<span style="color:#0F6E56">মূল্যায়ন লেখা হয়েছে</span>':'<span style="color:#854F0B">মূল্যায়ন বাকি</span>'):''}</div></div><button class="btn s" style="flex:0 0 auto" onclick="go('oprint',{mode:'${mode}',mk:'${mk}',sid:'${s.id}'})">দেখুন</button></div>
+ <div class="chs" style="margin-top:8px"><span class="ch ${x?'on-g':''}" onclick="ofGive('${gk}','${s.id}')">${x?'✓ ':''}দেওয়া হয়েছে</span><span class="ch ${x&&x.ret?'on-g':''}" onclick="ofRet('${gk}','${s.id}')">${x&&x.ret?'✓ ':''}স্বাক্ষরসহ ফেরত এসেছে</span>${x&&!x.ret?'<span class="tag r" style="align-self:center">ফেরত আসেনি</span>':''}</div></div>`}).join('')}).join('')}</div>`}
+function ofGive(gk,sid){const G=S.given[gk];if(G[sid])delete G[sid];else G[sid]={how:'হাতে',date:today(),by:'অফিস'};save();render()}
+function ofRet(gk,sid){const G=S.given[gk];if(!G[sid])G[sid]={how:'হাতে',date:today(),by:'অফিস'};if(G[sid].ret)delete G[sid].ret;else G[sid].ret=today();save();render()}
+function vOprint(){const mode=V.mode||'m',mk=V.mk||today().slice(0,7);const back=`go('office',{mode:'${mode}',mk:'${mk}'})`;
+ const L=V.sid?[SID(V.sid)]:S.students.filter(s=>s.status!=='out').sort((a,b)=>(a.group+a.id)<(b.group+b.id)?-1:1);
+ return offTop(V.sid?esc(L[0].name):'সব রিপোর্ট · '+bn(L.length)+' জন',back)+RCSS+`<div class="wrap">${printBar()}${L.map(s=>stuReport(s.id,mode,mk)).join('')}</div>`}
+
+/* ---------- ক্যালেন্ডার: ১২ মাস ---------- */
+const HT={monthly:['মাসিক ছুটি','#FAC775','#633806'],eid:['ঈদের ছুটি','#9FE1CB','#085041'],examh:['পরীক্ষার ছুটি','#B5D4F4','#0C447C']};
+const OTC={holiday:'#D3D1C7',prep:'#F7C1C1',exam:'#F09595',special:'#CECBF6'};
+function calSetDay(k,ty){const H=Object.keys(HT);const days={};
+ S.cal=(S.cal||[]).filter(c=>{if(!H.includes(c.type))return true;{let d=c.from;while(d<=c.to){days[d]={type:c.type,ret:c.ret};d=addD(d,1)}}return false});
+ if(ty)days[k]={type:ty,ret:ty==='monthly'?'মাগরিবের আগে':undefined};else delete days[k];
+ const ks=Object.keys(days).sort();let cur=null;
+ ks.forEach(d=>{const x=days[d];if(cur&&cur.type===x.type&&addD(cur.to,1)===d)cur.to=d;else{cur={type:x.type,name:HT[x.type][0],from:d,to:d};if(x.type==='monthly')cur.ret=x.ret||'মাগরিবের আগে';S.cal.push(cur)}});
+ save();tmp={};render()}
+function vDcal(){const st=V.cs||today().slice(0,7);const [y0,m0]=st.split('-').map(Number);const ed=tmp.cd;
+ const months=[];for(let i=0;i<12;i++)months.push(key(new Date(y0,m0-1+i,1)).slice(0,7));
+ const wd=['শনি','রবি','সোম','মঙ্গল','বুধ','বৃহঃ','শুক্র'];
+ const grid=mk=>{const [y,m]=mk.split('-').map(Number);const n=new Date(y,m,0).getDate();const first=mk+'-01';const off=(dow(first)+1)%7;let cells='';for(let i=0;i<off;i++)cells+='<span></span>';
+  for(let d=1;d<=n;d++){const k=mk+'-'+pad(d);const c=calOn(k);const h=c&&HT[c.type];const bg=h?h[1]:c?OTC[c.type]||'#eee':(dow(k)===5?'#F1EFE8':'#fff');const col=h?h[2]:'#1d2622';
+   cells+=`<span class="cd" style="background:${bg};color:${col};${k===today()?'outline:2px solid #1d2622;':''}${ed===k?'box-shadow:0 0 0 3px #378ADD;':''}" onclick="tmp.cd=tmp.cd==='${k}'?null:'${k}';render()">${bn(d)}</span>`}
+  const sel=ed&&ed.startsWith(mk)?`<div class="pe"><b>${dBn(ed)}</b>${calOn(ed)?`<div class="mut">এখন: ${esc(calOn(ed).name||CALT[calOn(ed).type])}</div>`:''}<div class="chs" style="margin-top:6px">${Object.entries(HT).map(([t,v])=>`<span class="ch" style="background:${v[1]};color:${v[2]};border-color:${v[1]}" onclick="calSetDay('${ed}','${t}')">${v[0]}</span>`).join('')}${calOn(ed)&&HT[calOn(ed).type]?`<span class="ch" onclick="calSetDay('${ed}','')">ছুটি বাতিল</span>`:''}</div></div>`:'';
+  return `<div class="card"><b>${MON[m-1]} ${bn(y)}</b><div class="cg" style="margin-top:6px">${wd.map(w=>`<span class="cw">${w}</span>`).join('')}${cells}</div>${sel}</div>`};
+ const L=(S.cal||[]).slice().sort((a,b)=>a.from<b.from?-1:1);const ty=tmp.ty||'prep';
+ const pv=key(new Date(y0,m0-13,1)).slice(0,7),nx=key(new Date(y0,m0+11,1)).slice(0,7);
+ return dirTop('ক্যালেন্ডার')+`<style>.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.cw{font-size:11px;color:#6b7772;text-align:center}.cd{display:block;text-align:center;font-size:13px;padding:6px 0;border-radius:6px;border:1px solid #e3e8e6;cursor:pointer}.pe{margin-top:10px;padding:10px;border:1px dashed #85B7EB;border-radius:10px;background:#F7FAFE}</style><div class="wrap">
+ <div class="chs" style="margin-bottom:8px">${Object.values(HT).map(v=>`<span class="tag" style="background:${v[1]};color:${v[2]}">${v[0]}</span>`).join('')}<span class="tag" style="background:#F7C1C1;color:#791F1F">পরীক্ষা ও প্রস্তুতি</span><span class="tag" style="background:#F1EFE8;color:#444441">শুক্রবার</span></div>
+ <div class="ban b">যেকোনো দিনে টিপে ছুটির ধরন বেছে নিন · আবার টিপে "ছুটি বাতিল"</div>
+ <div class="datebar"><button class="btn s" onclick="V.cs='${pv}';tmp={};render()">‹ আগের ১২ মাস</button><b></b><button class="btn s" onclick="V.cs='${nx}';tmp={};render()">পরের ১২ মাস ›</button></div>
+ ${months.map(grid).join('')}
+ <div class="sec">সব দাগানো দিন</div><div class="card">${L.map(c=>{const i=S.cal.indexOf(c);return `<div class="li"><div class="n"><b>${esc(c.name||CALT[c.type])} <span class="tag ${c.type==='prep'||c.type==='exam'?'r':c.type==='special'?'b':'y'}">${CALT[c.type]}</span></b><small>${dShort(c.from)} থেকে ${dShort(c.to)}${c.type==='monthly'?' · ফেরা: '+dShort(addD(c.to,1))+', '+esc(c.ret||''):''}</small></div><button class="btn s" onclick="S.cal.splice(${i},1);save();render()">মুছুন</button></div>`}).join('')||'<div class="mut">কিছু দাগানো হয়নি</div>'}</div>
+ <div class="sec">পরীক্ষা, প্রস্তুতি বা বিশেষ দিন (কয়েক দিন একসাথে)</div><div class="card"><div class="chs">${['prep','exam','special','holiday'].map(k=>`<span class="ch ${ty===k?'on-b':''}" onclick="tmp.ty='${k}';render()">${CALT[k]}</span>`).join('')}</div>
+ <label class="l">নাম</label><input id="c_n" placeholder="${ty==='prep'||ty==='exam'?'যেমন প্রথম সাময়িক পরীক্ষা':'যেমন বিশেষ দিন'}">
+ <div class="row"><div><label class="l">কবে থেকে</label><input id="c_f" type="date" value="${today()}"></div><div><label class="l">কবে পর্যন্ত</label><input id="c_t" type="date" value="${addD(today(),3)}"></div></div>
+ ${ty==='prep'?'<div class="row" style="margin-top:8px;justify-content:flex-start"><span class="ch '+(tmp.board?'on-b':'')+'" style="flex:0 0 auto" onclick="tmp.board=!tmp.board;render()">বোর্ড পরীক্ষার প্রস্তুতি (শুধু বাছাই করা শিক্ষার্থী)</span></div>':''}
+ <div class="err" id="cerr"></div><button class="btn pri w" onclick="saveCal()">জমা দিন</button></div></div>`}
+
+/* ---------- কর্তৃপক্ষ: জরুরি সতর্কতা ও দিনে দুবার হিসাব ---------- */
+function liveAlerts(){
+ const k=today(),out=[];const h=new Date().getHours();const G=sid=>{const s=SID(sid);return s?grpName(s)+' · '+s.name:''};
+ S.away.filter(a=>a.type==='run'&&!a.closed).forEach(a=>out.push(['r',`${G(a.sid)}: পালিয়ে গেছে (${dShort(a.from)})`]));
+ S.away.filter(a=>overdue(a)).forEach(a=>out.push(['r',`${G(a.sid)}: ছুটি শেষ হয়েছে ${dShort(a.to)}, এখনো ফেরেনি`]));
+ S.away.filter(a=>a.type==='leave'&&a.days>S.settings.rules.appDays&&a.app===0&&!a.closed).forEach(a=>out.push(['r',`${G(a.sid)}: ${bn(a.days)} দিনের ছুটি, দরখাস্ত জমা হয়নি`]));
+ S.away.filter(a=>(a.type==='msick'||a.type==='hsick')&&!a.closed).forEach(a=>out.push(['r',`${G(a.sid)}: ${AWT[a.type]}${a.ill?' · '+a.ill:''} (${dShort(a.from)} থেকে)`]));
+ if(dow(k)!==5&&h>=14)['ক','খ'].forEach(g=>{if(!(((S.att[k]||{}).z||{})[g]))out.push(['r',`গ্রুপ ${g}: জোহরের হাজিরা নেওয়া হয়নি`])});
+ S.alerts.filter(a=>a.date===k&&a.kind==='r'&&!/অসুস্থ|পালিয়ে/.test(a.txt)).forEach(a=>out.push(['r',a.txt+' · '+a.time]));
+ S.fines.filter(f=>!f.paid).forEach(f=>out.push(['y',`${G(f.sid)}: জরিমানা ${bn(f.amt)} টাকা বাকি`]));
+ S.students.filter(s=>s.probation&&!s.probation.dec&&s.probation.to<=k).forEach(s=>out.push(['y',`${s.name}: পর্যবেক্ষণকাল শেষ, সিদ্ধান্ত দিন`]));
+ return out}
+function lesDigest(g,k){const Ds=D;D=k;const Ls=stOf(g);const R=S.les[k]||{};const rows={};
+ Ls.forEach(s=>{const off=awayOn(s.id,k)||(absentNow(s.id,k)?'A':null);const kp=kpOn(s.id,k);const base=baseKinds(s);
+  (kp?['kp']:base).forEach(kd=>{const r=rows[kd]=rows[kd]||{ok:0,no:0,off:0,nh:0};if(off){r.off++;return}if(kd!=='kp'&&planOff(s.id,kd,k)){r.off++;return}const x=(R[s.id]||{})[kd];if(x&&x.st===2)x.ok?r.ok++:r.no++;else if(x&&x.st===3)r.off++;else r.nh++})});
+ D=Ds;const ks=['sabak','sat','amu','tk','kp'].filter(x=>rows[x]);
+ if(!ks.length)return '<div class="mut">আজ পড়া নেই</div>';
+ return `<table class="dg"><tr><th></th><th>শুনিয়েছে</th><th>পারেনি</th><th>বন্ধ/নেই</th><th>শোনায়নি</th></tr>${ks.map(x=>{const r=rows[x];return `<tr><td>${KN[x]}</td><td>${bn(r.ok)}</td><td style="${r.no?'color:#A32D2D':''}">${bn(r.no)}</td><td>${bn(r.off)}</td><td style="${r.nh?'color:#A32D2D;font-weight:600':''}">${bn(r.nh)}</td></tr>`}).join('')}</table>`}
+function eveDigest(g,k){const Ls=stOf(g);const T=S.til[k]||{};const on=Ls.filter(s=>!(awayOn(s.id,k)||absentNow(s.id,k)));
+ const tn=on.filter(s=>(T[s.id]||{}).namaz===1).length,tt=on.filter(s=>(T[s.id]||{}).til===1).length;const A=S.att[k]||{};
+ const at=sk=>{const x=(A[sk]||{})[sk==='n'?'all':g];return x?'<span style="color:#0F6E56">নেওয়া হয়েছে</span>':'<span style="color:#A32D2D">নেওয়া হয়নি</span>'};
+ const sn=Object.keys(S.sent[k]||{}).filter(id=>on.some(s=>s.id===id)).length;
+ return `<table class="dg"><tr><td>নামাজে তিলাওয়াত</td><td>${bn(tn)} / ${bn(on.length)}</td></tr><tr><td>তিলাওয়াত</td><td>${bn(tt)} / ${bn(on.length)}</td></tr><tr><td>আসরের হাজিরা</td><td>${at('a')}</td></tr><tr><td>মাগরিবের হাজিরা</td><td>${at('m')}</td></tr><tr><td>রাতের হাজিরা</td><td>${at('n')}</td></tr><tr><td>অভিভাবক বার্তা</td><td>${bn(sn)} / ${bn(on.length)}</td></tr></table>`}
+function digestCards(k){const t=hm(),isT=k===today();const sh2=!isT||t>='14:00',sh11=!isT||t>='23:00';
+ const grpH=(g,f)=>{const tc=gTeacher(g);const n=stOf(g).length;return `<div style="font-weight:600;margin:8px 0 4px;color:${g==='ক'?'#085041':'#0C447C'}">গ্রুপ ${g} · মোট ${bn(n)} জন${tc?' · '+esc(tc.name):''}</div>${f(g,k)}`};
+ return `<div class="card"><div class="row"><b>দুপুর ২টার হিসাব</b><span class="mut" style="text-align:right">ভোর থেকে দুপুর ২টা</span></div>${sh2?grpH('ক',lesDigest)+grpH('খ',lesDigest):'<div class="mut" style="margin-top:6px">দুপুর ২টায় সকালের পড়ার হিসাব এখানে আসবে</div>'}</div>
+ <div class="card"><div class="row"><b>রাত ১১টার হিসাব</b><span class="mut" style="text-align:right">দুপুর ২টা থেকে রাত</span></div>${sh11?grpH('ক',eveDigest)+grpH('খ',eveDigest):'<div class="mut" style="margin-top:6px">রাত ১১টায় দুপুরের পরের হিসাব এখানে আসবে</div>'}</div>`}
+function vDir(){
+ const al=liveAlerts().filter(a=>a[0]==='r');const dueF=S.fines.filter(f=>!f.paid).length;
+ const T_=(ic,n,sm,go_,c,dot)=>{const col={g:['#E1F5EE','#0F6E56'],b:['#E6F1FB','#185FA5'],p:['#EEEDFE','#534AB7'],y:['#FAEEDA','#854F0B']}[c];return `<div class="dt" onclick="${go_}"><div class="ic" style="background:${col[0]};color:${col[1]}">${ic}</div><div><b>${n}</b><small>${sm}</small>${dot?`<small style="color:#A32D2D">${dot}</small>`:''}</div></div>`};
+ return `<style>.dg{width:100%;border-collapse:collapse;font-size:13px}.dg th{font-weight:400;color:#6b7772;font-size:12px;text-align:center;padding:3px}.dg td{padding:4px 3px;text-align:center;border-top:1px solid #eef1f0}.dg td:first-child{text-align:left}.dts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dt{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;cursor:pointer}.dt .ic{flex:0 0 32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}.dt b{display:block;font-size:13px;line-height:1.3}.dt small{display:block;font-size:11px;color:#6b7772;line-height:1.35;margin-top:2px}</style>
+ <div class="top"><button class="btn s" onclick="ses=null;go('home')">বের হন</button><div class="t"><b>কর্তৃপক্ষ</b><span>${dBn(today())}</span></div></div><div class="wrap">
+ <div class="sec" style="margin-top:4px;color:#A32D2D">জরুরি</div>${al.length?`<div class="card" style="background:#FCEBEB;border-color:#F09595">${al.map(a=>`<div style="color:#791F1F;padding:3px 0;font-size:14px">• ${esc(a[1])}</div>`).join('')}</div>`:'<div class="card mut">এখন জরুরি কিছু নেই</div>'}
+ <div class="sec">পড়ার হিসাব</div>${digestCards(today())}
+ <div class="big" style="background:#E6F1FB;border-color:#85B7EB;margin-top:4px" onclick="D=today();go('dtoday')"><div class="ic" style="background:#378ADD">📋</div><div style="flex:1"><b style="color:#0C447C">আজকের পুরো অবস্থা</b><div style="font-size:12px;color:#185FA5">হাজিরা, প্রতি বেলা, উস্তাদ, সব সতর্কতা</div></div><span style="color:#185FA5">›</span></div>
+ <div class="sec">গ্রুপের পাতা</div><div class="row" style="margin-bottom:4px"><button class="btn" onclick="ses={role:'dir',g:'ক'};tmp={};D=today();go('g')">গ্রুপ ক</button><button class="btn" onclick="ses={role:'dir',g:'খ'};tmp={};D=today();go('g')">গ্রুপ খ</button></div>
+ <div class="sec">রিপোর্ট ও হিসাব</div><div class="dts">
+ ${T_('📋','মাসিক রিপোর্ট','প্রত্যেক শিক্ষার্থীর মাসের হিসাব',"go('drep',{mode:'m'})",'g')}${T_('📊','বাৎসরিক রিপোর্ট','সারা বছরের অগ্রগতি',"go('drep',{mode:'y'})",'g')}
+ ${T_('📑','উস্তাদদের কার্যবিবরণী','কোন উস্তাদ কোন কাজ করেছেন, কোনটা বাকি',"go('dtrep',{mode:'m'})",'g')}${T_('🏆','পরীক্ষার ফলাফল','গ্রেড ও মেধাতালিকা',"go('exam')",'g')}
+ ${T_('💰','জরিমানা','বাকি ও আদায়',"go('dfine')",'g',dueF?bn(dueF)+'টি বাকি':'')}${T_('⭐','আচরণ','শিক্ষার্থীদের আচরণের খাতা',"go('dbeh')",'g')}
+ ${T_('📝','পরীক্ষা প্রস্তুতি প্রশ্নপত্র','পরীক্ষার আগে অনুশীলনের প্রশ্ন',"go('dprepq')",'g')}${T_('🗄️','অফিস সহকারী','রিপোর্ট প্রিন্ট ও স্বাক্ষর ফেরত',"go('office')",'g')}</div>
+ <div class="sec">ঠিক করার জায়গা</div><div class="dts">
+ ${T_('➕','ভর্তি ও শিক্ষার্থী তথ্য','নতুন ভর্তি, সবার তথ্য দেখা ও বদলানো',"go('dstu')",'b')}${T_('📅','ক্যালেন্ডার','মাসিক, ঈদ ও পরীক্ষার ছুটি',"go('dcal')",'b')}
+ ${T_('⏰','রুটিন','দিনের সময়সূচি ও পড়ার সময়',"go('routine')",'b')}${T_('📢','নোটিশ বোর্ড','উস্তাদদের জন্য বিজ্ঞপ্তি',"go('dspec')",'b')}
+ ${T_('⚙️','পাঠ ও ছুটি নীতিমালা','লোকমা-দোহরানোর সীমা, দরখাস্ত ও জরিমানা',"go('drules')",'b')}${T_('🎓','গ্রেড নির্ধারণ ও বোর্ড পরীক্ষা','কত নম্বরে কোন গ্রেড, বোর্ডের ফল',"go('dgrade')",'b')}
+ ${T_('🗓️','শিক্ষাবর্ষ','বছরের শুরু ও শেষ',"go('dyear')",'b')}${T_('🔑','পিন ব্যবস্থাপনা','উস্তাদ, অফিস ও অন্যদের পিন',"go('dtch')",'b')}</div>
+ <div class="sec">অন্যান্য</div><div class="dts">
+ ${T_('🏫','মাদ্রাসার তথ্য','নাম, ঠিকানা, ফোন',"go('dinfo')",'p')}${T_('🕘','প্রবেশের খাতা','কে কখন ঢুকেছেন',"go('dlog')",'p')}${T_('💾','ব্যাকআপ','হিসাবের কপি রাখা',"go('dbak')",'p')}</div></div>`}
+
+/* ---------- পরীক্ষার নম্বর প্রদান ---------- */
+const EXS=[['কুরআন শরীফ',100],['তালিমুল ইসলাম',50],['তাজবীদ',50]];
+function exLine(ex,sid){const x=S.exams[ex][sid];if(x.ab)return '<span style="color:#A32D2D">অনুপস্থিত</span>';if(x.m.some(v=>v==null))return `${bn(x.m.filter(v=>v!=null).length)} / ৩ বিষয় লেখা হয়েছে`;const t=x.m.reduce((a,b)=>a+b,0);return `মোট <b>${bn(t)}</b> / ২০০ · গড় ${bn(t/2)} · <b style="color:#0F6E56">${grade(t/2)}</b>`}
+function vTexam(){
+ const ex=V.ex||'e2';const g=V.g2||ses.g;S.exams[ex]=S.exams[ex]||{};const E=S.exams[ex];
+ const L=stOf(g);L.forEach(s=>{E[s.id]=E[s.id]||{m:[null,null,null]}});
+ const done=L.filter(s=>E[s.id].ab||!E[s.id].m.some(v=>v==null)).length;const pc=L.length?Math.round(done*100/L.length):0;
+ return topBar('পরীক্ষার নম্বর প্রদান')+`<div class="wrap"><div class="chs" style="margin-bottom:8px">${Object.entries(EXN).map(([k,n])=>`<span class="ch ${k===ex?'on-g':''}" onclick="go('texam',{ex:'${k}',g2:'${g}'})">${n}</span>`).join('')}</div>
+ <div class="chs" style="margin-bottom:10px">${['ক','খ'].map(x=>`<span class="ch ${x===g?'on-b':''}" onclick="go('texam',{ex:'${ex}',g2:'${x}'})">গ্রুপ ${x}</span>`).join('')}</div>
+ <div class="card"><div class="row"><span>নম্বর দেওয়া শেষ</span><b style="text-align:right" id="exdone">${bn(done)} / ${bn(L.length)} জন</b></div><div style="height:8px;background:#eef1f0;border-radius:99px;margin-top:8px;overflow:hidden"><div id="exbar" style="height:100%;width:${pc}%;background:#1D9E75"></div></div></div>
+ ${L.map((s,i)=>{const x=E[s.id];return `<div class="card"><div class="row"><div><b>${bn(i+1)}. ${esc(s.name)}</b><div class="mut">${s.id} · ${esc(s.jamat)}</div></div><span class="ch ${x.ab?'on-r':''}" style="flex:0 0 auto" onclick="${ro()?'':`texAb('${ex}','${s.id}')`}">অনুপস্থিত</span></div>
+ ${x.ab?'':`<div class="row" style="margin-top:6px">${EXS.map(([n,mx],j)=>`<div><label class="l">${n} (${bn(mx)})</label><input inputmode="decimal" style="text-align:center" value="${x.m[j]==null?'':bn(x.m[j])}" onchange="texSet('${ex}','${s.id}',${j},this.value,this)" ${ro()?'disabled':''}></div>`).join('')}</div>`}
+ <div class="mut" style="margin-top:6px" id="tt_${s.id}">${exLine(ex,s.id)}</div>${x.by?`<div class="mut">লিখেছেন ${esc(x.by)}</div>`:''}</div>`}).join('')}
+ <p class="mut">ঘরে নম্বর লিখে পরের ঘরে গেলেই জমা হয় · গ্রেড সঙ্গে সঙ্গে দেখা যায় · দুই উস্তাদই যেকোনো গ্রুপের নম্বর দিতে পারবেন</p></div>`}
+function texSet(ex,sid,j,v,el){let x=parseFloat(en(String(v).trim()));const mx=EXS[j][1];const r=S.exams[ex][sid];
+ if(!isNaN(x)&&(x<0||x>mx)){if(el){el.style.borderColor='#E24B4A';el.value='';}const t=document.getElementById('tt_'+sid);if(t)t.innerHTML=`<span style="color:#A32D2D">${EXS[j][0]}-এ ${bn(mx)}-এর বেশি নম্বর হয় না</span>`;r.m[j]=null;save();return}
+ if(el)el.style.borderColor='';r.m[j]=isNaN(x)?null:x;r.by=(me()||{}).name;save();
+ const t=document.getElementById('tt_'+sid);if(t)t.innerHTML=exLine(ex,sid);
+ const g=V.g2||ses.g;const L=stOf(g);const E=S.exams[ex];const done=L.filter(s=>E[s.id]&&(E[s.id].ab||!E[s.id].m.some(v=>v==null))).length;
+ const d=document.getElementById('exdone');if(d)d.textContent=bn(done)+' / '+bn(L.length)+' জন';const b=document.getElementById('exbar');if(b)b.style.width=(L.length?Math.round(done*100/L.length):0)+'%'}
+
+Object.assign(VIEWS,{plan:vPlan,eval:vEval,office:vOffice,oprint:vOprint,news:vNews,away:vAway,dir:vDir,dcal:vDcal,texam:vTexam});
+
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
-const DEEP={att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
+const DEEP={plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
 const DESC={log:1,alerts:1,beh:1,contact:1};
-const NOPIN={'settings|dirPin':1,'settings|routinePin':1,'settings|subPin':1};
+const NOPIN={'settings|dirPin':1,'settings|routinePin':1,'settings|subPin':1,'settings|officePin':1};
 let SINCE=0,LAST={},READY=false,SENDING=false,AGAIN=false,TMR=null,OC=0,RETRY=null;
 let TOKEN=(()=>{try{return localStorage.getItem('aihm-tok')||''}catch(e){return ''}})();
 const CK='aihm-cache-v1';
@@ -1056,17 +1333,18 @@ async function login(kind,g,pin){const h=await pinHash(kind+'|'+g+'|'+pin);const
   TOKEN=r.token;try{localStorage.setItem('aihm-tok',TOKEN)}catch(e){}A[h]={role:r.role,tid:r.tid||null};try{localStorage.setItem('aihm-auth',JSON.stringify(A))}catch(e){}if(diff().length)flush();return A[h]}
  catch(e){if(e.server)return null;if(A[h])return Object.assign({offline:1},A[h]);return {nonet:1}}}
 function doPin(){const v=en(document.getElementById('pin').value.trim());const e=document.getElementById('perr');if(!v){e.textContent='PIN দিন';return}
- e.textContent='যাচাই হচ্ছে…';const kind=V.to==='dir'?'dir':V.to==='routine'?'routine':'g';const g=V.to==='g'||!V.to?(V.g||''):'';
+ e.textContent='যাচাই হচ্ছে…';const kind=V.to==='dir'?'dir':V.to==='routine'?'routine':V.to==='office'?'office':'g';const g=V.to==='g'||!V.to?(V.g||''):'';
  login(kind,g,v).then(r=>{if(!r){e.textContent='PIN ঠিক হয়নি';return}if(r.nonet){e.textContent='ইন্টারনেট নেই. এই মোবাইলে প্রথমবার ঢুকতে নেট লাগবে.';return}
   if(r.role==='dir'){ses={role:'dir'};S.log.unshift({t:today()+' '+nowT(),w:'পরিচালক'});save();D=today();go('dir')}
   else if(r.role==='routine'){ses={role:'routine'};go('routine')}
+  else if(r.role==='office'){ses={role:'office'};S.log.unshift({t:today()+' '+nowT(),w:'অফিস সহকারী'});save();go('office')}
   else{const t=T(r.tid);ses={role:r.role,tid:r.tid,g:V.g};S.log.unshift({t:today()+' '+nowT(),w:(t?t.name:'')+(r.role==='sub'?' · বদলি':'')+' · গ্রুপ '+V.g});save();D=today();go('g')}})}
 function setPinUI(which,id,inp){const el=document.getElementById(inp);const v=en(el.value.trim());const m=document.getElementById(inp+'_m');
  if(!/^\d{4}$/.test(v)){m.textContent='৪ অঙ্কের PIN দিন';m.style.color='#A32D2D';return}m.textContent='জমা হচ্ছে…';m.style.color='';
  api('setPin',[which,id,v]).then(()=>{el.value='';m.textContent='নতুন PIN জমা হয়েছে';m.style.color='#0F6E56'}).catch(err=>{m.style.color='#A32D2D';m.textContent=err.server?(/taken/.test(err.message)?'এই PIN অন্য কারো, আরেকটা দিন':'আবার কর্তৃপক্ষের PIN দিয়ে ঢুকে চেষ্টা করুন'):'ইন্টারনেট নেই, নেট থাকলে আবার চেষ্টা করুন'})}
 function pinRow(which,id,lab){const k='np_'+which+'_'+(id||'x');return `<div><label class="l">${lab}</label><div class="row"><input id="${k}" type="password" inputmode="numeric" maxlength="4" placeholder="নতুন PIN"><button class="btn s" style="flex:0 0 auto" onclick="setPinUI('${which}','${id||''}','${k}')">বদলান</button></div><div class="mut" id="${k}_m"></div></div>`}
 
-const _go=go;go=function(p,o){_go(p,o);if(['home','g','dir','dtoday'].includes(p))refresh()};
+const _go=go;go=function(p,o){_go(p,o);if(['home','g','dir','dtoday','office','news','away'].includes(p))refresh()};
 const _render=render;render=function(){if(!READY){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#55615c">তথ্য আনা হচ্ছে…</div>';return}_render()};
 function boot(){let C=null;try{C=JSON.parse(localStorage.getItem(CK)||'null')}catch(e){}
  if(C&&C.rows){build(C.rows);LAST=Object.assign({},C.rows);Object.keys(C.ld||{}).forEach(p=>{if(C.ld[p]===null)delete LAST[p];else LAST[p]=C.ld[p]});SINCE=C.since||0;READY=true;render();
