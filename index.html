@@ -1232,21 +1232,24 @@ function liveAlerts(){
  S.fines.filter(f=>!f.paid).forEach(f=>out.push(['y',`${G(f.sid)}: জরিমানা ${bn(f.amt)} টাকা বাকি`]));
  S.students.filter(s=>s.probation&&!s.probation.dec&&s.probation.to<=k).forEach(s=>out.push(['y',`${s.name}: পর্যবেক্ষণকাল শেষ, সিদ্ধান্ত দিন`]));
  return out}
-function lesDigest(g,k){const Ds=D;D=k;const Ls=stOf(g);const R=S.les[k]||{};const rows={};
+function onlyG(g){return S.students.filter(s=>s.group===g&&s.status!=='out')}
+function lesDigest(g,k){const Ds=D;D=k;const Ls=onlyG(g);const R=S.les[k]||{};const rows={};
  Ls.forEach(s=>{const off=awayOn(s.id,k)||(absentNow(s.id,k)?'A':null);const kp=kpOn(s.id,k);const base=baseKinds(s);
   (kp?['kp']:base).forEach(kd=>{const r=rows[kd]=rows[kd]||{ok:0,no:0,off:0,nh:0};if(off){r.off++;return}if(kd!=='kp'&&planOff(s.id,kd,k)){r.off++;return}const x=(R[s.id]||{})[kd];if(x&&x.st===2)x.ok?r.ok++:r.no++;else if(x&&x.st===3)r.off++;else r.nh++})});
  D=Ds;const ks=['sabak','sat','amu','tk','kp'].filter(x=>rows[x]);
  if(!ks.length)return '<div class="mut">আজ পড়া নেই</div>';
  return `<table class="dg"><tr><th></th><th>শুনিয়েছে</th><th>পারেনি</th><th>বন্ধ/নেই</th><th>শোনায়নি</th></tr>${ks.map(x=>{const r=rows[x];return `<tr><td>${KN[x]}</td><td>${bn(r.ok)}</td><td style="${r.no?'color:#A32D2D':''}">${bn(r.no)}</td><td>${bn(r.off)}</td><td style="${r.nh?'color:#A32D2D;font-weight:600':''}">${bn(r.nh)}</td></tr>`}).join('')}</table>`}
-function eveDigest(g,k){const Ls=stOf(g);const T=S.til[k]||{};const on=Ls.filter(s=>!(awayOn(s.id,k)||absentNow(s.id,k)));
+function eveDigest(g,k){const Ls=onlyG(g);const T=S.til[k]||{};const on=Ls.filter(s=>!(awayOn(s.id,k)||absentNow(s.id,k)));
  const tn=on.filter(s=>(T[s.id]||{}).namaz===1).length,tt=on.filter(s=>(T[s.id]||{}).til===1).length;const A=S.att[k]||{};
  const at=sk=>{const x=(A[sk]||{})[sk==='n'?'all':g];return x?'<span style="color:#0F6E56">নেওয়া হয়েছে</span>':'<span style="color:#A32D2D">নেওয়া হয়নি</span>'};
  const sn=Object.keys(S.sent[k]||{}).filter(id=>on.some(s=>s.id===id)).length;
- return `<table class="dg"><tr><td>নামাজে তিলাওয়াত</td><td>${bn(tn)} / ${bn(on.length)}</td></tr><tr><td>তিলাওয়াত</td><td>${bn(tt)} / ${bn(on.length)}</td></tr><tr><td>আসরের হাজিরা</td><td>${at('a')}</td></tr><tr><td>মাগরিবের হাজিরা</td><td>${at('m')}</td></tr><tr><td>রাতের হাজিরা</td><td>${at('n')}</td></tr><tr><td>অভিভাবক বার্তা</td><td>${bn(sn)} / ${bn(on.length)}</td></tr></table>`}
+ return `<table class="dg"><tr><td>নামাজে তিলাওয়াত</td><td>${bn(tn)} / ${bn(on.length)}</td></tr><tr><td>তিলাওয়াত</td><td>${bn(tt)} / ${bn(on.length)}</td></tr>${g==='both'?'':`<tr><td>আসরের হাজিরা</td><td>${at('a')}</td></tr><tr><td>মাগরিবের হাজিরা</td><td>${at('m')}</td></tr><tr><td>রাতের হাজিরা</td><td>${at('n')}</td></tr>`}<tr><td>অভিভাবক বার্তা</td><td>${bn(sn)} / ${bn(on.length)}</td></tr></table>`}
 function digestCards(k){const t=hm(),isT=k===today();const sh2=!isT||t>='14:00',sh11=!isT||t>='23:00';
- const grpH=(g,f)=>{const tc=gTeacher(g);const n=stOf(g).length;return `<div style="font-weight:600;margin:8px 0 4px;color:${g==='ক'?'#085041':'#0C447C'}">গ্রুপ ${g} · মোট ${bn(n)} জন${tc?' · '+esc(tc.name):''}</div>${f(g,k)}`};
- return `<div class="card"><div class="row"><b>দুপুর ২টার হিসাব</b><span class="mut" style="text-align:right">ভোর থেকে দুপুর ২টা</span></div>${sh2?grpH('ক',lesDigest)+grpH('খ',lesDigest):'<div class="mut" style="margin-top:6px">দুপুর ২টায় সকালের পড়ার হিসাব এখানে আসবে</div>'}</div>
- <div class="card"><div class="row"><b>রাত ১১টার হিসাব</b><span class="mut" style="text-align:right">দুপুর ২টা থেকে রাত</span></div>${sh11?grpH('ক',eveDigest)+grpH('খ',eveDigest):'<div class="mut" style="margin-top:6px">রাত ১১টায় দুপুরের পরের হিসাব এখানে আসবে</div>'}</div>`}
+ const grpH=(g,f)=>{const n=onlyG(g).length;if(!n)return '';const tc=g==='both'?null:gTeacher(g);return `<div style="font-weight:600;margin:8px 0 4px;color:${g==='ক'?'#085041':g==='খ'?'#0C447C':'#534AB7'}">${g==='both'?'তাকমিল':'গ্রুপ '+g} · ${bn(n)} জন${tc?' · '+esc(tc.name):''}</div>${f(g,k)}`};
+ const all=['ক','খ','both'].map(g=>onlyG(g).length);const tot=`<div class="mut" style="margin-top:4px">মোট শিক্ষার্থী ${bn(all[0]+all[1]+all[2])} জন (গ্রুপ ক ${bn(all[0])} · গ্রুপ খ ${bn(all[1])}${all[2]?' · তাকমিল '+bn(all[2]):''})</div>`;
+ const G3=f=>['ক','খ','both'].map(g=>grpH(g,f)).join('');
+ return `<div class="card"><div class="row"><b>দুপুর ২টার হিসাব</b><span class="mut" style="text-align:right">ভোর থেকে দুপুর ২টা</span></div>${tot}${sh2?G3(lesDigest):'<div class="mut" style="margin-top:6px">দুপুর ২টায় সকালের পড়ার হিসাব এখানে আসবে</div>'}</div>
+ <div class="card"><div class="row"><b>রাত ১১টার হিসাব</b><span class="mut" style="text-align:right">দুপুর ২টা থেকে রাত</span></div>${tot}${sh11?G3(eveDigest):'<div class="mut" style="margin-top:6px">রাত ১১টায় দুপুরের পরের হিসাব এখানে আসবে</div>'}</div>`}
 function vDir(){
  const al=liveAlerts().filter(a=>a[0]==='r');const dueF=S.fines.filter(f=>!f.paid).length;
  const T_=(ic,n,sm,go_,c,dot)=>{const col={g:['#E1F5EE','#0F6E56'],b:['#E6F1FB','#185FA5'],p:['#EEEDFE','#534AB7'],y:['#FAEEDA','#854F0B']}[c];return `<div class="dt" onclick="${go_}"><div class="ic" style="background:${col[0]};color:${col[1]}">${ic}</div><div><b>${n}</b><small>${sm}</small>${dot?`<small style="color:#A32D2D">${dot}</small>`:''}</div></div>`};
