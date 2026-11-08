@@ -292,6 +292,7 @@ function vLesOne(s){
  const ks=offNow(s.id)?[]:visKinds(s);S.les[D]=S.les[D]||{};const r=S.les[D][s.id]=S.les[D][s.id]||{};
  const nc=((S.nocls[D]||{})[ses.g]||{items:[]}).items;
  const cards=ks.map(k=>{
+  if(lesClosed(s,k))return lesSummary(s,k,r[k]);
   const x=r[k]||{st:0};const lim=limits(s,k);const nm=KN[k];
   if(nc.includes(nm)||(k==='tk'&&nc.includes('আমুখতা')))return `<div class="card"><b>${nm}</b><div class="ban y" style="margin:8px 0 0">আজ ${nm}: ক্লাস হয়নি</div></div>`;
   const offBtn=(k!=='tk'&&!ro())?`<button class="btn s" onclick="lesOff('${s.id}','${k}')">${x.st===3?'খুলুন':nm+' বন্ধ'}</button>`:'';
@@ -1038,8 +1039,16 @@ function kindsFor(s){const ks=baseKinds(s);if(!ks.length)return ks;if(kpOn(s.id,
 function visKinds(s){const ks=kindsFor(s);const w=curWin();if(!w||ALLK)return ks;return ks.filter(k=>k===w||k==='kp'||(k==='tk'&&w==='amu'))}
 function lesWinBan(){if(D!==today())return '';const w=curWin(),W=lwin();
  const sw=`<span style="text-decoration:underline;cursor:pointer;white-space:nowrap" onclick="ALLK=!ALLK;render()">${ALLK?'শুধু এখনকার পড়া':'সব পড়া দেখান'}</span>`;
- if(!w)return `<div class="ban b">এখন কোনো পড়ার নির্ধারিত সময় নয় · সব পড়া দেখা যাচ্ছে</div>`;
+ if(!w)return `<div class="ban b">এখন কোনো পড়ার নির্ধারিত সময় নয় · আজকের হিসাব বন্ধ আকারে দেখা যাচ্ছে · বদলাতে হলে "বদলান" চাপুন</div>`;
  return `<div class="ban g" style="display:flex;justify-content:space-between;gap:8px"><span>এখন <b>${KN[w]}</b>-এর সময় (${tmBn(W[w][0])} – ${tmBn(W[w][1])})${ALLK?'':' · শুধু '+KN[w]+' দেখা যাচ্ছে'}</span>${sw}</div>`}
+function winOpen(k){const w=curWin();return w===k||(k==='kp'&&!!w)||(k==='tk'&&w==='amu')}
+function lesClosed(s,k){if(D!==today()||ro())return false;if(tmp.op&&tmp.op[s.id+k])return false;return !winOpen(k)}
+function lesSummary(s,k,x){const nm=KN[k];const lim=limits(s,k);let st;
+ if(!x)st='<span class="mut">এখনো শোনানো হয়নি</span>';
+ else if(x.st===3)st=`<b style="color:#854F0B">আজ বন্ধ</b>${x.reason?' · কারণ: '+esc(x.reason):''}`;
+ else if(x.st===1)st='<span style="color:#854F0B">শুরু হয়েছে, শেষ হয়নি</span>';
+ else st=`${x.para?bn(x.para)+' পারা · ':''}${esc(x.page||'')}<br>${lim.lok!==null?'লোকমা '+bn(x.l||0)+' · ':''}দোহরানো ${bn(x.d||0)} · <b style="color:${x.ok?'#0F6E56':'#A32D2D'}">${x.ok?'পেরেছে':'পারেনি'}</b>${x.t1?` <span class="mut">· ${x.t1}${x.t2?' – '+x.t2:''}</span>`:''}`;
+ return `<div class="card" style="background:#fafcfb"><div class="row" style="align-items:center"><div><b style="font-size:15px">${nm}</b><div style="font-size:14px;margin-top:4px">${st}</div></div><button class="btn s" style="flex:0 0 auto" onclick="tmp.op=tmp.op||{};tmp.op['${s.id+k}']=1;render()">${x?'বদলান':'লিখুন'}</button></div></div>`}
 function planKinds(s){return (s.type==='takmil'?['tk']:['sabak','sat','amu']).concat(['kp'])}
 function daysLeft(to){return Math.round((pk(to)-pk(today()))/864e5)+1}
 function vPlan(){
