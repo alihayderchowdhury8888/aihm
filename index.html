@@ -235,8 +235,8 @@ function vAtt(){
  const L=isN?S.students.filter(s=>s.status!=='out'):stOf(g);
  const sk=isN?'all':g;
  const rec=((S.att[D]||{})[cur]||{})[sk];
- if(!tmp.a||tmp.slot!==cur){tmp.slot=cur;tmp.a={};tmp.r={};L.forEach(s=>{const aw=awayOn(s.id,D);const o=rec&&rec.list[s.id];tmp.a[s.id]=aw||(o?o.v:'P');tmp.r[s.id]=o?o.r||'':''})}
- const rows=L.map(s=>{const v=tmp.a[s.id],aw=awayOn(s.id,D);
+ if(!tmp.a||tmp.slot!==cur){tmp.slot=cur;tmp.a={};tmp.r={};L.forEach(s=>{const aw=attAw(s.id);const o=rec&&rec.list[s.id];tmp.a[s.id]=(aw==='M'?'S':aw)||(o?o.v:'P');tmp.r[s.id]=o?o.r||'':''})}
+ const rows=L.map(s=>{const v=tmp.a[s.id],aw=attAw(s.id);
   if(aw)return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div><span class="tag y">${awL(aw)}</span></div>`;
   return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div>
   <span class="ch ${v==='P'?'on-g':''}" onclick="${ro()?'':`tmp.a['${s.id}']=tmp.a['${s.id}']==='P'?'':'P';render()`}">উপস্থিত</span><span class="ch ${v==='A'?'on-r':''}" onclick="${ro()?'':`tmp.a['${s.id}']=tmp.a['${s.id}']==='A'?'':'A';render()`}">অনুপস্থিত</span>
@@ -759,7 +759,7 @@ function vDir(){
 function vDtoday(){
  const k=D;const al=k===today()?liveAlerts():S.alerts.filter(a=>a.date===k).map(a=>[a.kind,a.txt]);
  const all=S.students.filter(s=>s.status!=='out');let P=0,L=0,Sk=0,A=0,U=0;
- all.forEach(s=>{const aw=awayOn(s.id,k);if(aw){aw==='L'?L++:aw==='R'?A++:Sk++;return}let v=null;for(const g of stuGroups(s)){const z=((S.att[k]||{})[dow(k)===5?'ja':'z']||{})[g];if(z&&z.list[s.id]){v=z.list[s.id].v;break}}if(v==='P')P++;else if(v==='A')A++;else U++});
+ all.forEach(s=>{const aw=awayOn(s.id,k)||(msickOn(s.id,k)?'S':null);if(aw){aw==='L'?L++:aw==='R'?A++:Sk++;return}let v=null;for(const g of stuGroups(s)){const z=((S.att[k]||{})[dow(k)===5?'ja':'z']||{})[g];if(z&&z.list[s.id]){v=z.list[s.id].v;break}}if(v==='P')P++;else if(v==='A')A++;else U++});
  const sl=slotsFor(k);const cell=(sk,g)=>{const x=((S.att[k]||{})[sk]||{})[g];return x?`<span style="color:#0F6E56">${x.at}</span>`:'<span style="color:#A32D2D">নেওয়া হয়নি</span>'};
  const grp=g=>{const Ls=stOf(g);const R=S.les[k]||{};let heard=0,no=0,red=0,off=0;const R0=S.settings.rules;
   Ls.forEach(s=>{const r=R[s.id]||{};let any=false;Object.keys(r).forEach(kd=>{const x=r[kd];if(x.st===2){any=true;if(!x.ok)no++;const lim=limits(s,kd);if((lim.lok!==null&&x.l>lim.lok)||x.d>lim.doh)red++}if(x.st===3)off++});if(any)heard++});
@@ -1025,7 +1025,8 @@ function logA(txt,kind){const g=ses&&ses.g?'গ্রুপ '+ses.g+' · ':'';S.
 function absentNow(sid,k){k=k||D;const A=S.att[k]||{};let v=null;
  slotsFor(k).forEach(([sl])=>{const z=A[sl]||{};Object.keys(z).forEach(g=>{const x=z[g];if(x&&x.list&&x.list[sid])v=x.list[sid].v})});return v==='A'}
 function offNow(sid){return awayOn(sid,D)||(absentNow(sid,D)?'A':null)}
-function awL(c){return {L:'ছুটিতে',S:'অসুস্থ হয়ে বাড়িতে',R:'পালিয়ে গেছে',A:'অনুপস্থিত'}[c]||''}
+function awL(c){return {L:'ছুটিতে',S:'অসুস্থ হয়ে বাড়িতে',R:'পালিয়ে গেছে',A:'অনুপস্থিত',M:'মাদ্রাসায় অসুস্থ'}[c]||''}
+function attAw(sid){return awayOn(sid,D)||(msickOn(sid,D)?'M':null)}
 function msickOn(sid,k){return S.away.find(a=>a.sid===sid&&a.type==='msick'&&k>=a.from&&(!a.closed||k<a.closed))||null}
 
 /* ---------- পড়া সাজানো: বন্ধ ও কাঁচা পারা ---------- */
