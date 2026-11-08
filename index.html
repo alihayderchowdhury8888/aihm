@@ -769,6 +769,7 @@ function vDtoday(){
   <div class="li"><span class="n">মশক</span><b>${m?(m.off?'<span style="color:#A32D2D">হয়নি</span>':m.end?'হয়েছে':'চলছে'):'লেখা হয়নি'}</b></div><div class="li"><span class="n">অভিভাবকদের খবর পাঠানো</span><b>${bn(sn)} / ${bn(Ls.length)}</b></div></div>`};
  return dirTop('আজকের অবস্থা')+`<div class="wrap">${dateBar()}
  <div class="sec" style="color:#A32D2D;margin-top:4px">১. সতর্কতা</div>${al.map(a=>`<div class="ban ${a[0]==='y'?'y':'r'}">${esc(a[1])}</div>`).join('')||'<div class="card mut">কোনো সতর্কতা নেই</div>'}
+ <div class="sec">পড়ার হিসাব</div>${dgCss()}${digestCards(k)}
  <div class="sec">২. মোট হাজিরা (${dow(k)===5?'জুমা':'জোহর'})</div><div class="tiles" style="grid-template-columns:repeat(5,1fr);gap:6px">${[['মোট',all.length,''],['উপস্থিত',P,'#0F6E56'],['ছুটি',L,'#854F0B'],['অসুস্থ',Sk,'#854F0B'],['অনুপস্থিত',A,'#A32D2D']].map(([n,v,c])=>`<div class="card" style="margin:0;padding:8px 2px;text-align:center"><b style="font-size:18px;color:${c||'inherit'}">${bn(v)}</b><div class="mut">${n}</div></div>`).join('')}</div>${U?`<p class="mut">হিসাব লেখা হয়নি: ${bn(U)} জন</p>`:''}
  <div class="sec">৩. বেলাভিত্তিক হাজিরা</div><div class="card"><div class="li"><span class="n mut">বেলা</span><span class="mut" style="width:90px;text-align:center">গ্রুপ ক</span><span class="mut" style="width:90px;text-align:center">গ্রুপ খ</span></div>
  ${sl.map(([sk,n])=>sk==='n'?`<div class="li"><span class="n">${n}</span><span style="width:180px;text-align:center">${cell('n','all')}</span></div>`:`<div class="li"><span class="n">${n}</span><span style="width:90px;text-align:center;font-size:13px">${cell(sk,'ক')}</span><span style="width:90px;text-align:center;font-size:13px">${cell(sk,'খ')}</span></div>`).join('')}</div>
@@ -1242,9 +1243,8 @@ function vDir(){
  const T_=(ic,n,sm,go_,c,dot)=>{const col={g:['#E1F5EE','#0F6E56'],b:['#E6F1FB','#185FA5'],p:['#EEEDFE','#534AB7'],y:['#FAEEDA','#854F0B']}[c];return `<div class="dt" onclick="${go_}"><div class="ic" style="background:${col[0]};color:${col[1]}">${ic}</div><div><b>${n}</b><small>${sm}</small>${dot?`<small style="color:#A32D2D">${dot}</small>`:''}</div></div>`};
  return `<style>.dg{width:100%;border-collapse:collapse;font-size:13px}.dg th{font-weight:400;color:#6b7772;font-size:12px;text-align:center;padding:3px}.dg td{padding:4px 3px;text-align:center;border-top:1px solid #eef1f0}.dg td:first-child{text-align:left}.dts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dt{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;cursor:pointer}.dt .ic{flex:0 0 32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}.dt b{display:block;font-size:13px;line-height:1.3}.dt small{display:block;font-size:11px;color:#6b7772;line-height:1.35;margin-top:2px}</style>
  <div class="top"><button class="btn s" onclick="ses=null;go('home')">বের হন</button><div class="t"><b>কর্তৃপক্ষ</b><span>${dBn(today())}</span></div></div><div class="wrap">
- <div class="sec" style="margin-top:4px;color:#A32D2D">জরুরি</div>${al.length?`<div class="card" style="background:#FCEBEB;border-color:#F09595">${al.map(a=>`<div style="color:#791F1F;padding:3px 0;font-size:14px">• ${esc(a[1])}</div>`).join('')}</div>`:'<div class="card mut">এখন জরুরি কিছু নেই</div>'}
- <div class="sec">পড়ার হিসাব</div>${digestCards(today())}
- <div class="big" style="background:#E6F1FB;border-color:#85B7EB;margin-top:4px" onclick="D=today();go('dtoday')"><div class="ic" style="background:#378ADD">📋</div><div style="flex:1"><b style="color:#0C447C">আজকের পুরো অবস্থা</b><div style="font-size:12px;color:#185FA5">হাজিরা, প্রতি বেলা, উস্তাদ, সব সতর্কতা</div></div><span style="color:#185FA5">›</span></div>
+ <div class="big" style="background:#FCEBEB;border-color:#F09595;margin-top:4px" onclick="D=today();go('dtoday')"><div class="ic" style="background:#E24B4A">⚠️</div><div style="flex:1"><b style="color:#791F1F">আজকের অবস্থা</b><div style="font-size:12px;color:#A32D2D">${al.length?bn(al.length)+'টি জরুরি বিষয় · ':''}পড়ার হিসাব, হাজিরা, উস্তাদ</div></div><span style="color:#A32D2D">›</span></div>
+ <div class="big" style="background:#E1F5EE;border-color:#5DCAA5;margin-top:8px" onclick="tmp={};go('admit')"><div class="ic" style="background:#0F6E56">➕</div><div style="flex:1"><b style="color:#085041">নতুন ভর্তি</b><div style="font-size:12px;color:#0F6E56">নতুন শিক্ষার্থী ভর্তি করুন</div></div><span style="color:#0F6E56">›</span></div>
  <div class="sec">গ্রুপের পাতা</div><div class="row" style="margin-bottom:4px"><button class="btn" onclick="ses={role:'dir',g:'ক'};tmp={};D=today();go('g')">গ্রুপ ক</button><button class="btn" onclick="ses={role:'dir',g:'খ'};tmp={};D=today();go('g')">গ্রুপ খ</button></div>
  <div class="sec">রিপোর্ট ও হিসাব</div><div class="dts">
  ${T_('📋','মাসিক রিপোর্ট','প্রত্যেক শিক্ষার্থীর মাসের হিসাব',"go('drep',{mode:'m'})",'g')}${T_('📊','বাৎসরিক রিপোর্ট','সারা বছরের অগ্রগতি',"go('drep',{mode:'y'})",'g')}
@@ -1252,7 +1252,7 @@ function vDir(){
  ${T_('💰','জরিমানা','বাকি ও আদায়',"go('dfine')",'g',dueF?bn(dueF)+'টি বাকি':'')}${T_('⭐','আচরণ','শিক্ষার্থীদের আচরণের খাতা',"go('dbeh')",'g')}
  ${T_('📝','পরীক্ষা প্রস্তুতি প্রশ্নপত্র','পরীক্ষার আগে অনুশীলনের প্রশ্ন',"go('dprepq')",'g')}${T_('🗄️','অফিস সহকারী','রিপোর্ট প্রিন্ট ও স্বাক্ষর ফেরত',"go('office')",'g')}</div>
  <div class="sec">ঠিক করার জায়গা</div><div class="dts">
- ${T_('➕','ভর্তি ও শিক্ষার্থী তথ্য','নতুন ভর্তি, সবার তথ্য দেখা ও বদলানো',"go('dstu')",'b')}${T_('📅','ক্যালেন্ডার','মাসিক, ঈদ ও পরীক্ষার ছুটি',"go('dcal')",'b')}
+ ${T_('📇','ভর্তি ও শিক্ষার্থী তথ্য','সবার তথ্য দেখা ও বদলানো',"go('dstu')",'b')}${T_('📅','ক্যালেন্ডার','মাসিক, ঈদ ও পরীক্ষার ছুটি',"go('dcal')",'b')}
  ${T_('⏰','রুটিন','দিনের সময়সূচি ও পড়ার সময়',"go('routine')",'b')}${T_('📢','নোটিশ বোর্ড','উস্তাদদের জন্য বিজ্ঞপ্তি',"go('dspec')",'b')}
  ${T_('⚙️','পাঠ ও ছুটি নীতিমালা','লোকমা-দোহরানোর সীমা, দরখাস্ত ও জরিমানা',"go('drules')",'b')}${T_('🎓','গ্রেড নির্ধারণ ও বোর্ড পরীক্ষা','কত নম্বরে কোন গ্রেড, বোর্ডের ফল',"go('dgrade')",'b')}
  ${T_('🗓️','শিক্ষাবর্ষ','বছরের শুরু ও শেষ',"go('dyear')",'b')}${T_('🔑','পিন ব্যবস্থাপনা','উস্তাদ, অফিস ও অন্যদের পিন',"go('dtch')",'b')}</div>
@@ -1280,6 +1280,7 @@ function texSet(ex,sid,j,v,el){let x=parseFloat(en(String(v).trim()));const mx=E
  const g=V.g2||ses.g;const L=stOf(g);const E=S.exams[ex];const done=L.filter(s=>E[s.id]&&(E[s.id].ab||!E[s.id].m.some(v=>v==null))).length;
  const d=document.getElementById('exdone');if(d)d.textContent=bn(done)+' / '+bn(L.length)+' জন';const b=document.getElementById('exbar');if(b)b.style.width=(L.length?Math.round(done*100/L.length):0)+'%'}
 
+function dgCss(){return '<style>.dg{width:100%;border-collapse:collapse;font-size:13px}.dg th{font-weight:400;color:#6b7772;font-size:12px;text-align:center;padding:3px}.dg td{padding:4px 3px;text-align:center;border-top:1px solid #eef1f0}.dg td:first-child{text-align:left}</style>'}
 Object.assign(VIEWS,{plan:vPlan,eval:vEval,office:vOffice,oprint:vOprint,news:vNews,away:vAway,dir:vDir,dcal:vDcal,texam:vTexam});
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
