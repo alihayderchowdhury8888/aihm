@@ -1300,7 +1300,7 @@ const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgq
 const DEEP={plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
 const DESC={log:1,alerts:1,beh:1,contact:1};
 const NOPIN={'settings|dirPin':1,'settings|routinePin':1,'settings|subPin':1,'settings|officePin':1};
-let SINCE=0,LAST={},READY=false,SENDING=false,AGAIN=false,TMR=null,OC=0,RETRY=null;
+let FULL=false,SINCE=0,LAST={},READY=false,SENDING=false,AGAIN=false,TMR=null,OC=0,RETRY=null;
 let TOKEN=(()=>{try{return localStorage.getItem('aihm-tok')||''}catch(e){return ''}})();
 const CK='aihm-cache-v1';
 function api(fn,args){return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn,args,token:TOKEN})}).then(r=>r.json()).then(j=>{if(j.error){const e=new Error(j.error);e.server=1;throw e}return j.result})}
@@ -1322,7 +1322,21 @@ function build(rows){const base=seed();delete base.settings.dirPin;delete base.s
  base.teachers.forEach(t=>delete t.pin);
  S=base}
 function diff(){const F=flat(),P=[];Object.keys(F).forEach(p=>{if(F[p]!==LAST[p])P.push({p,v:F[p]})});Object.keys(LAST).forEach(p=>{if(!(p in F))P.push({p,v:null})});return P}
-function cacheSave(){if(!READY)return;try{const F=flat(),ld={};Object.keys(F).forEach(p=>{if(F[p]!==LAST[p])ld[p]=p in LAST?LAST[p]:null});Object.keys(LAST).forEach(p=>{if(!(p in F))ld[p]=LAST[p]});localStorage.setItem(CK,JSON.stringify({rows:F,ld,since:SINCE}))}catch(e){}}
+/* ফোনে শুধু এই মাস ও আগের মাসের তথ্য থাকে; পুরোনো সব তথ্য গুগল শিটে */
+const DATED={att:1,les:1,til:1,shab:1,mashq:1,kitab:1,ret:1,nocls:1,sent:1,given:1,target:1,tgWhy:1};
+function cutoff(){const d=new Date();return key(new Date(d.getFullYear(),d.getMonth()-1,1))}
+function isOld(p,v,c){const m=p.match(/^([^#|\/]+)\|(\d{4}-\d{2}(?:-\d{2})?)\|/);if(m&&DATED[m[1]])return m[2].length===7?m[2]<c.slice(0,7):m[2]<c;
+ const a=p.match(/^(log|alerts)#(.+)$/);if(a&&v){try{const x=JSON.parse(v);const d=x.date||(x.t||'').slice(0,10);return !!d&&d<c}catch(e){}}return false}
+function trimRows(R){const c=cutoff(),o={};Object.keys(R).forEach(p=>{if(!isOld(p,R[p],c))o[p]=R[p]});return o}
+function cacheSave(){if(!READY)return;try{const c=cutoff();const F=flat(),ld={},rows={};
+ Object.keys(F).forEach(p=>{const pend=F[p]!==LAST[p];if(pend)ld[p]=p in LAST?LAST[p]:null;if(pend||!isOld(p,F[p],c))rows[p]=F[p]});
+ Object.keys(LAST).forEach(p=>{if(!(p in F))ld[p]=LAST[p]});
+ localStorage.setItem(CK,JSON.stringify({rows,ld,since:SINCE}))}catch(e){}}
+function ensureFull(cb){if(FULL)return cb&&cb();syncMsg('পুরোনো হিসাব গুগল শিট থেকে আনা হচ্ছে…','y');
+ api('loadSince',[0]).then(r=>{const L=flat();const M=Object.assign({},r.rows);
+  Object.keys(L).forEach(p=>{if(L[p]!==LAST[p])M[p]=L[p]});Object.keys(LAST).forEach(p=>{if(!(p in L))delete M[p]});
+  build(M);LAST=Object.assign({},r.rows);SINCE=r.now;FULL=true;syncMsg('','g');cb&&cb()})
+ .catch(()=>{syncMsg('ইন্টারনেট নেই · শুধু গত দুই মাসের হিসাব দেখা যাচ্ছে','y');cb&&cb()})}
 function syncMsg(t,c){let e=document.getElementById('sync');if(!e){e=document.createElement('div');e.id='sync';e.className='noprint';e.style.cssText='position:fixed;bottom:8px;left:50%;transform:translateX(-50%);font-size:12px;padding:4px 12px;border-radius:99px;z-index:9;pointer-events:none;max-width:92%;text-align:center';document.body.appendChild(e)}
  e.textContent=t;e.style.background=c==='r'?'#FCEBEB':c==='y'?'#FAEEDA':'#E1F5EE';e.style.color=c==='r'?'#791F1F':c==='y'?'#633806':'#085041';e.style.display=t?'block':'none';if(c==='g')setTimeout(()=>{if(e.textContent===t)e.style.display='none'},1500)}
 function save(){if(!READY)return;clearTimeout(TMR);TMR=setTimeout(()=>{cacheSave();flush()},500)}
@@ -1358,13 +1372,14 @@ function setPinUI(which,id,inp){const el=document.getElementById(inp);const v=en
  api('setPin',[which,id,v]).then(()=>{el.value='';m.textContent='নতুন PIN জমা হয়েছে';m.style.color='#0F6E56'}).catch(err=>{m.style.color='#A32D2D';m.textContent=err.server?(/taken/.test(err.message)?'এই PIN অন্য কারো, আরেকটা দিন':'আবার কর্তৃপক্ষের PIN দিয়ে ঢুকে চেষ্টা করুন'):'ইন্টারনেট নেই, নেট থাকলে আবার চেষ্টা করুন'})}
 function pinRow(which,id,lab){const k='np_'+which+'_'+(id||'x');return `<div><label class="l">${lab}</label><div class="row"><input id="${k}" type="password" inputmode="numeric" maxlength="4" placeholder="নতুন PIN"><button class="btn s" style="flex:0 0 auto" onclick="setPinUI('${which}','${id||''}','${k}')">বদলান</button></div><div class="mut" id="${k}_m"></div></div>`}
 
-const _go=go;go=function(p,o){_go(p,o);if(['home','g','dir','dtoday','office','news','away'].includes(p))refresh()};
+const FULLV=['drep','dtrep','office','oprint','trep','dbak','dlog','exam'];
+const _go=go;go=function(p,o){_go(p,o);if(FULLV.includes(p)&&!FULL)ensureFull(()=>{if(V.p===p)render()});if(['home','g','dir','dtoday','office','news','away'].includes(p))refresh()};
 const _render=render;render=function(){if(!READY){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#55615c">তথ্য আনা হচ্ছে…</div>';return}_render()};
 function boot(){let C=null;try{C=JSON.parse(localStorage.getItem(CK)||'null')}catch(e){}
  if(C&&C.rows){build(C.rows);LAST=Object.assign({},C.rows);Object.keys(C.ld||{}).forEach(p=>{if(C.ld[p]===null)delete LAST[p];else LAST[p]=C.ld[p]});SINCE=C.since||0;READY=true;render();
   pull((err,rows)=>{if(err){syncMsg('ইন্টারনেট নেই · মোবাইলে রাখা হিসাব দেখাচ্ছে','y');setTimeout(refresh,15000);return}const ch=applyRemote(rows);cacheSave();if(ch&&!busy())render();if(diff().length)flush()})}
  else{render();pull((err,rows)=>{if(err){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#A32D2D">প্রথমবার খুলতে ইন্টারনেট লাগবে. নেট চালু করে আবার খুলুন.</div>';setTimeout(boot,15000);return}
-  build(rows);LAST=Object.assign({},rows);READY=true;cacheSave();render();if(diff().length)flush()})}
+  build(rows);LAST=Object.assign({},rows);FULL=true;READY=true;cacheSave();render();if(diff().length)flush()})}
  window.addEventListener('online',()=>{flush();refresh()});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cacheSave();else refresh()});
  window.addEventListener('pagehide',cacheSave);
