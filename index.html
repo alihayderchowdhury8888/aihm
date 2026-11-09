@@ -306,7 +306,7 @@ function vLesOne(s){
   return `<div class="card">${head}<div class="okm" style="margin-top:2px">শুরু হয়েছে ${x.t1}${x.st===2?' · শেষ '+x.t2:''} · <span style="color:#55615c;text-decoration:underline;cursor:pointer" onclick="delete S.les[D]['${s.id}']['${k}'];save();render()">শুরু বাতিল</span></div>
   <div class="row" style="margin-top:4px"><div><label class="l">পারা</label><input value="${esc(x.para!=null?x.para:d.para)}" oninput="S.les[D]['${s.id}']['${k}'].para=this.value;save()">${d.from&&x.para==null?`<div class="mut" style="color:#0F6E56">${d.from}</div>`:''}</div>
   <div><label class="l">পৃষ্ঠা</label><input value="${esc(x.page!=null?x.page:d.page)}" oninput="S.les[D]['${s.id}']['${k}'].page=this.value;save()"></div></div>
-  ${k==='tk'?`<div class="chs" style="margin-top:8px"><span class="ch ${s.stage!=='full'?'on-b':''}" onclick="SID('${s.id}').stage='half';save();render()">আধা পারা</span><span class="ch ${s.stage==='full'?'on-b':''}" onclick="SID('${s.id}').stage='full';save();render()">এক পারা</span></div>`:''}
+  ${(k==='sp'||k==='sp2')?spChips(s,k,x):''}${k==='tk'?`<div class="chs" style="margin-top:8px"><span class="ch ${s.stage!=='full'?'on-b':''}" onclick="SID('${s.id}').stage='half';save();render()">আধা পারা</span><span class="ch ${s.stage==='full'?'on-b':''}" onclick="SID('${s.id}').stage='full';save();render()">এক পারা</span></div>`:''}
   ${lim.lok!==null?cnt('l','লোকমা',lim.lok):''}${cnt('d','দোহরানো',lim.doh)}
   ${k==='tk'?cnt('q','মোট প্রশ্ন (২–৫)',null)+cnt('qok','পেরেছে',null):''}
   <div class="row" style="margin-top:10px"><button class="btn" style="color:#085041;border-color:#5DCAA5;${x.st===2&&x.ok?'background:#E1F5EE;font-weight:600':''}" onclick="lesFin('${s.id}','${k}',1)">${x.st===2&&x.ok?'✓ ':''}পেরেছে</button><button class="btn" style="color:#791F1F;border-color:#F09595;${x.st===2&&!x.ok?'background:#FCEBEB;font-weight:600':''}" onclick="lesFin('${s.id}','${k}',0)">${x.st===2&&!x.ok?'✓ ':''}পারেনি</button></div></div>`}).join('');
@@ -1302,6 +1302,35 @@ defaults=function(s,kind){
  if(kind==='sabak'){const l=lastLes(s.id,'sabak',D);if(l&&l.para){const n=pgNums(l.page),last=n.length?n[n.length-1]:0;return{para:l.para,page:last?bn(last+1):'',from:'আগের দিন '+bn(l.para)+' পারা'+(l.page?' · '+l.page:'')+' পর্যন্ত হয়েছিল'}}return{para:'',page:'',from:''}}
  if(kind==='sat'){const sb=((S.les[D]||{})[s.id]||{}).sabak;const src=sb&&sb.para?sb:defaults(s,'sabak');const n=pgNums(src.page),first=n.length?n[0]:0;if(src.para&&first>1)return{para:src.para,page:'১ থেকে '+bn(first-1),from:'সবকের পারা থেকে'};return{para:src.para||'',page:'',from:src.para?'সবকের পারা থেকে':''}}
  return _defaults0(s,kind)};
+
+/* ---------- সবকের পারা ---------- */
+KN.sp='সবকের পারা';KN.sp2='সবকের পারা (আমুখতার সময়)';
+const SPP={h1:'প্রথম অর্ধেক',h2:'দ্বিতীয় অর্ধেক',full:'পুরো পারা'};
+function paraPages(p){const n=parseInt(en(p||''))||0;return n===29?24:n===30?25:20}
+function lesBefore(sid,kind,before,cond){const ks=Object.keys(S.les).filter(k=>k<before).sort().reverse();for(const k of ks){const x=(S.les[k][sid]||{})[kind];if(x&&cond(x))return {k,x}}return null}
+/* শেষ পৃষ্ঠা পর্যন্ত সবক পেরেছে, এমন শেষ দিন */
+function spTrigger(sid,day){const l=lesBefore(sid,'sabak',day,x=>x.st===2);if(!l||!l.x.ok||!l.x.para)return null;const n=pgNums(l.x.page);const last=n.length?n[n.length-1]:0;return last>=paraPages(l.x.para)?l:null}
+/* সেই দিনের পর থেকে অংশগুলোর হিসাব (day সহ, চাইলে) */
+function spParts(sid,from,upto,incl){const done={};Object.keys(S.les).filter(k=>k>from&&(incl?k<=upto:k<upto)).sort().forEach(k=>{const r=S.les[k][sid]||{};['sp','sp2'].forEach(q=>{const x=r[q];if(x&&x.st===2&&x.ok&&x.part)done[x.part]=k})});return done}
+function spState(s,day){if(s.type==='takmil')return null;const t=spTrigger(s.id,day);if(!t)return null;const dn=spParts(s.id,t.k,day,false);if(dn.full)return null;return {para:t.x.para,from:t.k,done:dn}}
+function spNext(s,k){const st=spState(s,D);if(!st)return 'h1';const dn=Object.assign({},st.done);if(k==='sp2'){const a=((S.les[D]||{})[s.id]||{}).sp;if(a&&a.st===2&&a.ok&&a.part)dn[a.part]=D}return !dn.h1?'h1':!dn.h2?'h2':'full'}
+const _kindsFor0=kindsFor;
+kindsFor=function(s){const ks=baseKinds(s);if(!ks.length)return ks;if(kpOn(s.id,D))return['kp'];
+ const st=spState(s,D);if(st){const a=((S.les[D]||{})[s.id]||{}).sp;const fullToday=a&&a.st===2&&a.ok&&a.part==='full';return ks.includes('amu')&&!fullToday?['sp','sp2']:['sp']}
+ return ks.filter(k=>!planOff(s.id,k,D))};
+const _winOpen0=winOpen;
+winOpen=function(k){const w=curWin();if(k==='sp')return w==='sat'||w==='sabak';if(k==='sp2')return w==='amu';return _winOpen0(k)};
+const _limits0=limits;
+limits=function(s,kind){if(kind==='sp'||kind==='sp2')return{lok:0,doh:2};return _limits0(s,kind)};
+const _defaults1=defaults;
+defaults=function(s,kind){
+ if(kind==='sp'||kind==='sp2'){const st=spState(s,D);const p=spNext(s,kind);return{para:st?st.para:'',page:SPP[p],part:p,from:st?'সবকের পারা · '+bn(st.para)+' পারা':''}}
+ if(kind==='sabak'){const l=lastLes(s.id,'sabak',D);if(l&&l.para){const n=pgNums(l.page),last=n.length?n[n.length-1]:0;if(last>=paraPages(l.para))return{para:'',page:'১',from:'আগের পারা ('+bn(l.para)+') শেষ · নতুন পারার নম্বর লিখুন'}}}
+ return _defaults1(s,kind)};
+const _lesStart0=lesStart;
+lesStart=function(sid,k){_lesStart0(sid,k);if(k==='sp'||k==='sp2'){const x=S.les[D][sid][k];x.part=defaults(SID(sid),k).part;save();render()}};
+function spSet(sid,k,p){const x=S.les[D][sid][k];x.part=p;x.page=SPP[p];save();render()}
+function spChips(s,k,x){return `<div class="chs" style="margin-top:8px">${Object.keys(SPP).map(p=>`<span class="ch ${x.part===p?'on-b':''}" onclick="spSet('${s.id}','${k}','${p}')">${SPP[p]}</span>`).join('')}</div>`}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
