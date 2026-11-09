@@ -1036,15 +1036,15 @@ function planOf(sid){S.plan=S.plan||{};return S.plan[sid]||{}}
 function planOff(sid,k,day){const o=(planOf(sid).off||{})[k];return o&&day>=o.from&&day<=o.to?o:null}
 function kpOn(sid,day){const p=planOf(sid).kp;return p&&day>=p.from?p:null}
 function kindsFor(s){const ks=baseKinds(s);if(!ks.length)return ks;if(kpOn(s.id,D))return['kp'];return ks.filter(k=>!planOff(s.id,k,D))}
-function visKinds(s){const ks=kindsFor(s);const w=curWin();if(!w||ALLK)return ks;return ks.filter(k=>k===w||k==='kp'||(k==='tk'&&w==='amu'))}
+function visKinds(s){return kindsFor(s)}
 function lesWinBan(){if(D!==today())return '';const w=curWin(),W=lwin();
  const sw=`<span style="text-decoration:underline;cursor:pointer;white-space:nowrap" onclick="ALLK=!ALLK;render()">${ALLK?'শুধু এখনকার পড়া':'সব পড়া দেখান'}</span>`;
  if(!w)return `<div class="ban b">এখন কোনো পড়ার নির্ধারিত সময় নয় · আজকের হিসাব বন্ধ আকারে দেখা যাচ্ছে · বদলাতে হলে "বদলান" চাপুন</div>`;
- return `<div class="ban g" style="display:flex;justify-content:space-between;gap:8px"><span>এখন <b>${KN[w]}</b>-এর সময় (${tmBn(W[w][0])} – ${tmBn(W[w][1])})${ALLK?'':' · শুধু '+KN[w]+' দেখা যাচ্ছে'}</span>${sw}</div>`}
+ return `<div class="ban g">এখন <b>${KN[w]}</b>-এর সময় (${tmBn(W[w][0])} – ${tmBn(W[w][1])}) · দিনের অন্য পড়াগুলো বন্ধ আকারে আছে, বদলাতে হলে "বদলান" চাপুন</div>`}
 function winOpen(k){const w=curWin();return w===k||(k==='kp'&&!!w)||(k==='tk'&&w==='amu')}
 function lesClosed(s,k){if(D!==today()||ro())return false;if(tmp.op&&tmp.op[s.id+k])return false;return !winOpen(k)}
 function lesSummary(s,k,x){const nm=KN[k];const lim=limits(s,k);let st;
- if(!x)st='<span class="mut">এখনো শোনানো হয়নি</span>';
+ if(!x){const d=defaults(s,k);st=(d.para?bn(d.para)+' পারা'+(d.page?' · '+d.page:'')+'<br>':'')+'<span class="mut">এখনো শোনানো হয়নি</span>'}
  else if(x.st===3)st=`<b style="color:#854F0B">আজ বন্ধ</b>${x.reason?' · কারণ: '+esc(x.reason):''}`;
  else if(x.st===1)st='<span style="color:#854F0B">শুরু হয়েছে, শেষ হয়নি</span>';
  else st=`${x.para?bn(x.para)+' পারা · ':''}${esc(x.page||'')}<br>${lim.lok!==null?'লোকমা '+bn(x.l||0)+' · ':''}দোহরানো ${bn(x.d||0)} · <b style="color:${x.ok?'#0F6E56':'#A32D2D'}">${x.ok?'পেরেছে':'পারেনি'}</b>${x.t1?` <span class="mut">· ${x.t1}${x.t2?' – '+x.t2:''}</span>`:''}`;
