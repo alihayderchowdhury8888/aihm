@@ -1295,6 +1295,14 @@ function texSet(ex,sid,j,v,el){let x=parseFloat(en(String(v).trim()));const mx=E
 function dgCss(){return '<style>.dg{width:100%;border-collapse:collapse;font-size:13px}.dg th{font-weight:400;color:#6b7772;font-size:12px;text-align:center;padding:3px}.dg td{padding:4px 3px;text-align:center;border-top:1px solid #eef1f0}.dg td:first-child{text-align:left}</style>'}
 Object.assign(VIEWS,{plan:vPlan,eval:vEval,office:vOffice,oprint:vOprint,news:vNews,away:vAway,dir:vDir,dcal:vDcal,texam:vTexam});
 
+/* ---------- সবকের পারা: আগের দিনের শেষ পৃষ্ঠা থেকে ---------- */
+function pgNums(p){return (en(p||'').match(/\d+/g)||[]).map(Number)}
+const _defaults0=defaults;
+defaults=function(s,kind){
+ if(kind==='sabak'){const l=lastLes(s.id,'sabak',D);if(l&&l.para){const n=pgNums(l.page),last=n.length?n[n.length-1]:0;return{para:l.para,page:last?bn(last+1):'',from:'আগের দিন '+bn(l.para)+' পারা'+(l.page?' · '+l.page:'')+' পর্যন্ত হয়েছিল'}}return{para:'',page:'',from:''}}
+ if(kind==='sat'){const sb=((S.les[D]||{})[s.id]||{}).sabak;const src=sb&&sb.para?sb:defaults(s,'sabak');const n=pgNums(src.page),first=n.length?n[0]:0;if(src.para&&first>1)return{para:src.para,page:'১ থেকে '+bn(first-1),from:'সবকের পারা থেকে'};return{para:src.para||'',page:'',from:src.para?'সবকের পারা থেকে':''}}
+ return _defaults0(s,kind)};
+
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
 const DEEP={plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
