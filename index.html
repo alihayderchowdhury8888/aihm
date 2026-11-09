@@ -1384,6 +1384,8 @@ function boot(){let C=null;try{C=JSON.parse(localStorage.getItem(CK)||'null')}ca
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cacheSave();else refresh()});
  window.addEventListener('pagehide',cacheSave);
  setInterval(()=>{if(document.visibilityState==='visible')refresh()},60000)}
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
+ navigator.serviceWorker.register('sw.js').then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})}).catch(()=>{})}
 boot();
 </script></body></html>
