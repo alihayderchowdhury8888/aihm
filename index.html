@@ -1103,14 +1103,17 @@ function waNum(s){let d=en(s.wa||s.fatherMob||'').replace(/\D/g,'');if(!d)return
 function newsMsg(s){const r=(S.les[D]||{})[s.id]||{};const t=me();const nc=((S.nocls[D]||{})[ses.g]||{items:[]}).items;
  const ms=msickOn(s.id,D);const heard=Object.values(r).some(x=>x&&x.st===2);let lines;
  if(ms&&!heard)lines=['আপনার সন্তান আজ অসুস্থ।'+(ms.ill?' অসুখ: '+ms.ill:'')];
- else{const kp=kpOn(s.id,D);const ks=kp?['kp']:baseKinds(s);
+ else{const kp=kpOn(s.id,D);const sps=!kp&&baseKinds(s).length?spState(s,D):null;
+  if(sps){const xs=['sp','sp2'].map(k=>r[k]).filter(x=>x&&x.st).sort((a,b)=>['h1','h2','full'].indexOf(a.part)-['h1','h2','full'].indexOf(b.part));lines=xs.length?xs.map(x=>'• সবকের পারা ('+bn(en(sps.para))+' পারা · '+(SPP[x.part]||'')+'): '+(x.st===2?(x.ok?'পেরেছে':'পারেনি'):x.st===3?'আজ বন্ধ'+(x.reason?' (কারণ: '+x.reason+')':''):'চলছে')):['• সবকের পারা ('+bn(en(sps.para))+' পারা): এখনো শোনানো হয়নি'];
+   lines.unshift('• আজ শুধু সবকের পারা চলছে, তাই সবক, সাতসবক ও আমুখতা নেই')}
+  else{const ks=kp?['kp']:baseKinds(s);
   lines=ks.map(k=>{const n=k==='kp'?'কাঁচা পারা ('+bn(en(kp.para))+' পারা)':KN[k];const x=r[k];const o=k==='kp'?null:planOff(s.id,k,D);
    if(o)return '• '+n+': বন্ধ'+(o.reason?' (কারণ: '+o.reason+')':'');
    if(nc.includes(KN[k])||(k==='tk'&&nc.includes('আমুখতা')))return '• '+n+': আজ ক্লাস হয়নি';
    if(!x)return '• '+n+': এখনো শোনানো হয়নি';
    if(x.st===3)return '• '+n+': আজ বন্ধ'+(x.reason?' (কারণ: '+x.reason+')':'');
    if(x.st===2)return '• '+n+': '+(x.ok?'পেরেছে':'পারেনি');
-   return '• '+n+': চলছে'});
+   return '• '+n+': চলছে'})}
   if(!lines.length)lines=['• আজ পড়া নেই']}
  return `আসসালামু আলাইকুম।\n${s.name}-এর আজকের পড়া\n${dBn(D)}\n\n${lines.join('\n')}\n\n${t?t.name:''}\n${S.settings.madrasa}`}
 function waHref(s){return `https://wa.me/${waNum(s)}?text=${encodeURIComponent(newsMsg(s))}`}
@@ -1234,9 +1237,9 @@ function liveAlerts(){
  return out}
 function onlyG(g){return S.students.filter(s=>s.group===g&&s.status!=='out')}
 function lesDigest(g,k){const Ds=D;D=k;const Ls=onlyG(g);const R=S.les[k]||{};const rows={};
- Ls.forEach(s=>{const off=awayOn(s.id,k)||(absentNow(s.id,k)?'A':null);const kp=kpOn(s.id,k);const base=baseKinds(s);
-  (kp?['kp']:base).forEach(kd=>{const r=rows[kd]=rows[kd]||{ok:0,no:0,off:0,nh:0};if(off){r.off++;return}if(kd!=='kp'&&planOff(s.id,kd,k)){r.off++;return}const x=(R[s.id]||{})[kd];if(x&&x.st===2)x.ok?r.ok++:r.no++;else if(x&&x.st===3)r.off++;else r.nh++})});
- D=Ds;const ks=['sabak','sat','amu','tk','kp'].filter(x=>rows[x]);
+ Ls.forEach(s=>{const off=awayOn(s.id,k)||(absentNow(s.id,k)?'A':null);const kp=kpOn(s.id,k);const base=baseKinds(s);const sps=!kp&&base.length?spState(s,k):null;
+  (kp?['kp']:sps?['sp']:base).forEach(kd=>{const r=rows[kd]=rows[kd]||{ok:0,no:0,off:0,nh:0};if(off){r.off++;return}if(kd!=='kp'&&kd!=='sp'&&planOff(s.id,kd,k)){r.off++;return}const rr=R[s.id]||{};const x=kd==='sp'?([rr.sp,rr.sp2].find(y=>y&&y.st===2&&y.ok)||[rr.sp,rr.sp2].find(y=>y&&y.st)):rr[kd];if(x&&x.st===2)x.ok?r.ok++:r.no++;else if(x&&x.st===3)r.off++;else r.nh++})});
+ D=Ds;const ks=['sabak','sat','amu','tk','kp','sp'].filter(x=>rows[x]);
  if(!ks.length)return '<div class="mut">আজ পড়া নেই</div>';
  return `<table class="dg"><tr><th></th><th>শুনিয়েছে</th><th>পারেনি</th><th>বন্ধ/নেই</th><th>শোনায়নি</th></tr>${ks.map(x=>{const r=rows[x];return `<tr><td>${KN[x]}</td><td>${bn(r.ok)}</td><td style="${r.no?'color:#A32D2D':''}">${bn(r.no)}</td><td>${bn(r.off)}</td><td style="${r.nh?'color:#A32D2D;font-weight:600':''}">${bn(r.nh)}</td></tr>`}).join('')}</table>`}
 function eveDigest(g,k){const Ls=onlyG(g);const T=S.til[k]||{};const on=Ls.filter(s=>!(awayOn(s.id,k)||absentNow(s.id,k)));
