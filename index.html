@@ -1471,7 +1471,7 @@ function pull(cb){api('loadSince',[SINCE]).then(r=>{SINCE=r.now;cb(null,r.rows)}
 function applyRemote(ch){const L=flat();let changed=false;Object.keys(ch).forEach(p=>{const v=ch[p];const pending=L[p]!==LAST[p];
  if(v==null){if(!pending&&(p in L)){delete L[p];changed=true}delete LAST[p]}else{if(!pending&&L[p]!==v){L[p]=v;changed=true}LAST[p]=v}});if(changed)build(L);return changed}
 function busy(){const a=document.activeElement;return a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT')}
-function refresh(){if(!READY||SENDING)return;pull((err,rows)=>{if(err)return;const ch=applyRemote(rows);cacheSave();if(ch&&!busy())render();if(diff().length)flush()})}
+let STALE=false;function refresh(){if(!READY||SENDING)return;pull((err,rows)=>{if(err){if(STALE)setTimeout(refresh,15000);return}if(STALE){STALE=false;syncMsg('হিসাব হালনাগাদ হয়েছে','g')}const ch=applyRemote(rows);cacheSave();if(ch&&!busy())render();if(diff().length)flush()})}
 
 /* ---------- PIN যাচাই (সার্ভারে) ---------- */
 async function pinHash(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('aihm|'+s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -1496,8 +1496,8 @@ const FULLV=['drep','dtrep','office','oprint','trep','dbak','dlog','exam'];
 const _go=go;go=function(p,o){_go(p,o);if(FULLV.includes(p)&&!FULL)ensureFull(()=>{if(V.p===p)render()});if(['home','g','dir','dtoday','office','news','away'].includes(p))refresh()};
 const _render=render;render=function(){if(!READY){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#55615c">তথ্য আনা হচ্ছে…</div>';return}_render()};
 function boot(){let C=null;try{C=JSON.parse(localStorage.getItem(CK)||'null')}catch(e){}
- if(C&&C.rows){build(C.rows);LAST=Object.assign({},C.rows);Object.keys(C.ld||{}).forEach(p=>{if(C.ld[p]===null)delete LAST[p];else LAST[p]=C.ld[p]});SINCE=C.since||0;READY=true;render();
-  pull((err,rows)=>{if(err){syncMsg('ইন্টারনেট নেই · মোবাইলে রাখা হিসাব দেখাচ্ছে','y');setTimeout(refresh,15000);return}const ch=applyRemote(rows);cacheSave();if(ch&&!busy())render();if(diff().length)flush()})}
+ if(C&&C.rows){build(C.rows);LAST=Object.assign({},C.rows);Object.keys(C.ld||{}).forEach(p=>{if(C.ld[p]===null)delete LAST[p];else LAST[p]=C.ld[p]});SINCE=C.since||0;READY=true;render();STALE=true;syncMsg('সর্বশেষ হিসাব আনা হচ্ছে…','y');
+  pull((err,rows)=>{if(err){syncMsg('ইন্টারনেট নেই · মোবাইলে রাখা আগের হিসাব দেখাচ্ছে','y');setTimeout(refresh,15000);return}STALE=false;syncMsg('হিসাব হালনাগাদ হয়েছে','g');const ch=applyRemote(rows);cacheSave();if(ch&&!busy())render();if(diff().length)flush()})}
  else{render();pull((err,rows)=>{if(err){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#A32D2D">প্রথমবার খুলতে ইন্টারনেট লাগবে. নেট চালু করে আবার খুলুন.</div>';setTimeout(boot,15000);return}
   build(rows);LAST=Object.assign({},rows);FULL=true;READY=true;cacheSave();render();if(diff().length)flush()})}
  window.addEventListener('online',()=>{flush();refresh()});
