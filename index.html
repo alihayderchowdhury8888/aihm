@@ -1415,6 +1415,9 @@ function nurStAdd(cid){nurModal(`<b>${esc(nurCls(cid).name)} · শিক্ষ�
 function nurStAddS(cid){const ns=document.getElementById('nsa').value.split('\n').map(x=>x.trim()).filter(Boolean);if(!ns.length)return;ns.forEach(n=>S.nurSt.push({id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:n,cls:cid,adm:today(),status:'in'}));save();nurModal('');render()}
 Object.assign(VIEWS,{nur:vNur,nurc:vNurc});
 
+/* উস্তাদের গ্রুপ হারালে নিজের গ্রুপ থেকে ফিরিয়ে আনা */
+(function(){const _r=render;render=function(){try{if(ses&&(ses.role==='teacher'||ses.role==='sub')&&!ses.g){const t=T(ses.tid);if(t&&t.group)ses.g=ses.role==='sub'?(t.group==='ক'?'খ':'ক'):t.group}}catch(e){}return _r.apply(this,arguments)}})();
+
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
 const DEEP={nurDay:2,plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
@@ -1486,7 +1489,7 @@ function doPin(){const v=en(document.getElementById('pin').value.trim());const e
   if(r.role==='dir'){ses={role:'dir'};S.log.unshift({t:today()+' '+nowT(),w:'পরিচালক'});save();D=today();go('dir')}
   else if(r.role==='routine'){ses={role:'routine'};go('routine')}
   else if(r.role==='office'){ses={role:'office'};S.log.unshift({t:today()+' '+nowT(),w:'অফিস সহকারী'});save();go('office')}
-  else{const t=T(r.tid);ses={role:r.role,tid:r.tid,g:V.g};S.log.unshift({t:today()+' '+nowT(),w:(t?t.name:'')+(r.role==='sub'?' · বদলি':'')+' · গ্রুপ '+V.g});save();D=today();go('g')}})}
+  else{const t=T(r.tid);const gg=g||(t&&t.group)||V.g;ses={role:r.role,tid:r.tid,g:gg};S.log.unshift({t:today()+' '+nowT(),w:(t?t.name:'')+(r.role==='sub'?' · বদলি':'')+' · গ্রুপ '+gg});save();D=today();go('g')}})}
 function setPinUI(which,id,inp){const el=document.getElementById(inp);const v=en(el.value.trim());const m=document.getElementById(inp+'_m');
  if(!/^\d{4}$/.test(v)){m.textContent='৪ অঙ্কের PIN দিন';m.style.color='#A32D2D';return}m.textContent='জমা হচ্ছে…';m.style.color='';
  api('setPin',[which,id,v]).then(()=>{el.value='';m.textContent='নতুন PIN জমা হয়েছে';m.style.color='#0F6E56'}).catch(err=>{m.style.color='#A32D2D';m.textContent=err.server?(/taken/.test(err.message)?'এই PIN অন্য কারো, আরেকটা দিন':'আবার কর্তৃপক্ষের PIN দিয়ে ঢুকে চেষ্টা করুন'):'ইন্টারনেট নেই, নেট থাকলে আবার চেষ্টা করুন'})}
