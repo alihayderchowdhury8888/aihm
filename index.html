@@ -342,13 +342,13 @@ function tilAll(m){stOf(ses.g).forEach(s=>{if(!offNow(s.id)){S.til[D][s.id]=S.ti
 function thuOf(k){let d=pk(k);while(d.getDay()!==4)d.setDate(d.getDate()-1);return key(d)}
 function vShab(){
  const g=ses.g,L=stOf(g);const wk=thuOf(D);const prev=addD(wk,-7);
- S.shab[wk]=S.shab[wk]||{st:{},tc:{}};const W=S.shab[wk];const P=S.shab[prev];
+ S.shab[wk]=S.shab[wk]||{st:{},tc:{}};const W=S.shab[wk];W.st=W.st||{};W.tc=W.tc||{};const P=S.shab[prev]||{st:{}};P.st=P.st||{};
  const isThu=dow(today())===4&&wk===thuOf(today());const lock=wk!==thuOf(today());
  const tch=S.teachers.filter(t=>t.active).map(t=>{const x=W.tc[t.id]||{};
   return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(t.name)}</b><small>গ্রুপ ${t.group}</small></div>
   ${x.p===1?`<span class="okm" style="margin:0">✓ উপস্থিত ${x.time}</span>`:`<span class="ch" onclick="${lock?'':`shTc('${wk}','${t.id}',1)`}">উপস্থিত</span><span class="ch ${x.p===0?'on-r':''}" onclick="${lock?'':`shTc('${wk}','${t.id}',0)`}">নেই</span>`}
   ${x.p===0?`<input style="flex-basis:100%;margin-top:6px" placeholder="কেন উপস্থিত নেই" value="${esc(x.r||'')}" oninput="S.shab['${wk}'].tc['${t.id}'].r=this.value;save()">`:''}</div>`}).join('');
- const rows=L.map(s=>{if(awayOn(s.id,wk))return `<div class="card row"><b>${esc(s.name)}</b><span class="tag y" style="flex:0 0 auto">${awL(awayOn(s.id,wk))}</span></div>`;const x=W.st[s.id]=W.st[s.id]||{q:[null,null,null]};
+ const rows=L.map(s=>{if(awayOn(s.id,wk))return `<div class="card row"><b>${esc(s.name)}</b><span class="tag y" style="flex:0 0 auto">${awL(awayOn(s.id,wk))}</span></div>`;const x=W.st[s.id]=W.st[s.id]||{q:[null,null,null]};if(!Array.isArray(x.q))x.q=[null,null,null];
   const cur=x.paras!=null?x.paras:(P&&P.st[s.id]&&P.st[s.id].next)||'';
   const ok=x.q.filter(v=>v===1).length,no=x.q.filter(v=>v===0).length;
   const top=(!cur||x.edit)?`<label class="l">এই সপ্তাহের শবিনা (পারা)</label><input value="${esc(cur)}" placeholder="যেমন ৫ ও ৬" oninput="S.shab['${wk}'].st['${s.id}'].paras=this.value;save()" ${lock?'disabled':''}>`
@@ -360,8 +360,8 @@ function vShab(){
  <div class="datebar"><button class="btn s" onclick="D=addD(thuOf(D),-7);render()">‹ আগের সপ্তাহ</button><b>বৃহস্পতিবার, ${dShort(wk)}</b><button class="btn s" onclick="D=addD(thuOf(D),7);render()" ${wk>=thuOf(today())?'disabled':''}>পরের ›</button></div>
  ${isThu?'':'<div class="ban b">প্রশ্ন হয় বৃহস্পতিবার বাদ মাগরিব. এই সপ্তাহের যেকোনো দিন লেখা যাবে.</div>'}
  <div class="card"><b style="font-size:14px">উপস্থিত উস্তাদ</b>${tch}</div>${rows}</div>`}
-function shTc(wk,tid,p){const o=S.shab[wk].tc[tid];if(o&&o.p===p)delete S.shab[wk].tc[tid];else S.shab[wk].tc[tid]={p,time:nowT(),r:''};save();render()}
-function shQ(wk,sid,j,v){const x=S.shab[wk].st[sid];x.q[j]=x.q[j]===v?null:v;save();render()}
+function shTc(wk,tid,p){S.shab[wk].tc=S.shab[wk].tc||{};const o=S.shab[wk].tc[tid];if(o&&o.p===p)delete S.shab[wk].tc[tid];else S.shab[wk].tc[tid]={p,time:nowT(),r:''};save();render()}
+function shQ(wk,sid,j,v){const x=S.shab[wk].st[sid];if(!Array.isArray(x.q))x.q=[null,null,null];x.q[j]=x.q[j]===v?null:v;save();render()}
 
 /* ---------- মশক ---------- */
 function vMashq(){
@@ -603,7 +603,7 @@ function stat(sid,from,to){
   if(c&&c.type==='prep'&&!s.prepAll)o.prepOff++;
   const t=(S.til[k]||{})[sid];if(t){['namaz','til'].forEach(f=>{if(t[f]===1)o.til[f][0]++;else if(t[f]===0)o.til[f][1]++})}
  });
- rangeDays(from,to).filter(k=>dow(k)===4).forEach(k=>{const W=S.shab[k];if(!W)return;o.shab.held++;const x=W.st[sid];if(x&&x.q.some(v=>v!==null)){o.shab.took++;o.shab.q+=x.q.filter(v=>v!==null).length;o.shab.qok+=x.q.filter(v=>v===1).length}});
+ rangeDays(from,to).filter(k=>dow(k)===4).forEach(k=>{const W=S.shab[k];if(!W)return;o.shab.held++;const x=(W.st||{})[sid];if(x&&Array.isArray(x.q)&&x.q.some(v=>v!==null)){o.shab.took++;o.shab.q+=x.q.filter(v=>v!==null).length;o.shab.qok+=x.q.filter(v=>v===1).length}});
  o.beh=S.beh.filter(b=>b.sid===sid&&b.date>=from&&b.date<=to);
  o.contact=S.contact.filter(b=>b.sid===sid&&b.date>=from&&b.date<=to);
  o.fines=S.fines.filter(b=>b.sid===sid&&b.date>=from&&b.date<=to);
@@ -629,7 +629,7 @@ function tstat(tid,from,to){
   const m=(S.mashq[k]||{})[t.group];if(m&&!m.off&&(m.byId===tid||m.by===t.name))o.mashq[0]++;else if(m&&m.off)o.mashq[1]++;
   const kb=(S.kitab[k]||{})[t.group]||{};S.settings.kitabs.forEach(b=>{if(kb[b]&&kb[b].ok===1)o.kitab[0]++;else if(kb[b]&&kb[b].ok===0)o.kitab[1]++});
  });
- rangeDays(from,to).filter(k=>dow(k)===4).forEach(k=>{const W=S.shab[k];if(!W)return;o.shab[0]++;const x=W.tc[tid];if(x&&x.p===1)o.shab[1]++;else o.shab[2]++});
+ rangeDays(from,to).filter(k=>dow(k)===4).forEach(k=>{const W=S.shab[k];if(!W)return;o.shab[0]++;const x=(W.tc||{})[tid];if(x&&x.p===1)o.shab[1]++;else o.shab[2]++});
  Object.keys(S.given||{}).forEach(mk=>{Object.keys(S.given[mk]).forEach(sid=>{const g=S.given[mk][sid];if(g.byId===tid){o.given++;if(g.ret)o.ret++}})});
  S.fines.forEach(f=>{if(f.paid&&f.by===t.name&&f.pdate>=from&&f.pdate<=to)o.fine+=f.amt});
  return o}
