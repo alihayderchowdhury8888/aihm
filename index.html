@@ -592,7 +592,7 @@ function workDays(from,to){return rangeDays(from,to).filter(k=>{if(k===today()&&
 function stuGroups(s){return s.group==='both'?['ক','খ']:[s.group]}
 function stat(sid,from,to){
  const s=SID(sid),days=workDays(from,to);const o={days:days.length,P:0,A:0,L:0,S:0,U:0,les:{},til:{namaz:[0,0],til:[0,0]},prepOff:0,shab:{held:0,took:0,q:0,qok:0},beh:[],contact:[],fines:[]};
- ['sabak','sat','amu','tk','kp'].forEach(k=>o.les[k]={ok:0,no:0,off:0,nc:0});
+ ['sabak','sat','amu','tk','kp','sp'].forEach(k=>o.les[k]={ok:0,no:0,off:0,nc:0});o.spDone=[];
  days.forEach(k=>{
   const aw=awayOn(sid,k);let v=null;
   for(const g of stuGroups(s)){const z=((S.att[k]||{}).z||{})[g]||((S.att[k]||{}).ja||{})[g];if(z&&z.list[sid]){v=z.list[sid].v;break}}
@@ -600,6 +600,7 @@ function stat(sid,from,to){
   const R=(S.les[k]||{})[sid]||{};const c=calOn(k);
   ['sabak','sat','amu','tk','kp'].forEach(kd=>{const x=R[kd];const nc=stuGroups(s).some(g=>(((S.nocls[k]||{})[g]||{}).items||[]).includes(KN[kd]));
    if(nc)o.les[kd].nc++;else if(x){if(x.st===2)o.les[kd][x.ok?'ok':'no']++;else if(x.st===3)o.les[kd].off++}});
+  {const xs=[R.sp,R.sp2].filter(x=>x&&(x.st===2||x.st===3));if(xs.length){const d2=xs.filter(x=>x.st===2);if(d2.some(x=>!x.ok))o.les.sp.no++;else if(d2.length)o.les.sp.ok++;else o.les.sp.off++;d2.forEach(x=>{if(x.ok&&x.part==='full')o.spDone.push({para:x.para,date:k})})}}
   if(c&&c.type==='prep'&&!s.prepAll)o.prepOff++;
   const t=(S.til[k]||{})[sid];if(t){['namaz','til'].forEach(f=>{if(t[f]===1)o.til[f][0]++;else if(t[f]===0)o.til[f][1]++})}
  });
@@ -607,7 +608,7 @@ function stat(sid,from,to){
  o.beh=S.beh.filter(b=>b.sid===sid&&b.date>=from&&b.date<=to);
  o.contact=S.contact.filter(b=>b.sid===sid&&b.date>=from&&b.date<=to);
  o.fines=S.fines.filter(b=>b.sid===sid&&b.date>=from&&b.date<=to);
- o.miss={sabak:o.les.sabak.no,sat:o.les.sat.no,amu:o.les.amu.no+o.les.tk.no};
+ o.miss={sabak:o.les.sabak.no+o.les.sp.no,sat:o.les.sat.no,amu:o.les.amu.no+o.les.tk.no};
  return o}
 function autoCmt(o){const m=o.miss;const L=S.settings.cmtLimit||3;if(!m.sabak&&!m.sat&&!m.amu)return S.settings.cmt[0];if(m.sabak<=L&&m.sat<=L&&m.amu<=L)return S.settings.cmt[1];return S.settings.cmt[2]}
 function grade(avg){for(const g of S.settings.grades)if(avg>=g[1])return g[0];return S.settings.grades[S.settings.grades.length-1][0]}
@@ -623,7 +624,7 @@ function tstat(tid,from,to){
   const f=mine('f'),z=mine('z')||mine('ja');
   if(lv){o.leave++;if(lv.sub)o.subIn++}else if(f&&z)o.pres++;else if(f||z)o.part++;else o.none++;
   slotsFor(k).forEach(([sk])=>{if(sk==='n'){if(t.night){o.night++;if(A.n&&A.n.all&&A.n.all.byId===tid)o.nightTaken++}}else{o.slots++;const x=(A[sk]||{})[t.group];if(x&&x.byId===tid)o.taken++;const y=(A[sk]||{})[t.group==='ক'?'খ':'ক'];if(y&&y.byId===tid&&sk==='z')o.subOut++}});
-  const L=stOf(t.group);['sabak','sat','amu'].forEach(kd=>{const need=kindsForDay(k).includes(kd);if(!need)return;const any=L.some(s=>{const x=((S.les[k]||{})[s.id]||{})[kd];return x&&(x.byId===tid||x.by===t.name)});if(any)o.les[kd][0]++;else if(!lv)o.les[kd][1]++});
+  const L=stOf(t.group);['sabak','sat','amu'].forEach(kd=>{const need=kindsForDay(k).includes(kd);if(!need)return;const any=L.some(s=>{const rr=(S.les[k]||{})[s.id]||{};return [rr[kd],kd==='sat'?rr.sp:kd==='amu'?rr.sp2:kd==='sabak'?(rr.sp||rr.sp2):null].some(x=>x&&(x.byId===tid||x.by===t.name))});if(any)o.les[kd][0]++;else if(!lv)o.les[kd][1]++});
   L.forEach(s=>{const x=((S.les[k]||{})[s.id]||{}).sabak;if(x&&x.st===3&&(x.byId===tid||x.by===t.name)){o.off++;o.offTold++}});
   const snt=S.sent[k]||{};if(L.every(s=>snt[s.id]||awayOn(s.id,k)))o.news[0]++;else o.news[1]++;
   const m=(S.mashq[k]||{})[t.group];if(m&&!m.off&&(m.byId===tid||m.by===t.name))o.mashq[0]++;else if(m&&m.off)o.mashq[1]++;
@@ -663,7 +664,7 @@ function stuReport(sid,mode,key){
  <div class="s">${secT(++n,'হাজিরা','g')}<div class="bg"><div class="bc"><b>${bn(o.days)}</b><span>মোট কার্যদিবস</span></div><div class="bc"><b class="ok">${bn(o.P)}</b><span>উপস্থিত</span></div><div class="bc"><b class="bad">${bn(absent)}</b><span>অনুপস্থিত</span></div></div>
  <div class="nt">অনুপস্থিতির কারণ: ছুটি ${bn(o.L)} দিন · অসুস্থ ${bn(o.S)} দিন · অনুমতি ছাড়া ${bn(o.A)} দিন${o.U?' · হিসাব লেখা হয়নি '+bn(o.U)+' দিন':''}</div></div>
  <div class="s">${secT(++n,'পড়া','g')}<table><tr><th style="${th};text-align:left">পড়া</th><th style="${th}">পেরেছে</th><th style="${th}">পারেনি</th><th style="${th}">বন্ধ ছিল</th><th style="${th}">ক্লাস হয়নি</th></tr>
- ${C?lrow('খতমির পড়া',o.les.tk):lrow('সবক',o.les.sabak)+lrow('সাতসবক',o.les.sat)+lrow('আমুখতা',o.les.amu)}</table>
+ ${C?lrow('খতমির পড়া',o.les.tk):lrow('সবক',o.les.sabak)+lrow('সাতসবক',o.les.sat)+lrow('আমুখতা',o.les.amu)+(o.les.sp.ok+o.les.sp.no+o.les.sp.off?lrow('সবকের পারা',o.les.sp):'')}</table>${o.spDone.length?`<div class="nt">সবকের পারা শেষ: ${o.spDone.map(x=>esc(x.para)+' পারা ('+dShort(x.date)+')').join(', ')}</div>`:''}
  <table style="margin-top:8px"><tr><th style="${th};text-align:left">তিলাওয়াত</th><th style="${th}">করেছে</th><th style="${th}">করেনি</th></tr><tr><td>নামাজে তিলাওয়াত</td><td class="ok">${d2(o.til.namaz[0],'দিন')}</td><td class="bad">${d2(o.til.namaz[1],'দিন')}</td></tr><tr><td>তিলাওয়াত</td><td class="ok">${d2(o.til.til[0],'দিন')}</td><td class="bad">${d2(o.til.til[1],'দিন')}</td></tr></table>
  ${o.prepOff?`<div class="nt">পরীক্ষার প্রস্তুতির জন্য সবক বন্ধ ছিল: ${bn(o.prepOff)} দিন</div>`:''}</div>
  <div class="s">${secT(++n,'শবিনা ও প্রশ্ন','g')}<table><tr><th style="${th};text-align:left">শবিনা</th><th style="${th}">মোট হয়েছে</th><th style="${th}">অংশ নিয়েছে</th><th style="${th}">অংশ নেয়নি</th></tr><tr><td>শবিনা</td><td>${d2(o.shab.held,'বার')}</td><td class="ok">${d2(o.shab.took,'বার')}</td><td class="bad">${d2(o.shab.held-o.shab.took,'বার')}</td></tr></table>
