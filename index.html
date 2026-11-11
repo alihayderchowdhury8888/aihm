@@ -1105,7 +1105,7 @@ function newsMsg(s){const r=(S.les[D]||{})[s.id]||{};const t=me();const nc=((S.n
  const ms=msickOn(s.id,D);const heard=Object.values(r).some(x=>x&&x.st===2);let lines;
  if(ms&&!heard)lines=['আপনার সন্তান আজ অসুস্থ।'+(ms.ill?' অসুখ: '+ms.ill:'')];
  else{const kp=kpOn(s.id,D);const sps=!kp&&baseKinds(s).length?spState(s,D):null;
-  if(sps){const xs=['sp','sp2'].map(k=>r[k]).filter(x=>x&&x.st).sort((a,b)=>['h1','h2','full'].indexOf(a.part)-['h1','h2','full'].indexOf(b.part));lines=xs.length?xs.map(x=>'• সবকের পারা ('+bn(en(sps.para))+' পারা · '+(SPP[x.part]||'')+'): '+(x.st===2?(x.ok?'পেরেছে':'পারেনি'):x.st===3?'আজ বন্ধ'+(x.reason?' (কারণ: '+x.reason+')':''):'চলছে')):['• সবকের পারা ('+bn(en(sps.para))+' পারা): এখনো শোনানো হয়নি'];
+  if(sps){const fdn=['sp','sp2'].some(k=>r[k]&&r[k].st===2&&r[k].ok&&r[k].part==='full');const xs=['sp','sp2'].map(k=>r[k]).filter(x=>x&&x.st&&(!fdn||x.st===2||x.st===3)).sort((a,b)=>['h1','h2','full'].indexOf(a.part)-['h1','h2','full'].indexOf(b.part));lines=xs.length?xs.map(x=>'• সবকের পারা ('+bn(en(sps.para))+' পারা · '+(SPP[x.part]||'')+'): '+(x.st===2?(x.ok?'পেরেছে':'পারেনি'):x.st===3?'আজ বন্ধ'+(x.reason?' (কারণ: '+x.reason+')':''):'চলছে')):['• সবকের পারা ('+bn(en(sps.para))+' পারা): এখনো শোনানো হয়নি'];
    lines.unshift('• আজ শুধু সবকের পারা চলছে, তাই সবক, সাতসবক ও আমুখতা নেই')}
   else{const ks=kp?['kp']:baseKinds(s);
   lines=ks.map(k=>{const n=k==='kp'?'কাঁচা পারা ('+bn(en(kp.para))+' পারা)':KN[k];const x=r[k];const o=k==='kp'?null:planOff(s.id,k,D);
@@ -1321,7 +1321,7 @@ function spState(s,day){if(s.type==='takmil')return null;const t=spTrigger(s.id,
 function spNext(s,k){const st=spState(s,D);if(!st)return 'h1';const dn=Object.assign({},st.done);if(k==='sp2'){const a=((S.les[D]||{})[s.id]||{}).sp;if(a&&a.st===2&&a.ok&&a.part)dn[a.part]=D}return !dn.h1?'h1':!dn.h2?'h2':'full'}
 const _kindsFor0=kindsFor;
 kindsFor=function(s){const ks=baseKinds(s);if(!ks.length)return ks;if(kpOn(s.id,D))return['kp'];
- const st=spState(s,D);if(st){const a=((S.les[D]||{})[s.id]||{}).sp;const fullToday=a&&a.st===2&&a.ok&&a.part==='full';return ks.includes('amu')&&!fullToday?['sp','sp2']:['sp']}
+ const st=spState(s,D);if(st){const r=(S.les[D]||{})[s.id]||{};const fd=['sp','sp2'].find(q=>r[q]&&r[q].st===2&&r[q].ok&&r[q].part==='full');if(fd){const dn=['sp','sp2'].filter(q=>r[q]&&(r[q].st===2||r[q].st===3));return dn.length?dn:[fd]}return ks.includes('amu')?['sp','sp2']:['sp']}
  return ks.filter(k=>!planOff(s.id,k,D))};
 const _winOpen0=winOpen;
 winOpen=function(k){const w=curWin();if(k==='sp')return w==='sat'||w==='sabak';if(k==='sp2')return w==='amu';return _winOpen0(k)};
