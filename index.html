@@ -272,7 +272,7 @@ function baseKinds(s){const w=dow(D);if(w===5)return[];const c=calOn(D);if(c&&(O
  if(c&&c.type==='prep'){const all=s.prepAll||(c.board&&!(c.boardList||[]).includes(s.id));if(!all)k=k.filter(x=>x==='amu'||x==='tk')}
  const sp=specOn(D,ses?ses.g:s.group);if(sp)k=k.filter(x=>sp.run.includes(x==='tk'?'আমুখতা':KN[x]));
  return k}
-const KN={sabak:'সবক',sat:'সাতসবক',amu:'আমুখতা',tk:'খতমির পড়া',kp:'কাঁচা পারা'};
+const KN={sabak:'সবক',sat:'সাতসবক',amu:'আমুখতা',tk:'দাওর',kp:'কাঁচা পারা'};
 function limits(s,kind){const R=S.settings.rules;
  if(kind==='kp')return{lok:R.amuLok,doh:R.amuDoh};
  if(kind==='sabak')return{lok:null,doh:s.weak?R.sabakDohWeak:0};
@@ -306,7 +306,7 @@ function vLesOne(s){
   return `<div class="card">${head}<div class="okm" style="margin-top:2px">শুরু হয়েছে ${x.t1}${x.st===2?' · শেষ '+x.t2:''} · <span style="color:#55615c;text-decoration:underline;cursor:pointer" onclick="delete S.les[D]['${s.id}']['${k}'];save();render()">শুরু বাতিল</span></div>
   <div class="row" style="margin-top:4px"><div><label class="l">পারা</label><input value="${esc(x.para!=null?x.para:d.para)}" oninput="S.les[D]['${s.id}']['${k}'].para=this.value;save()">${d.from&&x.para==null?`<div class="mut" style="color:#0F6E56">${d.from}</div>`:''}</div>
   <div><label class="l">পৃষ্ঠা</label><input value="${esc(x.page!=null?x.page:d.page)}" oninput="S.les[D]['${s.id}']['${k}'].page=this.value;save()"></div></div>
-  ${(k==='sp'||k==='sp2')?spChips(s,k,x):''}${k==='tk'?`<div class="chs" style="margin-top:8px"><span class="ch ${s.stage!=='full'?'on-b':''}" onclick="SID('${s.id}').stage='half';save();render()">আধা পারা</span><span class="ch ${s.stage==='full'?'on-b':''}" onclick="SID('${s.id}').stage='full';save();render()">এক পারা</span></div>`:''}
+  ${(k==='sp'||k==='sp2')?spChips(s,k,x):''}${k==='tk'?tkChips(s):''}
   ${lim.lok!==null?cnt('l','লোকমা',lim.lok):''}${cnt('d','দোহরানো',lim.doh)}
   ${k==='tk'?cnt('q','মোট প্রশ্ন (২–৫)',null)+cnt('qok','পেরেছে',null):''}
   <div class="row" style="margin-top:10px"><button class="btn" style="color:#085041;border-color:#5DCAA5;${x.st===2&&x.ok?'background:#E1F5EE;font-weight:600':''}" onclick="lesFin('${s.id}','${k}',1)">${x.st===2&&x.ok?'✓ ':''}পেরেছে</button><button class="btn" style="color:#791F1F;border-color:#F09595;${x.st===2&&!x.ok?'background:#FCEBEB;font-weight:600':''}" onclick="lesFin('${s.id}','${k}',0)">${x.st===2&&!x.ok?'✓ ':''}পারেনি</button></div></div>`}).join('');
@@ -489,7 +489,7 @@ function saveFine(){const e=document.getElementById('ferr');if(!tmp.pick){e.text
 
 /* ---------- আজকের খবর ---------- */
 function newsMsg(s){const r=(S.les[D]||{})[s.id]||{};const t=me();const nc=((S.nocls[D]||{})[ses.g]||{items:[]}).items;
- const it=s.type==='takmil'?[['tk','খতমির পড়া']]:[['sabak','সবক'],['sat','সাতসবক'],['amu','আমুখতা']];
+ const it=s.type==='takmil'?[['tk','দাওর']]:[['sabak','সবক'],['sat','সাতসবক'],['amu','আমুখতা']];
  const aw=awayOn(s.id,D);
  const lines=aw?['• '+awL(aw)]:it.map(([k,n])=>{const x=r[k];if(nc.includes(n))return '• '+n+': ক্লাস হয়নি';if(!x)return '• '+n+': এখনো লেখা হয়নি';if(x.st===3)return '• '+n+': আজ বন্ধ';if(x.st===2)return '• '+n+': '+(x.ok?'পেরেছে':'পারেনি');return '• '+n+': চলছে'});
  return `আসসালামু আলাইকুম।\n${s.name}-এর আজকের খবর\n${dBn(D)}\n\n${lines.join('\n')}\n\n${t?t.name:''}\n${S.settings.madrasa}`}
@@ -664,7 +664,7 @@ function stuReport(sid,mode,key){
  <div class="s">${secT(++n,'হাজিরা','g')}<div class="bg"><div class="bc"><b>${bn(o.days)}</b><span>মোট কার্যদিবস</span></div><div class="bc"><b class="ok">${bn(o.P)}</b><span>উপস্থিত</span></div><div class="bc"><b class="bad">${bn(absent)}</b><span>অনুপস্থিত</span></div></div>
  <div class="nt">অনুপস্থিতির কারণ: ছুটি ${bn(o.L)} দিন · অসুস্থ ${bn(o.S)} দিন · অনুমতি ছাড়া ${bn(o.A)} দিন${o.U?' · হিসাব লেখা হয়নি '+bn(o.U)+' দিন':''}</div></div>
  <div class="s">${secT(++n,'পড়া','g')}<table><tr><th style="${th};text-align:left">পড়া</th><th style="${th}">পেরেছে</th><th style="${th}">পারেনি</th><th style="${th}">বন্ধ ছিল</th><th style="${th}">ক্লাস হয়নি</th></tr>
- ${C?lrow('খতমির পড়া',o.les.tk):lrow('সবক',o.les.sabak)+lrow('সাতসবক',o.les.sat)+lrow('আমুখতা',o.les.amu)+(o.les.sp.ok+o.les.sp.no+o.les.sp.off?lrow('সবকের পারা',o.les.sp):'')}</table>${o.spDone.length?`<div class="nt">সবকের পারা শেষ: ${o.spDone.map(x=>esc(x.para)+' পারা ('+dShort(x.date)+')').join(', ')}</div>`:''}
+ ${C?lrow('দাওর',o.les.tk):lrow('সবক',o.les.sabak)+lrow('সাতসবক',o.les.sat)+lrow('আমুখতা',o.les.amu)+(o.les.sp.ok+o.les.sp.no+o.les.sp.off?lrow('সবকের পারা',o.les.sp):'')}</table>${o.spDone.length?`<div class="nt">সবকের পারা শেষ: ${o.spDone.map(x=>esc(x.para)+' পারা ('+dShort(x.date)+')').join(', ')}</div>`:''}
  <table style="margin-top:8px"><tr><th style="${th};text-align:left">তিলাওয়াত</th><th style="${th}">করেছে</th><th style="${th}">করেনি</th></tr><tr><td>নামাজে তিলাওয়াত</td><td class="ok">${d2(o.til.namaz[0],'দিন')}</td><td class="bad">${d2(o.til.namaz[1],'দিন')}</td></tr><tr><td>তিলাওয়াত</td><td class="ok">${d2(o.til.til[0],'দিন')}</td><td class="bad">${d2(o.til.til[1],'দিন')}</td></tr></table>
  ${o.prepOff?`<div class="nt">পরীক্ষার প্রস্তুতির জন্য সবক বন্ধ ছিল: ${bn(o.prepOff)} দিন</div>`:''}</div>
  <div class="s">${secT(++n,'শবিনা ও প্রশ্ন','g')}<table><tr><th style="${th};text-align:left">শবিনা</th><th style="${th}">মোট হয়েছে</th><th style="${th}">অংশ নিয়েছে</th><th style="${th}">অংশ নেয়নি</th></tr><tr><td>শবিনা</td><td>${d2(o.shab.held,'বার')}</td><td class="ok">${d2(o.shab.took,'বার')}</td><td class="bad">${d2(o.shab.held-o.shab.took,'বার')}</td></tr></table>
@@ -891,7 +891,7 @@ function saveSpec(){const n=v('s_n');if(!n){document.getElementById('serr').text
 function vDrules(){const R=S.settings.rules;const f=(k,n,u)=>`<div class="li"><span class="n">${n}</span><input style="width:70px;text-align:center" value="${bn(R[k])}" onchange="S.settings.rules['${k}']=+en(this.value)||0;save()"><span class="mut" style="width:40px">${u}</span></div>`;
  return dirTop('পাঠ ও ছুটি নীতিমালা')+`<div class="wrap"><p class="mut">এখানে বদলালে সব জায়গায় বদলে যাবে · এর বেশি হলে লাল</p>
  <div class="sec">লোকমা ও দোহরানো</div><div class="card"><div class="li"><span class="n">সবকে লোকমা ও দোহরানো</span><span class="mut">চলবে না</span></div>${f('sabakDohWeak','সবকে দোহরানো (দুর্বল শিক্ষার্থী)','বার')}${f('sabakParaDoh','সবকের পারায় দোহরানো','বার')}${f('satLok','সাতসবকে লোকমা','টি')}${f('satDoh','সাতসবকে দোহরানো','বার')}${f('amuLok','আমুখতায় লোকমা','টি')}${f('amuDoh','আমুখতায় দোহরানো','বার')}</div>
- <div class="sec">খতমি</div><div class="card">${f('tkHalfLok','আধা পারায় লোকমা','টি')}${f('tkHalfDoh','আধা পারায় দোহরানো','বার')}${f('tkFullDoh','এক পারায় (১ম খতম) দোহরানো','বার')}</div>
+ <div class="sec">দাওর (হিফয তাকমিল)</div><div class="card">${f('tkHalfLok','আধা পারায় লোকমা','টি')}${f('tkHalfDoh','আধা পারায় দোহরানো','বার')}${f('tkFullDoh','এক পারায় (১ম খতম) দোহরানো','বার')}</div>
  <div class="sec">ছুটি ও জরিমানা</div><div class="card">${f('appDays','দরখাস্ত লাগবে, ছুটি এর বেশি হলে','দিন')}${f('fine','জরিমানা (না ফিরলে বা অনুমতি ছাড়া গেলে)','টাকা')}</div>
  <div class="sec">মাসিক মন্তব্য (মিস দেখে নিজে নিজে বসে)</div><div class="card"><label class="l" style="margin-top:0">একদিনও মিস হয়নি</label><textarea rows="3" onchange="S.settings.cmt[0]=this.value;save()">${esc(S.settings.cmt[0])}</textarea>
  <label class="l">প্রতিটায় <input style="width:50px;text-align:center;padding:2px" value="${bn(S.settings.cmtLimit)}" onchange="S.settings.cmtLimit=+en(this.value)||3;save()"> দিন বা কম মিস</label><textarea rows="3" onchange="S.settings.cmt[1]=this.value;save()">${esc(S.settings.cmt[1])}</textarea>
@@ -1054,14 +1054,14 @@ function planKinds(s){return (s.type==='takmil'?['tk']:['sabak','sat','amu']).co
 function daysLeft(to){return Math.round((pk(to)-pk(today()))/864e5)+1}
 function vPlan(){
  const L=stOf(ses.g),k0=today(),lock=nightLock();S.plan=S.plan||{};const ed=tmp.ed;
- const rows=L.map(s=>{const kp=kpOn(s.id,k0);
+ const rows=L.map(s=>{const kp=kpOn(s.id,k0);const spx=!kp&&s.type!=='takmil'&&spState(s,k0);
   const btn=k=>{const o=planOff(s.id,k,k0);const nm=KN[k];let st,cl;
    if(k==='kp'){st=kp?bn(en(kp.para))+' পারা চলছে':'নেই';cl=kp?'background:#FAEEDA;color:#633806;border-color:#EF9F27':'background:#fff;color:#55615c'}
-   else if(kp){st='কাঁচা পারার জন্য বন্ধ';cl='background:#F1EFE8;color:#888780;border-color:#D3D1C7'}
+   else if(kp||spx){st=kp?'কাঁচা পারার জন্য বন্ধ':'সবকের পারার জন্য বন্ধ';cl='background:#F1EFE8;color:#888780;border-color:#D3D1C7'}
    else if(o){st='বন্ধ · '+bn(daysLeft(o.to))+' দিন বাকি';cl='background:#FCEBEB;color:#791F1F;border-color:#F09595'}
    else{st='চালু';cl='background:#E1F5EE;color:#085041;border-color:#9FE1CB'}
    const on=ed&&ed.sid===s.id&&ed.k===k;
-   return `<div class="pb" style="${cl};${on?'outline:2px solid #378ADD;':''}" onclick="${lock||(kp&&k!=='kp')?'':`planTap('${s.id}','${k}')`}"><b>${nm}</b><span>${st}</span></div>`};
+   return `<div class="pb" style="${cl};${on?'outline:2px solid #378ADD;':''}" onclick="${lock||((kp||spx)&&k!=='kp')?'':`planTap('${s.id}','${k}')`}"><b>${nm}</b><span>${st}</span></div>`};
   let edh='';
   if(ed&&ed.sid===s.id){const k=ed.k,o=planOff(s.id,k,k0);
    if(k==='kp')edh=`<div class="pe"><b>কাঁচা পারা</b><div class="mut">চালু থাকলে সবক, সাতসবক ও আমুখতা বন্ধ থাকবে</div><div class="row"><div><label class="l">কোন পারা</label><input inputmode="numeric" value="${esc(tmp.kpp||'')}" oninput="tmp.kpp=this.value"></div><div><label class="l">প্রতিদিন কত পৃষ্ঠা</label><input inputmode="numeric" value="${esc(tmp.kpg||'')}" oninput="tmp.kpg=this.value"></div></div><div class="err" id="perr2"></div>
@@ -1070,10 +1070,10 @@ function vPlan(){
     <div class="row" style="margin-top:8px"><button class="btn pri" onclick="offSave('${s.id}','${k}')">বন্ধ করুন</button><button class="btn" onclick="tmp={};render()">বাতিল</button></div></div>`}
   const off=offNow(s.id);
   return `<div class="card"><div class="row"><b>${esc(s.name)}</b><span class="mut" style="text-align:right">${s.id}${off?' · '+awL(off):''}</span></div>
-  <div class="pgrid">${planKinds(s).map(btn).join('')}</div>${edh}
+  ${planExtra(s)}<div class="pgrid">${planKinds(s).map(btn).join('')}</div>${edh}
   ${Object.entries(planOf(s.id).off||{}).filter(([k,o])=>o.to>=k0&&!kp).map(([k,o])=>`<div class="mut" style="margin-top:4px">${KN[k]} বন্ধ ${dShort(o.from)} থেকে ${dShort(o.to)}${o.reason?' · কারণ: '+esc(o.reason):''}</div>`).join('')}
   ${kp?`<div class="mut" style="margin-top:4px">কাঁচা পারা: ${bn(en(kp.para))} পারা · প্রতিদিন ${bn(en(kp.pages||''))} পৃষ্ঠা · ${dShort(kp.from)} থেকে</div>`:''}</div>`}).join('');
- return topBar('পড়া সাজানো')+`<style>.pgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}.pb{border:1px solid;border-radius:10px;padding:7px 3px;text-align:center;cursor:pointer;user-select:none}.pb b{display:block;font-size:13px}.pb span{display:block;font-size:11px;margin-top:2px;line-height:1.3}.pe{margin-top:10px;padding:10px;border:1px dashed #85B7EB;border-radius:10px;background:#F7FAFE}</style><div class="wrap">
+ return topBar('পড়া সাজানো')+`<style>.pgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}.pb{border:1px solid;border-radius:10px;padding:7px 3px;text-align:center;cursor:pointer;user-select:none}.pb b{display:block;font-size:13px}.pb span{display:block;font-size:11px;margin-top:2px;line-height:1.3}.pst{margin-top:8px;padding:8px 10px;border:1px solid;border-radius:10px;font-size:13.5px}.pe{margin-top:10px;padding:10px;border:1px dashed #85B7EB;border-radius:10px;background:#F7FAFE}</style><div class="wrap">
  <div class="ban b">সবুজ = চালু · লাল = বন্ধ · হলুদ = কাঁচা পারা · বন্ধ করতে চালু ঘরে টিপুন, আবার চালু করতে লাল ঘরে টিপুন · দিন শেষ হলে নিজে থেকে চালু হবে</div>
  ${lock?'<div class="ban y">রাত ১২টা থেকে ভোর ৪টা পর্যন্ত বদলানো যাবে না</div>':''}${rows}</div>`}
 function planTap(sid,k){const o=planOff(sid,k,today());
@@ -1105,7 +1105,7 @@ function newsMsg(s){const r=(S.les[D]||{})[s.id]||{};const t=me();const nc=((S.n
  const ms=msickOn(s.id,D);const heard=Object.values(r).some(x=>x&&x.st===2);let lines;
  if(ms&&!heard)lines=['আপনার সন্তান আজ অসুস্থ।'+(ms.ill?' অসুখ: '+ms.ill:'')];
  else{const kp=kpOn(s.id,D);const sps=!kp&&baseKinds(s).length?spState(s,D):null;
-  if(sps){const fdn=['sp','sp2'].some(k=>r[k]&&r[k].st===2&&r[k].ok&&r[k].part==='full');const xs=['sp','sp2'].map(k=>r[k]).filter(x=>x&&x.st&&(!fdn||x.st===2||x.st===3)).sort((a,b)=>['h1','h2','full'].indexOf(a.part)-['h1','h2','full'].indexOf(b.part));lines=xs.length?xs.map(x=>'• সবকের পারা ('+bn(en(sps.para))+' পারা · '+(SPP[x.part]||'')+'): '+(x.st===2?(x.ok?'পেরেছে':'পারেনি'):x.st===3?'আজ বন্ধ'+(x.reason?' (কারণ: '+x.reason+')':''):'চলছে')):['• সবকের পারা ('+bn(en(sps.para))+' পারা): এখনো শোনানো হয়নি'];
+  if(sps){const fdn=['sp','sp2'].some(k=>r[k]&&r[k].st===2&&r[k].ok&&r[k].part==='full');const xs=['sp','sp2'].map(k=>r[k]).filter(x=>x&&x.st&&(!fdn||x.st===2||x.st===3)).sort((a,b)=>['h1','h2','c','full'].indexOf(a.part)-['h1','h2','c','full'].indexOf(b.part));lines=xs.length?xs.map(x=>'• সবকের পারা ('+bn(en(sps.para))+' পারা · '+(x.part==='c'?'পৃষ্ঠা '+(x.page||''):(SPP[x.part]||''))+'): '+(x.st===2?(x.ok?'পেরেছে':'পারেনি'):x.st===3?'আজ বন্ধ'+(x.reason?' (কারণ: '+x.reason+')':''):'চলছে')):['• সবকের পারা ('+bn(en(sps.para))+' পারা): এখনো শোনানো হয়নি'];
    lines.unshift('• আজ শুধু সবকের পারা চলছে, তাই সবক, সাতসবক ও আমুখতা নেই')}
   else{const ks=kp?['kp']:baseKinds(s);
   lines=ks.map(k=>{const n=k==='kp'?'কাঁচা পারা ('+bn(en(kp.para))+' পারা)':KN[k];const x=r[k];const o=k==='kp'?null:planOff(s.id,k,D);
@@ -1113,9 +1113,11 @@ function newsMsg(s){const r=(S.les[D]||{})[s.id]||{};const t=me();const nc=((S.n
    if(nc.includes(KN[k])||(k==='tk'&&nc.includes('আমুখতা')))return '• '+n+': আজ ক্লাস হয়নি';
    if(!x)return '• '+n+': এখনো শোনানো হয়নি';
    if(x.st===3)return '• '+n+': আজ বন্ধ'+(x.reason?' (কারণ: '+x.reason+')':'');
+   if(x.st===2&&k==='tk')return '• দাওর ('+(x.para?bn(en(x.para))+' পারা · ':'')+({kacha:'কয়েক পৃষ্ঠা',full:'এক পারা'}[s.stage]||'আধা পারা')+(x.page?' · '+x.page:'')+'): '+(x.ok?'পেরেছে':'পারেনি')+' · লোকমা '+bn(x.l||0);
    if(x.st===2)return '• '+n+': '+(x.ok?'পেরেছে':'পারেনি');
    return '• '+n+': চলছে'})}
   if(!lines.length)lines=['• আজ পড়া নেই']}
+ if(dow(D)===4){const W=S.shab[D];const x=W&&(W.st||{})[s.id];if(x&&(x.paras||Array.isArray(x.q))){const q=Array.isArray(x.q)?x.q.filter(v=>v!==null&&v!==undefined):[];lines.push('','শবিনা'+(x.paras?': '+x.paras+' পারা':''));if(q.length)lines.push('• প্রশ্ন: '+bn(q.length)+'টির মধ্যে '+bn(q.filter(v=>v===1).length)+'টি পেরেছে')}}
  return `আসসালামু আলাইকুম।\n${s.name}-এর আজকের পড়া\n${dBn(D)}\n\n${lines.join('\n')}\n\n${t?t.name:''}\n${S.settings.madrasa}`}
 function waHref(s){return `https://wa.me/${waNum(s)}?text=${encodeURIComponent(newsMsg(s))}`}
 function vNews(){
@@ -1310,7 +1312,7 @@ defaults=function(s,kind){
 
 /* ---------- সবকের পারা ---------- */
 KN.sp='সবকের পারা';KN.sp2='সবকের পারা (আমুখতার সময়)';
-const SPP={h1:'প্রথম অর্ধেক',h2:'দ্বিতীয় অর্ধেক',full:'পুরো পারা'};
+const SPP={h1:'প্রথম অর্ধেক',h2:'দ্বিতীয় অর্ধেক',c:'কয়েক পৃষ্ঠা',full:'পুরো পারা'};
 function paraPages(p){const n=parseInt(en(p||''))||0;return n===29?24:n===30?25:20}
 function lesBefore(sid,kind,before,cond){const ks=Object.keys(S.les).filter(k=>k<before).sort().reverse();for(const k of ks){const x=(S.les[k][sid]||{})[kind];if(x&&cond(x))return {k,x}}return null}
 /* শেষ পৃষ্ঠা পর্যন্ত সবক পেরেছে, এমন শেষ দিন */
@@ -1334,7 +1336,7 @@ defaults=function(s,kind){
  return _defaults1(s,kind)};
 const _lesStart0=lesStart;
 lesStart=function(sid,k){_lesStart0(sid,k);if(k==='sp'||k==='sp2'){const x=S.les[D][sid][k];x.part=defaults(SID(sid),k).part;save();render()}};
-function spSet(sid,k,p){const x=S.les[D][sid][k];x.part=p;x.page=SPP[p];save();render()}
+function spSet(sid,k,p){const x=S.les[D][sid][k];x.part=p;x.page=p==='c'?spChunk(SID(sid),k):SPP[p];save();render()}
 function spChips(s,k,x){return `<div class="chs" style="margin-top:8px">${Object.keys(SPP).map(p=>`<span class="ch ${x.part===p?'on-b':''}" onclick="spSet('${s.id}','${k}','${p}')">${SPP[p]}</span>`).join('')}</div>`}
 
 /* ======================= নূরানী বিভাগ ======================= */
@@ -1422,9 +1424,79 @@ Object.assign(VIEWS,{nur:vNur,nurc:vNurc});
 /* উস্তাদের গ্রুপ হারালে নিজের গ্রুপ থেকে ফিরিয়ে আনা */
 (function(){const _r=render;render=function(){try{if(ses&&(ses.role==='teacher'||ses.role==='sub')&&!ses.g){const t=T(ses.tid);if(t&&t.group)ses.g=ses.role==='sub'?(t.group==='ক'?'খ':'ক'):t.group}}catch(e){}return _r.apply(this,arguments)}})();
 
+/* ================= ১৩ নভেম্বরের নিয়ম ================= */
+KN.tk='দাওর';
+/* লোকমা ও দোহরানোর সীমা */
+limits=function(s,kind){const R=S.settings.rules;
+ if(kind==='sabak')return{lok:null,doh:1};
+ if(kind==='sat')return{lok:R.satLok,doh:R.satDoh};
+ if(kind==='amu')return{lok:R.amuLok,doh:R.amuDoh};
+ if(kind==='kp')return{lok:2,doh:R.amuDoh};
+ if(kind==='sp'||kind==='sp2'){const x=((S.les[D]||{})[s.id]||{})[kind]||{};return x.part==='full'?{lok:0,doh:null}:{lok:2,doh:null}}
+ if(kind==='tk'){if(s.stage==='kacha')return{lok:2,doh:R.tkHalfDoh};return s.stage==='full'?{lok:0,doh:s.khatm>=1?0:R.tkFullDoh}:{lok:R.tkHalfLok,doh:R.tkHalfDoh}}
+ return{lok:null,doh:null}};
+/* সবকের পারা: দুর্বলের জন্য কয়েক পৃষ্ঠা করে (৫ পৃষ্ঠা), পরে পুরো পারা */
+function spChunkEnd(s,k){const st=spState(s,D);if(!st)return 0;let e=0;Object.keys(S.les).filter(d=>d>st.from&&d<=D).forEach(d=>{const r=S.les[d][s.id]||{};['sp','sp2'].forEach(q=>{if(d===D&&q===k)return;const x=r[q];if(x&&x.st===2&&x.ok&&x.part==='c'){const n=pgNums(x.page);if(n.length)e=Math.max(e,n[n.length-1])}})});return e}
+function spChunk(s,k){const st=spState(s,D);const P=st?paraPages(st.para):20;const e=spChunkEnd(s,k);const a=Math.min(e+1,P),b=Math.min(e+5,P);return bn(a)+'–'+bn(b)}
+const _spNext0=spNext;
+spNext=function(s,k){if(s.weak){const st=spState(s,D);const P=st?paraPages(st.para):20;return spChunkEnd(s,k)>=P?'full':'c'}return _spNext0(s,k)};
+const _defaults2=defaults;
+defaults=function(s,kind){
+ if(kind==='sp'||kind==='sp2'){const d=_defaults2(s,kind);if(d.part==='c')d.page=spChunk(s,kind);return d}
+ if(kind==='amu'){const ks=Object.keys(S.les).filter(k=>k<D).sort().reverse();let l=null;for(const k of ks){const x=(S.les[k][s.id]||{}).amu;if(x&&x.st===2){l=x;break}}
+  if(l&&l.para&&!l.ok)return{para:l.para,page:l.page||'',from:'আগের দিন পারেনি · আবার একই অংশ'};
+  if(l&&l.para&&/প্রথম/.test(l.page||''))return{para:l.para,page:'দ্বিতীয় অর্ধেক',from:'গতকাল প্রথম অর্ধেক হয়েছে'};
+  return{para:'',page:'',from:''}}
+ if(kind==='tk'){const ks=Object.keys(S.les).filter(k=>k<D).sort().reverse();let l=null;for(const k of ks){const x=(S.les[k][s.id]||{}).tk;if(x&&x.st===2){l=x;break}}
+  if(l&&l.para&&!l.ok)return{para:l.para,page:l.page||'',from:'আগের দিন পারেনি · আবার একই অংশ'};
+  return _defaults2(s,kind)}
+ return _defaults2(s,kind)};
+/* দাওর: তিন ধরন বাছাই (লেসন পাতায় আগের দুই বোতামের বদলে) */
+function tkChips(s){const b=(v,l)=>`<span class="ch ${(s.stage||'half')===v?'on-b':''}" onclick="SID('${s.id}').stage='${v}';save();render()">${l}</span>`;return `<div class="chs" style="margin-top:8px">${b('kacha','কয়েক পৃষ্ঠা')}${b('half','আধা পারা')}${b('full','এক পারা')}</div>`}
+
+/* প্রথম হিসাব না আসা পর্যন্ত (নেট থাকলে, সর্বোচ্চ ২০ সেকেন্ড) নতুন পড়া শুরু বন্ধ */
+const _lesStart1=lesStart;
+lesStart=function(sid,k){if(typeof STALE!=='undefined'&&STALE&&navigator.onLine&&Date.now()-BOOTT<20000){alert('সর্বশেষ হিসাব আনা হচ্ছে। কয়েক সেকেন্ড পর আবার চাপুন।');return}return _lesStart1(sid,k)};
+
+/* তিলাওয়াত পাতা: নামাজে তিলাওয়াত (আধা/এক পারা ঐচ্ছিক), তিলাওয়াত, সবকের নাজারা */
+function vTil(){const g=ses.g,L=stOf(g),m=V.m||'namaz';S.til[D]=S.til[D]||{};const R=S.til[D];
+ const TL={namaz:'নামাজে তিলাওয়াত',til:'তিলাওয়াত',naz:'সবকের নাজারা'},Y={namaz:['করেছে','করেনি'],til:['করেছে','করেনি'],naz:['পড়েছে','পড়েনি']}[m];
+ const act=L.filter(s=>!offNow(s.id)&&(m!=='naz'||s.type!=='takmil'));const all=act.length&&act.every(s=>(R[s.id]||{})[m]===1);
+ const rows=L.map(s=>{const r=R[s.id]||{},v=r[m];const aw=offNow(s.id);
+  if(aw)return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div><span class="tag y">${awL(aw)}</span></div>`;
+  if(m==='naz'&&s.type==='takmil')return '';
+  return `<div class="li" style="flex-wrap:wrap"><div class="n"><b>${esc(s.name)}</b><small>${s.id}</small></div>
+  ${m==='til'?`<input style="width:72px;flex:0 0 72px;text-align:center" placeholder="পারা" value="${esc(r.para||'')}" oninput="tilSet('${s.id}','para',this.value)" ${ro()?'disabled':''}>`:''}
+  <span class="ch ${v===1?'on-g':''}" onclick="${ro()?'':`tilSet('${s.id}','${m}',1)`}">${Y[0]}</span><span class="ch ${v===0?'on-r':''}" onclick="${ro()?'':`tilSet('${s.id}','${m}',0)`}">${Y[1]}</span>
+  ${m==='namaz'&&v===1?`<div style="width:100%;display:flex;gap:6px;justify-content:flex-end;margin-top:6px"><span class="mut" style="align-self:center;font-size:12px">ঐচ্ছিক:</span><span class="ch ${r.amt==='h'?'on-b':''}" onclick="${ro()?'':`tilAmt('${s.id}','h')`}">আধা পারা</span><span class="ch ${r.amt==='f'?'on-b':''}" onclick="${ro()?'':`tilAmt('${s.id}','f')`}">এক পারা</span></div>`:''}</div>`}).join('');
+ return topBar('তিলাওয়াত ও নাজারা')+`<div class="wrap">${dateBar()}
+ <div class="row" style="margin-bottom:10px;flex-wrap:wrap">${Object.keys(TL).map(x=>`<span class="ch ${m===x?'on-g':''}" style="flex:1" onclick="V.m='${x}';render()">${TL[x]}</span>`).join('')}</div>
+ ${m==='naz'?'<div class="ban b">আসরের আগে পরের দিনের সবক দেখে দেখে পড়া</div>':''}
+ ${ro()?'':`<div style="text-align:right;margin-bottom:6px"><button class="btn s" style="color:#085041;border-color:#5DCAA5" onclick="tilAll2('${m}',${all?0:1})">${all?'সবার টিক তুলে দিন':(m==='naz'?'সবাই পড়েছে':'সবাই করেছে')}</button></div>`}
+ <div class="card">${rows}</div>${m==='til'?'<p class="mut">পারা লেখা ঐচ্ছিক</p>':''}</div>`}
+function tilAmt(id,a){const r=S.til[D][id]=S.til[D][id]||{};if(r.amt===a)delete r.amt;else r.amt=a;save();render()}
+function tilAll2(m,on){stOf(ses.g).forEach(s=>{if(offNow(s.id)||(m==='naz'&&s.type==='takmil'))return;S.til[D][s.id]=S.til[D][s.id]||{};if(on)S.til[D][s.id][m]=1;else delete S.til[D][s.id][m]});save();render()}
+VIEWS.til=vTil;
+/* অভিভাবক বার্তা: কখন পাঠাবেন */
+const _vNews0=vNews;
+vNews=function(){const h=_vNews0();const w=dow(D);const b=w===5?'আজ শুক্রবার · পড়া নেই, বার্তা পাঠাতে হবে না':w===4?'বৃহস্পতিবার · এশার পর শবিনাসহ একসাথে পাঠান':'শনি থেকে বুধ · জোহরের পর পাঠান, সবক, সাতসবক ও আমুখতা শেষ হলে';return h.replace('<div class="wrap">',`<div class="wrap"><div class="ban ${w===5?'y':'b'}">${b}</div>`)};
+VIEWS.news=vNews;
+
+/* পড়া সাজানো: প্রতিটি শিক্ষার্থীর কার্ডে গ্রুপ, জামাত, এখনকার অবস্থা, দুর্বল */
+function planExtra(s){const i=S.students.indexOf(s),k0=today(),lock=nightLock();
+ const ch=(on,lab,fn)=>`<span class="ch ${on?'on-g':''}" style="padding:5px 10px;font-size:13px" onclick="${lock?'':fn}">${lab}</span>`;
+ let st='';const kp=kpOn(s.id,k0);
+ if(s.type==='takmil')st=`<div class="pst" style="background:#EEEDFE;color:#3C3489;border-color:#AFA9EC">দাওর চলছে · ${({kacha:'কয়েক পৃষ্ঠা করে',full:'এক পারা করে'}[s.stage]||'আধা পারা করে')} · খতম ${bn(s.khatm||0)}</div>`;
+ else if(kp)st=`<div class="pst" style="background:#FAEEDA;color:#633806;border-color:#EF9F27">কাঁচা পারা চলছে · ${bn(en(kp.para))} পারা · প্রতিদিন ${bn(en(kp.pages||''))} পৃষ্ঠা<br><span style="font-size:12px">সবক, সাতসবক ও আমুখতা বন্ধ</span></div>`;
+ else{const sp=spState(s,k0);if(sp){const dn=sp.done;st=`<div class="pst" style="background:#E6F1FB;color:#0C447C;border-color:#85B7EB">সবকের পারা চলছে · ${bn(en(sp.para))} পারা · নিজে থেকে এসেছে<br><span style="font-size:12px">${s.weak?'কয়েক পৃষ্ঠা করে, তারপর পুরো পারা':`প্রথম অর্ধেক ${dn.h1?'✓':'বাকি'} · দ্বিতীয় অর্ধেক ${dn.h2?'✓':'বাকি'} · পুরো পারা বাকি`}</span></div>`}
+  else{const c=calOn(k0);if(c&&c.type==='prep')st=`<div class="pst" style="background:#F1EFE8;color:#444441;border-color:#B4B2A9">পরীক্ষার প্রস্তুতি চলছে · ${s.prepAll?'সব পড়া চালু':'সবক ও সাতসবক বন্ধ, আমুখতা চলছে'} <span style="text-decoration:underline;cursor:pointer" onclick="${lock?'':`SID('${s.id}').prepAll=${s.prepAll?'false':'true'};save();render()`}">${s.prepAll?'বন্ধ করুন':'সব পড়া চালু'}</span></div>`}}
+ return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center"><span class="mut" style="font-size:12px">গ্রুপ</span>${ch(s.group==='ক','ক',`setGrp(${i},'ক')`)}${ch(s.group==='খ','খ',`setGrp(${i},'খ')`)}<span class="mut" style="font-size:12px;margin-left:6px">জামাত</span>${['হিফয প্রথম','হিফয দ্বিতীয়','হিফয তাকমিল'].map(j=>ch(s.jamat===j,j.replace('হিফয ',''),`setJamat(${i},'${j}')`)).join('')}</div>
+ <div style="display:flex;gap:6px;align-items:center;margin-top:6px"><span class="mut" style="font-size:12px">দুর্বল শিক্ষার্থী</span>${ch(!!s.weak,'হ্যাঁ',`SID('${s.id}').weak=true;save();render()`)}${ch(!s.weak,'না',`SID('${s.id}').weak=false;save();render()`)}</div>${st}`}
+
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
 const DEEP={nurDay:2,plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
+const LES_MIG='2026-11-01';/* এই তারিখ থেকে প্রতিটি পড়া আলাদা সারিতে: les|তারিখ|শিক্ষার্থী|পড়া */
 const DESC={log:1,alerts:1,beh:1,contact:1};
 const NOPIN={'settings|dirPin':1,'settings|routinePin':1,'settings|subPin':1,'settings|officePin':1};
 let FULL=false,SINCE=0,LAST={},READY=false,SENDING=false,AGAIN=false,TMR=null,OC=0,RETRY=null;
@@ -1436,10 +1508,11 @@ function rec(v,p,d,o){if(NOPIN[p])return;if(d>0&&v&&typeof v==='object'&&!Array.
 const noPin=(k,v)=>k==='pin'?undefined:v;
 function flat(){const o={};Object.keys(S).forEach(k=>{const v=S[k];
  if(Array.isArray(v)&&v.every(x=>x&&typeof x==='object'&&!Array.isArray(x))){o[k+'#']='1';const n=v.length;v.forEach((x,i)=>{if(!x._id)x._id=uid();if(x._o==null)x._o=Date.now()*1000+(DESC[k]?(n-i):i)+(OC++%1000)/1000;o[k+'#'+x._id]=k==='teachers'?JSON.stringify(x,noPin):JSON.stringify(x)})}
+ else if(k==='les'&&v&&typeof v==='object'){o[k+'/']='1';Object.keys(v).forEach(d=>rec(v[d],'les|'+d,d>=LES_MIG?2:1,o))}
  else if(DEEP[k]&&v&&typeof v==='object'){o[k+'/']='1';rec(v,k,DEEP[k],o)}
  else o[k]=JSON.stringify(v)});return o}
 function build(rows){const base=seed();delete base.settings.dirPin;delete base.settings.routinePin;delete base.settings.subPin;const arr={},obj={},whole={};
- Object.keys(rows).forEach(p=>{const v=rows[p];let m;
+ Object.keys(rows).sort((a,b)=>a.split('|').length-b.split('|').length).forEach(p=>{const v=rows[p];let m;
   if((m=p.match(/^([^#|\/]+)#(.*)$/))){arr[m[1]]=arr[m[1]]||[];if(m[2])arr[m[1]].push(JSON.parse(v))}
   else if((m=p.match(/^([^#|\/]+)\/$/))){obj[m[1]]=obj[m[1]]||{}}
   else{const ps=p.split('|');const k=ps[0];if(ps.length===1){whole[k]=JSON.parse(v)}else{obj[k]=obj[k]||{};let o=obj[k];for(let i=1;i<ps.length-1;i++){o[ps[i]]=o[ps[i]]||{};o=o[ps[i]]}o[ps[ps.length-1]]=JSON.parse(v)}}});
@@ -1474,7 +1547,7 @@ function flush(){if(SENDING){AGAIN=true;return}const P=diff();if(!P.length)retur
  .catch(err=>{SENDING=false;AGAIN=false;
   if(err.server&&/auth/.test(err.message)){TOKEN='';try{localStorage.removeItem('aihm-tok')}catch(e){}syncMsg('লেখা মোবাইলে রাখা আছে · জমা দিতে আবার PIN দিয়ে ঢুকুন','y');return}
   syncMsg('ইন্টারনেট নেই · লেখা মোবাইলে রাখা আছে · নেট এলে নিজে পাঠাবে','y');clearTimeout(RETRY);RETRY=setTimeout(flush,8000)})}
-function pull(cb){api('loadSince',[SINCE]).then(r=>{SINCE=r.now;cb(null,r.rows)}).catch(()=>cb(1))}
+function pull(cb){api('loadSince',[Math.max(0,SINCE-60000)]).then(r=>{SINCE=r.now;cb(null,r.rows)}).catch(()=>cb(1))}
 function applyRemote(ch){const L=flat();let changed=false;Object.keys(ch).forEach(p=>{const v=ch[p];const pending=L[p]!==LAST[p];
  if(v==null){if(!pending&&(p in L)){delete L[p];changed=true}delete LAST[p]}else{if(!pending&&L[p]!==v){L[p]=v;changed=true}LAST[p]=v}});if(changed)build(L);return changed}
 function busy(){const a=document.activeElement;return a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT')}
@@ -1502,7 +1575,7 @@ function pinRow(which,id,lab){const k='np_'+which+'_'+(id||'x');return `<div><la
 const FULLV=['drep','dtrep','office','oprint','trep','dbak','dlog','exam'];
 const _go=go;go=function(p,o){_go(p,o);if(FULLV.includes(p)&&!FULL)ensureFull(()=>{if(V.p===p)render()});if(['home','g','dir','dtoday','office','news','away'].includes(p))refresh()};
 const _render=render;render=function(){if(!READY){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#55615c">তথ্য আনা হচ্ছে…</div>';return}_render()};
-function boot(){let C=null;try{C=JSON.parse(localStorage.getItem(CK)||'null')}catch(e){}
+let BOOTT=Date.now();function boot(){BOOTT=Date.now();let C=null;try{C=JSON.parse(localStorage.getItem(CK)||'null')}catch(e){}
  if(C&&C.rows){build(C.rows);LAST=Object.assign({},C.rows);Object.keys(C.ld||{}).forEach(p=>{if(C.ld[p]===null)delete LAST[p];else LAST[p]=C.ld[p]});SINCE=C.since||0;READY=true;render();STALE=true;syncMsg('সর্বশেষ হিসাব আনা হচ্ছে…','y');
   pull((err,rows)=>{if(err){syncMsg('ইন্টারনেট নেই · মোবাইলে রাখা আগের হিসাব দেখাচ্ছে','y');setTimeout(refresh,15000);return}STALE=false;syncMsg('হিসাব হালনাগাদ হয়েছে','g');const ch=applyRemote(rows);cacheSave();if(ch&&!busy())render();if(diff().length)flush()})}
  else{render();pull((err,rows)=>{if(err){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#A32D2D">প্রথমবার খুলতে ইন্টারনেট লাগবে. নেট চালু করে আবার খুলুন.</div>';setTimeout(boot,15000);return}
@@ -1515,4 +1588,14 @@ if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;
  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl){rl=true;location.reload()}});
  navigator.serviceWorker.register('sw.js').then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update()})}).catch(()=>{})}
 boot();
+
+/* ভুলের খাতা: অ্যাপে কোনো ভুল হলে Sheet-এর "ত্রুটি" পাতায় লিখে রাখে (দিনে সর্বোচ্চ ২০টা, একই ভুল একবার) */
+(function(){const seen={};let n=0;
+ function rep(msg,where){try{const k=String(msg).slice(0,120);if(seen[k]||n>=20)return;seen[k]=1;n++;
+  const who=(typeof ses!=='undefined'&&ses)?(ses.role+(ses.tid?':'+ses.tid:'')+(ses.g?':'+ses.g:'')):'-';
+  api('logErr',[{m:String(msg).slice(0,500),w:String(where||'').slice(0,300),p:(typeof V!=='undefined'&&V)?V.p:'',who,d:(typeof D!=='undefined'?D:''),ua:navigator.userAgent.slice(0,120),v:(document.querySelector('meta[name=aihm-v]')||{}).content||''}]).catch(()=>{})}catch(e){}}
+ window.addEventListener('error',e=>rep(e.message,(e.filename||'').split('/').pop()+':'+e.lineno+':'+e.colno));
+ window.addEventListener('unhandledrejection',e=>{const r=e.reason;if(r&&r.server===undefined&&/fetch|network/i.test(String(r)))return;rep('promise: '+(r&&r.message||r),(r&&r.stack||'').split('\n')[1])});
+ const _r=render;render=function(){try{return _r.apply(this,arguments)}catch(e){rep(e.message,(e.stack||'').split('\n').slice(0,2).join(' | '));throw e}};
+})();
 </script></body></html>
