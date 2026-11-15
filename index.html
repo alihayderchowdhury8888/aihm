@@ -1392,7 +1392,7 @@ function vNurc(){nurInit();const cid=V.c,C=nurCls(cid);if(!C)return vNur();const
  h+=`<div class="ntw"><table><tr><th class="nm" rowspan="2">শিক্ষার্থীর নাম</th><th rowspan="2">হাজিরা</th>${subs.map(([n,t,w],j)=>{const sb=d.sub[j];return `<th ${w?'colspan="2"':'rowspan="2"'} class="sg"><span class="nsn" onclick="nurSubEd('${cid}',${j})">${esc(n)}</span><span class="ntch ${sb!=null?'sub':''}" onclick="nurPickT('${cid}',${j})">${sb!=null?'বদলি: '+esc(T[sb]||''):esc(T[t]||'')}</span>${w?'':`<span class="nall" onclick="nurAll('${cid}','m',${j})">সবাই ✓</span>`}${(d.nc||{})[j]?`<span class="nall" style="color:#A32D2D;font-weight:600" onclick="nurNc('${cid}',${j})">ক্লাস হয়নি${d.nc[j].why?' · '+esc(d.nc[j].why):''}</span>`:`<span class="nall" style="color:#8a948f" onclick="nurNc('${cid}',${j})">ক্লাস হয়নি?</span>`}</th>`}).join('')}<th rowspan="2" class="sg"><span class="nall" onclick="nurSubAdd('${cid}')">+ বিষয়</span></th></tr>
  <tr>${subs.map(([n,t,w],j)=>w?`<th class="sg">পড়া<br><span class="nall" onclick="nurAll('${cid}','m',${j})">সবাই ✓</span></th><th class="w">লেখা<br><span class="nall" onclick="nurAll('${cid}','w',${j})">সবাই ✓</span></th>`:'').join('')}</tr>`;
  rows.forEach((s,i)=>{const a=nurAtt(s,D);const off=a!=='P'||fri;const lv=nurOnLeave(s.id,D);
-  h+=`<tr><td class="nm">${bn(i+1)}. ${esc(s.name)}</td><td><span class="nat ${a}" onclick="${fri?'':`nurAttTap('${s.id}')`}">${a==='P'?'উপস্থিত':a==='S'?'অসুস্থ':a==='L'?'ছুটি'+(lv?' · '+bn(Math.round((pk(lv.to)-pk(D))/864e5)+1)+' দিন বাকি':''):'অনুপস্থিত'}</span></td>`;
+  const bh=((d.bh||{})[s.id]||[]);h+=`<tr><td class="nm">${bn(i+1)}. ${esc(s.name)} <span class="nall" style="${bh.length?'color:#A32D2D;font-weight:600':'color:#8a948f'}" onclick="nurBh('${cid}','${s.id}')">${bh.length?'আচরণ · '+bn(bh.length):'আচরণ'}</span></td><td><span class="nat ${a}" onclick="${fri?'':`nurAttTap('${s.id}')`}">${a==='P'?'উপস্থিত':a==='S'?'অসুস্থ':a==='L'?'ছুটি'+(lv?' · '+bn(Math.round((pk(lv.to)-pk(D))/864e5)+1)+' দিন বাকি':''):'অনুপস্থিত'}</span></td>`;
   subs.forEach((x,j)=>{const v=(d.m[s.id]||{})[j];const ofs=off||!!(d.nc||{})[j];h+=ofs?`<td class="c off sg">–</td>`:`<td class="c sg ${v===1?'ok':v===0?'no':''}" onclick="nurCyc('${cid}','m','${s.id}',${j})">${v===1?'✓':v===0?'✗':''}</td>`;
    if(x[2]){const y=(d.w[s.id]||{})[j];h+=ofs?`<td class="c off w">–</td>`:`<td class="c w ${y===1?'ok':y===0?'no':''}" onclick="nurCyc('${cid}','w','${s.id}',${j})">${y===1?'✓':y===0?'✗':''}</td>`}});
   h+='<td class="sg"></td></tr>'});
@@ -1767,8 +1767,8 @@ const _liveAlerts0=liveAlerts;liveAlerts=function(){const out=_liveAlerts0();try
 function nrHead(t){return rpHead(t,'g').replace('হিফয বিভাগ ·','নূরানী বিভাগ ·')}
 function nrDays(cid,f,t){return Object.keys(S.nurDay||{}).filter(k=>k>=f&&k<=t&&(S.nurDay[k]||{})[cid]&&dow(k)!==5&&!nurHolOn(k)).sort()}
 function nrMonthRange(mk){const f=mk+'-01';const d=new Date(+mk.slice(0,4),+mk.slice(5,7),0).getDate();return [f,mk+'-'+String(d).padStart(2,'0')]}
-function nrStat(s,f,t){const subs=S.nurCfg.subs[s.cls]||[];const r={days:0,P:0,A:0,L:0,S:0,sub:subs.map(x=>({n:x[0],w:!!x[2],mo:0,mn:0,wo:0,wn:0})),mo:0,mn:0,wo:0,wn:0,x:0,x20:0,x40:0,xl:0};
- nrDays(s.cls,f,t).forEach(k=>{const d=S.nurDay[k][s.cls];r.days++;const a=nurAtt(s,k);r[a]=(r[a]||0)+1;if(a!=='P')return;
+function nrStat(s,f,t){const subs=S.nurCfg.subs[s.cls]||[];const r={days:0,P:0,A:0,L:0,S:0,sub:subs.map(x=>({n:x[0],w:!!x[2],mo:0,mn:0,wo:0,wn:0})),mo:0,mn:0,wo:0,wn:0,x:0,x20:0,x40:0,xl:0,bf:0,bd:0,bw:0,bwhy:[]};
+ nrDays(s.cls,f,t).forEach(k=>{const d=S.nurDay[k][s.cls];r.days++;((d.bh||{})[s.id]||[]).forEach(b=>{r['b'+b.t]++;r.bwhy.push(dShort(k)+' · '+BHN[b.t]+(b.why?' · '+b.why:''))});const a=nurAtt(s,k);r[a]=(r[a]||0)+1;if(a!=='P')return;
   r.sub.forEach((q,j)=>{if((d.nc||{})[j])return;const m=(d.m[s.id]||{})[j],w=(d.w[s.id]||{})[j];if(m===1){q.mo++;r.mo++}else if(m===0){q.mn++;r.mn++}if(q.w){if(w===1){q.wo++;r.wo++}else if(w===0){q.wn++;r.wn++}}})});
  Object.keys(S.nurX||{}).filter(k=>k>=f&&k<=t).forEach(k=>{const x=S.nurX[k][s.id];if(x){r.x++;x.m===40?r.x40++:r.x20++;if(x.lv)r.xl++}});return r}
 function nrTeach(f,t){const T=S.nurCfg.teach,R={};nurTeach().forEach(([i,n])=>R[i]={n,P:0,L:0,A:0,held:0,nh:0,why:[],mo:0,mn:0});
@@ -1785,13 +1785,14 @@ function nrStuPage(s,mode,key){const cn=(S.nurCfg.classes.find(c=>c.id===s.cls)|
   return `<div class="rp" style="page-break-after:always">${nrHead('মাসিক রিপোর্ট')}${info}
   ${st('হাজিরা')}${nrTbl(['কার্যদিবস','উপস্থিত','না জানিয়ে অনুপস্থিত','ছুটি','অসুস্থ'],[[N0(r.days),N0(r.P),N0(r.A),N0(r.L),N0(r.S)]].map(x=>x))}</div>
   ${st('পড়া ও লেখা (দিন)')}${nrTbl(['বিষয়','পড়া পেরেছে','পারেনি','লেখা দিয়েছে','দেয়নি'],r.sub.map(q=>[esc(q.n),N0(q.mo),N0(q.mn),q.w?N0(q.wo):'—',q.w?N0(q.wn):'—']).concat([['<b>মোট</b>',`<b>${N0(r.mo)}</b>`,`<b>${N0(r.mn)}</b>`,`<b>${N0(r.wo)}</b>`,`<b>${N0(r.wn)}</b>`]]))}</div>
+  ${st('আচরণ')}${nrTbl(['জরিমানা','দুষ্টুমি','বড় সতর্কতা'],[[r.bf?bn(r.bf)+' বার':'নেই',r.bd?bn(r.bd)+' বার':'নেই',r.bw?bn(r.bw)+' বার':'নেই']])}${r.bwhy.length?`<div class="mut" style="font-size:12px;margin-top:4px">${r.bwhy.map(esc).join('<br>')}</div>`:''}</div>
   ${st('বাড়তি পাঠ সময়')}${nrTbl(['মোট দিন','২০ মিনিট','৪০ মিনিট','ছুটি দেওয়া হয়েছে'],[[N0(r.x),N0(r.x20),N0(r.x40),N0(r.xl)]])}</div>
   ${st('উস্তাদের মন্তব্য')}<div style="height:48px;border-bottom:1px dotted #9aa"></div></div>${sig}</div>`}
- const rows=[];const tot={days:0,P:0,A:0,L:0,S:0,mo:0,mn:0,wo:0,wn:0,x:0};
- for(let m=1;m<=12;m++){const mk=key+'-'+String(m).padStart(2,'0');const [f,t]=nrMonthRange(mk);const r=nrStat(s,f,t);if(!r.days&&!r.x)continue;Object.keys(tot).forEach(k=>tot[k]+=r[k]||0);rows.push([MON[m-1],N0(r.days),N0(r.P),N0(r.A),N0(r.L),N0(r.S),N0(r.mo),N0(r.mn),N0(r.wo),N0(r.wn),N0(r.x)])}
- rows.push(['<b>মোট</b>'].concat(['days','P','A','L','S','mo','mn','wo','wn','x'].map(k=>`<b>${N0(tot[k])}</b>`)));
+ const rows=[];const tot={days:0,P:0,A:0,L:0,S:0,mo:0,mn:0,wo:0,wn:0,x:0,bh:0};
+ for(let m=1;m<=12;m++){const mk=key+'-'+String(m).padStart(2,'0');const [f,t]=nrMonthRange(mk);const r=nrStat(s,f,t);if(!r.days&&!r.x)continue;r.bh=r.bf+r.bd+r.bw;Object.keys(tot).forEach(k=>tot[k]+=r[k]||0);rows.push([MON[m-1],N0(r.days),N0(r.P),N0(r.A),N0(r.L),N0(r.S),N0(r.mo),N0(r.mn),N0(r.wo),N0(r.wn),N0(r.x),N0(r.bh)])}
+ rows.push(['<b>মোট</b>'].concat(['days','P','A','L','S','mo','mn','wo','wn','x','bh'].map(k=>`<b>${N0(tot[k])}</b>`)));
  const pct=tot.days?Math.round(tot.P*100/tot.days):0;
- return `<div class="rp" style="page-break-after:always">${nrHead('বাৎসরিক রিপোর্ট')}${info}${st('১২ মাসের হিসাব')}<div style="overflow-x:auto">${nrTbl(['মাস','কার্যদিবস','উপস্থিত','না জানিয়ে অনুপস্থিত','ছুটি','অসুস্থ','পড়া পেরেছে','পারেনি','লেখা দিয়েছে','দেয়নি','বাড়তি পাঠ'],rows)}</div><div style="margin-top:6px;font-size:14px">বছরে উপস্থিতি: <b>${bn(pct)}%</b></div></div>${st('উস্তাদের মন্তব্য')}<div style="height:48px;border-bottom:1px dotted #9aa"></div></div>${sig}</div>`}
+ return `<div class="rp" style="page-break-after:always">${nrHead('বাৎসরিক রিপোর্ট')}${info}${st('১২ মাসের হিসাব')}<div style="overflow-x:auto">${nrTbl(['মাস','কার্যদিবস','উপস্থিত','না জানিয়ে অনুপস্থিত','ছুটি','অসুস্থ','পড়া পেরেছে','পারেনি','লেখা দিয়েছে','দেয়নি','বাড়তি পাঠ','আচরণ'],rows)}</div><div style="margin-top:6px;font-size:14px">বছরে উপস্থিতি: <b>${bn(pct)}%</b></div></div>${st('উস্তাদের মন্তব্য')}<div style="height:48px;border-bottom:1px dotted #9aa"></div></div>${sig}</div>`}
 function nrTeachPage(mode,key){const [f,t]=mode==='m'?nrMonthRange(key):[key+'-01-01',key+'-12-31'];const L=nrTeach(f,t);
  const why=L.filter(r=>r.why.length);
  return `<div class="rp">${nrHead(mode==='m'?'উস্তাদদের মাসিক হিসাব':'উস্তাদদের বাৎসরিক হিসাব')}<div style="text-align:center;font-weight:600;margin-bottom:8px">${mode==='m'?MON[+key.slice(5,7)-1]+' '+bn(key.slice(0,4)):bn(key)}</div>
@@ -1817,6 +1818,15 @@ function vNurrep(){nurInit();const C=S.nurCfg;const mode=V.mode||'m';const mk=V.
  <div class="card">${nurStOf(cid).map(s=>{const o=R[s.id]||{};return `<div class="li"><div class="n"><b>${esc(s.name)}</b><div class="chs" style="margin:4px 0 0"><span class="ch ${o.g?'on-g':''}" onclick="nrRetTg('${key}','${s.id}','g')">${o.g?'✓ ':''}দেওয়া হয়েছে</span><span class="ch ${o.r?'on-g':''}" onclick="nrRetTg('${key}','${s.id}','r')">${o.r?'✓ ':''}স্বাক্ষরসহ ফেরত</span></div></div><button class="btn s" onclick="${nav({sid:s.id})}">দেখুন</button></div>`}).join('')||'<div class="mut">কেউ নেই</div>'}</div>
  <button class="btn pri w" style="margin-top:10px" onclick="${nav({all:1})}">এই শ্রেণির সবগুলো একসাথে প্রিন্ট</button></div>`}
 VIEWS.nurrep=vNurrep;
+
+/* নূরানী: আচরণ (জরিমানা, দুষ্টুমি, বড় সতর্কতা) */
+const BHN={f:'জরিমানা',d:'দুষ্টুমি',w:'বড় সতর্কতা'};
+function nurBh(cid,sid){const s=nsGet(sid);const L=((nurPeek(D,cid)||{}).bh||{})[sid]||[];tmp.bht=tmp.bht||'d';
+ nurModal(`<b>${esc(s.name)} · আচরণ</b>${L.length?`<div style="margin-top:8px">${L.map((b,i)=>`<div class="li"><span>${BHN[b.t]}${b.why?' · '+esc(b.why):''}</span><button class="btn s" onclick="nurBhDel('${cid}','${sid}',${i})">বাদ দিন</button></div>`).join('')}</div>`:''}
+ <label class="l">নতুন যোগ</label><div class="chs" id="bh_t">${Object.entries(BHN).map(([k,n])=>`<span class="ch ${tmp.bht===k?'on-g':''}" onclick="tmp.bht='${k}';document.querySelectorAll('#bh_t .ch').forEach(e=>e.classList.remove('on-g'));this.classList.add('on-g')">${n}</span>`).join('')}</div>
+ <label class="l">কারণ (এক লাইনে)</label><input id="bh_w" style="width:100%"><div class="row" style="margin-top:12px"><button class="btn pri" onclick="nurBhS('${cid}','${sid}')">যোগ করুন</button><button class="btn" onclick="nurModal('');render()">বন্ধ করুন</button></div>`)}
+function nurBhS(cid,sid){const d=nurDayOf(D,cid);d.bh=d.bh||{};d.bh[sid]=d.bh[sid]||[];d.bh[sid].push({t:tmp.bht||'d',why:document.getElementById('bh_w').value.trim()});save();nurBh(cid,sid)}
+function nurBhDel(cid,sid,i){const d=nurDayOf(D,cid);if(d.bh&&d.bh[sid]){d.bh[sid].splice(i,1);if(!d.bh[sid].length)delete d.bh[sid]}save();nurBh(cid,sid)}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
