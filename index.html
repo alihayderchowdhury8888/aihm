@@ -1267,7 +1267,7 @@ function vDir(){
  <div class="sec">হিফয বিভাগ · গ্রুপের পাতা</div><div class="row" style="margin-bottom:4px"><button class="btn" onclick="ses={role:'dir',g:'ক'};tmp={};D=today();go('g')">গ্রুপ ক</button><button class="btn" onclick="ses={role:'dir',g:'খ'};tmp={};D=today();go('g')">গ্রুপ খ</button></div>
  <div class="sec">রিপোর্ট ও হিসাব</div><div class="dts">
  ${T_('📋','মাসিক রিপোর্ট','প্রত্যেক শিক্ষার্থীর মাসের হিসাব',"go('drep',{mode:'m'})",'g')}${T_('📊','বাৎসরিক রিপোর্ট','সারা বছরের অগ্রগতি',"go('drep',{mode:'y'})",'g')}
- ${T_('📑','উস্তাদদের কার্যবিবরণী','কোন উস্তাদ কোন কাজ করেছেন, কোনটা বাকি',"go('dtrep',{mode:'m'})",'g')}${T_('🏆','পরীক্ষার ফলাফল','গ্রেড ও মেধাতালিকা',"go('exam')",'g')}
+ ${T_('🏆','পরীক্ষার ফলাফল','গ্রেড ও মেধাতালিকা',"go('exam')",'g')}
  ${T_('💰','জরিমানা','বাকি ও আদায়',"go('dfine')",'g',dueF?bn(dueF)+'টি বাকি':'')}${T_('⭐','আচরণ','শিক্ষার্থীদের আচরণের খাতা',"go('dbeh')",'g')}
  ${T_('📝','পরীক্ষা প্রস্তুতি প্রশ্নপত্র','পরীক্ষার আগে অনুশীলনের প্রশ্ন',"go('dprepq')",'g')}${T_('🗄️','অফিস সহকারী','রিপোর্ট প্রিন্ট ও স্বাক্ষর ফেরত',"go('office')",'g')}</div>
  <div class="sec">ঠিক করার জায়গা</div><div class="dts">
@@ -1628,6 +1628,25 @@ function vNurx(){nurInit();const C=S.nurCfg,X=(S.nurX||{})[D]||{};const cls=C.cl
  </div>`}
 VIEWS.nurx=vNurx;
 const _vNur0=vNur;vNur=function(){return _vNur0().replace('<div class="sec">ক্লাস</div>',`<div class="card" style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px" onclick="D=today();go('nurx')"><div style="flex:1"><b>বাড়তি পাঠ সময়</b><div class="mut">ছুটির পর ২০ বা ৪০ মিনিট · অভিভাবককে WhatsApp</div></div><span>›</span></div><div class="sec">ক্লাস</div>`)};
+VIEWS.nur=vNur;
+/* উস্তাদদের হিসাব সরানো (তথ্য থাকবে, পাতা থাকবে না) */
+VIEWS.dtrep=function(){setTimeout(()=>go('dir'),0);return ''};
+const _vDtch0=vDtch;vDtch=function(){return _vDtch0().replace(/<button class="btn s" style="margin-top:8px" onclick="go\('dtrep'[^"]*">হিসাব দেখুন<\/button>/g,'')};VIEWS.dtch=vDtch;
+/* ভর্তির কাগজপত্র: জমা হয়েছে কি না */
+const DOCS_H=['ভর্তি ফরম সম্পূর্ণ পূরণ','পিতার জাতীয় পরিচয়পত্রের কপি','মাতার জাতীয় পরিচয়পত্রের কপি','শিক্ষার্থীর জন্মনিবন্ধনের কপি','শিক্ষার্থীর ছবি'];
+const DOCS_N=DOCS_H.concat(['ভর্তি পরীক্ষার খাতা']);
+function docBox(d,list,fn){d=d||{};const left=list.filter(x=>!d[x]).length;
+ return `<label class="l">কাগজপত্র ${left?`<span style="color:#A32D2D">· ${bn(left)}টি বাকি</span>`:'<span style="color:#0F6E56">· সব জমা হয়েছে</span>'}</label><div class="chs">${list.map((x,j)=>`<span class="ch ${d[x]?'on-g':''}" style="${d[x]?'':'border-color:#F09595;color:#A32D2D'}" onclick="${fn.replace('#',j)}">${d[x]?'✓ ':''}${x}</span>`).join('')}</div>`}
+function docTgH(sid,j){const s=SID(sid);if(!s)return;s.docs=s.docs||{};const k=DOCS_H[j];s.docs[k]=!s.docs[k];save();render()}
+function docTgA(j){admKeep();tmp.adocs=tmp.adocs||{};const k=DOCS_H[j];tmp.adocs[k]=!tmp.adocs[k];render()}
+const _vStuP1=vStuProfile;vStuProfile=function(s){const h=_vStuP1(s);const k=h.indexOf('</div><div class="sec">পর্যবেক্ষণকাল</div>');return k<0?h:h.slice(0,k)+docBox(s.docs,DOCS_H,`docTgH('${s.id}',#)`)+h.slice(k)};
+const _vAdmit1=vAdmit;vAdmit=function(){return _vAdmit1().replace('<div class="err" id="aerr">',docBox(tmp.adocs,DOCS_H,'docTgA(#)')+'<div class="err" id="aerr">')};VIEWS.admit=vAdmit;
+const _doAdmit1=doAdmit;doAdmit=function(){const n=S.students.length,d=tmp.adocs;_doAdmit1();if(S.students.length>n&&d){S.students[S.students.length-1].docs=d;save();render()}};
+/* নূরানী বিভাগ: হিফযের মতো ছোট ঘর */
+function nurSoon(n){nurModal(`<b>${n}</b><div class="mut" style="margin-top:8px">এই অংশ শীঘ্রই আসছে।</div><div style="margin-top:12px"><button class="btn" onclick="nurModal('')">ঠিক আছে</button></div>`)}
+vNur=function(){let h=_vNur0();
+ const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','শীঘ্রই আসছে',"nurSoon('ভর্তি ও শিক্ষার্থী তথ্য')",'g')}${OT_('রু','ক্লাস রুটিন','শীঘ্রই আসছে',"nurSoon('ক্লাস রুটিন')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','শীঘ্রই আসছে',"nurSoon('ছুটি ও দরখাস্ত')",'y')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শীঘ্রই আসছে',"nurSoon('মাসিক ও বাৎসরিক রিপোর্ট')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
+ h=h.replace('<div class="sec">ক্লাস</div>',t);return h.replace(/<p class="mut" style="margin-top:14px">ভর্তি, উস্তাদ হাজিরা[^<]*<\/p>/,'')};
 VIEWS.nur=vNur;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
