@@ -1645,7 +1645,7 @@ const _doAdmit1=doAdmit;doAdmit=function(){const n=S.students.length,d=tmp.adocs
 /* নূরানী বিভাগ: হিফযের মতো ছোট ঘর */
 function nurSoon(n){nurModal(`<b>${n}</b><div class="mut" style="margin-top:8px">এই অংশ শীঘ্রই আসছে।</div><div style="margin-top:12px"><button class="btn" onclick="nurModal('')">ঠিক আছে</button></div>`)}
 vNur=function(){let h=_vNur0();
- const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','শীঘ্রই আসছে',"nurSoon('ছুটি ও দরখাস্ত')",'y')}${OT_('উ','উস্তাদদের হাজিরা','উপস্থিত, ছুটি, অনুপস্থিত',"D=today();go('nurta')",'g')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থী ও উস্তাদদের হিসাব',"go('nurrep')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
+ const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','কে ছুটিতে, কার দরখাস্ত বাকি',"tmp={};go('nurlv')",'y')}${OT_('উ','উস্তাদদের হাজিরা','উপস্থিত, ছুটি, অনুপস্থিত',"D=today();go('nurta')",'g')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থী ও উস্তাদদের হিসাব',"go('nurrep')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
  h=h.replace('<div class="sec">ক্লাস</div>',t);return h.replace(/<p class="mut" style="margin-top:14px">ভর্তি, উস্তাদ হাজিরা[^<]*<\/p>/,'')};
 VIEWS.nur=vNur;
 /* নূরানী: ভর্তি ও শিক্ষার্থী তথ্য */
@@ -1827,6 +1827,26 @@ function nurBh(cid,sid){const s=nsGet(sid);const L=((nurPeek(D,cid)||{}).bh||{})
  <label class="l">কারণ (এক লাইনে)</label><input id="bh_w" style="width:100%"><div class="row" style="margin-top:12px"><button class="btn pri" onclick="nurBhS('${cid}','${sid}')">যোগ করুন</button><button class="btn" onclick="nurModal('');render()">বন্ধ করুন</button></div>`)}
 function nurBhS(cid,sid){const d=nurDayOf(D,cid);d.bh=d.bh||{};d.bh[sid]=d.bh[sid]||[];d.bh[sid].push({t:tmp.bht||'d',why:document.getElementById('bh_w').value.trim()});save();nurBh(cid,sid)}
 function nurBhDel(cid,sid,i){const d=nurDayOf(D,cid);if(d.bh&&d.bh[sid]){d.bh[sid].splice(i,1);if(!d.bh[sid].length)delete d.bh[sid]}save();nurBh(cid,sid)}
+/* নূরানী: ছুটি ও দরখাস্ত */
+function nlAdd(){const sid=document.getElementById('nl_s').value,f=document.getElementById('nl_f').value,n=parseInt(en(document.getElementById('nl_n').value||'')),w=document.getElementById('nl_w').value.trim();const e=document.getElementById('nlerr');
+ if(!sid){e.textContent='শিক্ষার্থী বেছে নিন';return}if(!f||!n||n<1){e.textContent='শুরুর তারিখ ও কত দিন, লিখুন';return}
+ S.nurLv.push({sid,from:f,to:addD(f,n-1),why:w});save();tmp={};render()}
+function nlEnd(i){const l=S.nurLv[i];if(!l)return;const y=addD(today(),-1);if(y<l.from)S.nurLv.splice(i,1);else l.to=y;save();render()}
+function vNurlv(){nurInit();const k=today();const cn=c=>(S.nurCfg.classes.find(x=>x.id===c)||{}).name||'';const st=sid=>S.nurSt.find(x=>x.id===sid);
+ const now=S.nurLv.map((l,i)=>[l,i]).filter(([l])=>k>=l.from&&k<=l.to&&st(l.sid)&&st(l.sid).status!=='out');
+ const pend=S.nurSt.filter(s=>s.status!=='out').map(s=>[s,nurBlocked(s,addD(k,1))]).filter(x=>x[1]);
+ const late=S.nurLv.filter(l=>{const nx=addD(l.to,1);if(nx>k||nx<addD(k,-7))return false;const s=st(l.sid);if(!s||s.status==='out')return false;const x=nurPeek(nx,s.cls);return x&&x.att&&x.att[s.id]&&x.att[s.id]!=='P'});
+ const mk=k.slice(0,7);const hist=S.nurLv.filter(l=>l.from.slice(0,7)===mk||l.to.slice(0,7)===mk).sort((a,b)=>a.from<b.from?1:-1);
+ const opts=S.nurCfg.classes.map(c=>`<optgroup label="${esc(c.name)}">${nurStOf(c.id).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</optgroup>`).join('');
+ return nurCss+nurTop('ছুটি ও দরখাস্ত','নূরানী বিভাগ',"go('nur')")+`<div class="wrap">
+ <div class="sec">আজ ছুটিতে · ${bn(now.length)} জন</div><div class="card">${now.map(([l,i])=>{const s=st(l.sid);const left=Math.round((pk(l.to)-pk(k))/864e5)+1;return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${esc(cn(s.cls))} · ${dShort(l.from)} থেকে ${dShort(l.to)} · ${bn(left)} দিন বাকি${l.why?' · '+esc(l.why):''}</small></div><button class="btn s" onclick="nlEnd(${i})">আজ ফিরেছে</button></div>`}).join('')||'<div class="mut">কেউ ছুটিতে নেই</div>'}</div>
+ <div class="sec">দরখাস্ত বাকি · ${bn(pend.length)} জন</div><div class="card" ${pend.length?'style="border-color:#F09595"':''}>${pend.map(([s,b])=>`<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${esc(cn(s.cls))} · ${dShort(b)} না জানিয়ে অনুপস্থিত</small></div><button class="btn s" onclick="S.nurApp['${s.id}']=today();save();render()">দরখাস্ত জমা দিয়েছে</button></div>`).join('')||'<div class="mut">কারও দরখাস্ত বাকি নেই</div>'}</div>
+ ${late.length?`<div class="sec">ছুটি শেষ, কিন্তু আসেনি</div><div class="card" style="border-color:#F09595">${late.map(l=>{const s=st(l.sid);return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${esc(cn(s.cls))} · ছুটি শেষ ${dShort(l.to)}</small></div></div>`}).join('')}</div>`:''}
+ <div class="sec">নতুন ছুটি লিখুন</div><div class="card"><label class="l" style="margin-top:0">শিক্ষার্থী</label><select id="nl_s" style="width:100%"><option value="">বেছে নিন</option>${opts}</select>
+ <div class="row"><div><label class="l">শুরুর তারিখ</label><input id="nl_f" type="date" value="${k}"></div><div><label class="l">কত দিন</label><input id="nl_n" inputmode="numeric" placeholder="যেমন ৩"></div></div>
+ <label class="l">কারণ</label><input id="nl_w" placeholder="যেমন অসুস্থতা, পারিবারিক কাজ" style="width:100%"><div class="err" id="nlerr"></div><button class="btn pri w" style="margin-top:8px" onclick="nlAdd()">ছুটি জমা দিন</button></div>
+ <div class="sec">এই মাসের ছুটির তালিকা</div><div class="card">${hist.map(l=>{const s=st(l.sid);if(!s)return'';return `<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${esc(cn(s.cls))} · ${dShort(l.from)}${l.to!==l.from?' থেকে '+dShort(l.to):''}${l.why?' · '+esc(l.why):''}</small></div></div>`}).join('')||'<div class="mut">এই মাসে কোনো ছুটি নেই</div>'}</div></div>`}
+VIEWS.nurlv=vNurlv;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
@@ -1907,7 +1927,7 @@ function setPinUI(which,id,inp){const el=document.getElementById(inp);const v=en
  api('setPin',[which,id,v]).then(()=>{el.value='';m.textContent='নতুন PIN জমা হয়েছে';m.style.color='#0F6E56'}).catch(err=>{m.style.color='#A32D2D';m.textContent=err.server?(/taken/.test(err.message)?'এই PIN অন্য কারো, আরেকটা দিন':'আবার কর্তৃপক্ষের PIN দিয়ে ঢুকে চেষ্টা করুন'):'ইন্টারনেট নেই, নেট থাকলে আবার চেষ্টা করুন'})}
 function pinRow(which,id,lab){const k='np_'+which+'_'+(id||'x');return `<div><label class="l">${lab}</label><div class="row"><input id="${k}" type="password" inputmode="numeric" maxlength="4" placeholder="নতুন PIN"><button class="btn s" style="flex:0 0 auto" onclick="setPinUI('${which}','${id||''}','${k}')">বদলান</button></div><div class="mut" id="${k}_m"></div></div>`}
 
-const FULLV=['nurrep','drep','dtrep','office','oprint','pbrep','dstu','trep','dbak','dlog','exam'];
+const FULLV=['nurrep','nurlv','drep','dtrep','office','oprint','pbrep','dstu','trep','dbak','dlog','exam'];
 const _go=go;go=function(p,o){_go(p,o);if(FULLV.includes(p)&&!FULL)ensureFull(()=>{if(V.p===p)render()});if(['home','g','dir','dtoday','office','news','away'].includes(p))refresh()};
 const _render=render;render=function(){if(!READY){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#55615c">তথ্য আনা হচ্ছে…</div>';return}_render()};
 let BOOTT=Date.now();function boot(){BOOTT=Date.now();let C=null;try{C=JSON.parse(localStorage.getItem(CK)||'null')}catch(e){}
