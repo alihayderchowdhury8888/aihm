@@ -1497,14 +1497,18 @@ function specKeep(){const f=document.getElementById('s_f'),t=document.getElement
 const _vDspec0=vDspec;
 vDspec=function(){if(!tmp.f)tmp.f=today();if(!tmp.t)tmp.t=addD(today(),2);let h=_vDspec0();
  h=h.replace(/id="s_f" type="date" value="[^"]*"/,`id="s_f" type="date" value="${tmp.f}" onchange="specKeep();if(tmp.t<tmp.f){tmp.t=tmp.f;render()}"`).replace(/id="s_t" type="date" value="[^"]*"/,`id="s_t" type="date" value="${tmp.t}" onchange="specKeep()"`).replace('id="s_n"','id="s_n" oninput="tmp.note=this.value"');
+ h=h.replace(/<button class="btn s" onclick="S\.spec\.splice\((\d+),1\);save\(\);render\(\)">মুছুন<\/button>/g,(m,i)=>`<div style="display:flex;gap:6px"><button class="btn s" onclick="specEdit(${i})">সংশোধন</button>${m}</div>`);
+ if(tmp.ed!=null){h=h.replace('<div class="sec">নতুন নির্দেশ</div>','<div class="sec">নির্দেশ সংশোধন</div>').replace('onclick="saveSpec()">জমা দিন</button>','onclick="saveSpec()">সংশোধন জমা দিন</button><button class="btn w" style="margin-top:8px" onclick="tmp={};render()">বাতিল</button>')}
  if(tmp.ok)h=h.replace('<div class="err" id="serr"></div>',`<div class="err" id="serr" style="color:#0F6E56">${tmp.ok}</div>`);return h};
 tg2=function(f,x){specKeep();tmp.ok='';const a=tmp[f];const i=a.indexOf(x);i<0?a.push(x):a.splice(i,1);render()};
 saveSpec=function(){specKeep();const er=m=>{const e=document.getElementById('serr');if(e){e.style.color='';e.textContent=m}};
  const n=(tmp.note||'').trim();if(!n)return er('নির্দেশ লিখুন');if(!tmp.g||!tmp.g.length)return er('গ্রুপ বেছে নিন');
  if(!tmp.f||!tmp.t)return er('কবে থেকে ও কবে পর্যন্ত — দুটো তারিখই দিন');if(tmp.t<tmp.f)return er('"কবে পর্যন্ত" তারিখ "কবে থেকে"-র আগে হতে পারে না');
- if(!Array.isArray(S.spec))S.spec=[];S.spec.push({from:tmp.f,to:tmp.t,groups:tmp.g.slice(),run:tmp.run.slice(),note:n});save();
- tmp={ok:'নির্দেশ জমা হয়েছে। উপরের তালিকায় দেখুন।'};render();window.scrollTo(0,0)};
+ if(!Array.isArray(S.spec))S.spec=[];const o={from:tmp.f,to:tmp.t,groups:tmp.g.slice(),run:tmp.run.slice(),note:n};const ed=tmp.ed!=null&&S.spec[tmp.ed];if(ed)S.spec[tmp.ed]=o;else S.spec.push(o);save();
+ tmp={ok:ed?'সংশোধন জমা হয়েছে। উপরের তালিকায় দেখুন।':'নির্দেশ জমা হয়েছে। উপরের তালিকায় দেখুন।'};render();window.scrollTo(0,0)};
 VIEWS.dspec=vDspec;
+
+function specEdit(i){const x=S.spec[i];if(!x)return;tmp={ed:i,f:x.from,t:x.to,g:(x.groups||[]).slice(),run:(x.run||[]).slice(),note:x.note||''};render();setTimeout(()=>{const e=document.getElementById('s_n');if(e)e.scrollIntoView({block:'center'})},50)}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
