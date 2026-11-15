@@ -1888,6 +1888,15 @@ function vNurex(){nurInit();S.nurEx=S.nurEx||{};const C=S.nurCfg;
  <div class="row" style="margin-top:12px"><button class="btn" onclick="exSubEd('${ex.id}','${cid}')">বিষয় ও পূর্ণ নম্বর বদলান</button><button class="btn pri" onclick="${nav({pr:1})}">ফলাফল দেখুন ও প্রিন্ট</button></div>
  <div class="row" style="margin-top:8px"><label class="l" style="margin:0">পরীক্ষা শুরুর তারিখ</label><input type="date" value="${ex.date}" onchange="S.nurEx['${ex.id}'].date=this.value;S.nurEx['${ex.id}'].yr=this.value.slice(0,4);save();render()"></div></div>`}
 VIEWS.nurex=vNurex;
+/* দুইবার চাপলে আগের অবস্থায় ফেরা */
+ofRet=function(gk,sid){const G=S.given[gk];if(!G[sid])G[sid]={how:'হাতে',date:today(),by:'অফিস',auto:1};if(G[sid].ret){delete G[sid].ret;if(G[sid].auto)delete G[sid]}else G[sid].ret=today();save();render()};
+nurAll=function(cid,t,j){const d=nurDayOf(D,cid);const L=nurStOf(cid).filter(s=>nurAtt(s,D)==='P');const all=L.length&&L.every(s=>(d[t][s.id]||{})[j]===1);
+ L.forEach(s=>{d[t][s.id]=d[t][s.id]||{};if(all)delete d[t][s.id][j];else if(d[t][s.id][j]===undefined)d[t][s.id][j]=1});save();render()};
+nurTAAll=function(){S.nurTA=S.nurTA||{};S.nurTA[D]=S.nurTA[D]||{};const A=S.nurTA[D],L=nurTeach();if(L.every(([i])=>A[i]==='P'))L.forEach(([i])=>delete A[i]);else L.forEach(([i])=>{if(!A[i])A[i]='P'});save();render()};
+nurAll=function(cid,t,j){const d=nurDayOf(D,cid);const L=nurStOf(cid).filter(s=>nurAtt(s,D)==='P');const key=t+j;d.fill=d.fill||{};const F=d.fill[key];
+ if(F&&F.length&&F.every(id=>(d[t][id]||{})[j]===1)){F.forEach(id=>delete d[t][id][j]);delete d.fill[key]}
+ else{const nf=[];L.forEach(s=>{d[t][s.id]=d[t][s.id]||{};if(d[t][s.id][j]===undefined){d[t][s.id][j]=1;nf.push(s.id)}});if(nf.length)d.fill[key]=nf;else delete d.fill[key]}
+ if(!Object.keys(d.fill).length)delete d.fill;save();render()};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
