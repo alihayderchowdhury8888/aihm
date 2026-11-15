@@ -1492,6 +1492,19 @@ function planExtra(s){const i=S.students.indexOf(s),k0=today(),lock=nightLock();
   else{const c=calOn(k0);if(c&&c.type==='prep')st=`<div class="pst" style="background:#F1EFE8;color:#444441;border-color:#B4B2A9">পরীক্ষার প্রস্তুতি চলছে · ${s.prepAll?'সব পড়া চালু':'সবক ও সাতসবক বন্ধ, আমুখতা চলছে'} <span style="text-decoration:underline;cursor:pointer" onclick="${lock?'':`SID('${s.id}').prepAll=${s.prepAll?'false':'true'};save();render()`}">${s.prepAll?'বন্ধ করুন':'সব পড়া চালু'}</span></div>`}}
  return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center"><span class="mut" style="font-size:12px">গ্রুপ</span>${ch(s.group==='ক','ক',`setGrp(${i},'ক')`)}${ch(s.group==='খ','খ',`setGrp(${i},'খ')`)}<span class="mut" style="font-size:12px;margin-left:6px">জামাত</span>${['হিফয প্রথম','হিফয দ্বিতীয়','হিফয তাকমিল'].map(j=>ch(s.jamat===j,j.replace('হিফয ',''),`setJamat(${i},'${j}')`)).join('')}</div>
  <div style="display:flex;gap:6px;align-items:center;margin-top:6px"><span class="mut" style="font-size:12px">দুর্বল শিক্ষার্থী</span>${ch(!!s.weak,'হ্যাঁ',`SID('${s.id}').weak=true;save();render()`)}${ch(!s.weak,'না',`SID('${s.id}').weak=false;save();render()`)}</div>${st}`}
+/* নোটিশ বোর্ড: তারিখ ও টিক ধরে রাখা, জমা নিশ্চিত করা */
+function specKeep(){const f=document.getElementById('s_f'),t=document.getElementById('s_t'),n=document.getElementById('s_n');if(f)tmp.f=f.value;if(t)tmp.t=t.value;if(n)tmp.note=n.value}
+const _vDspec0=vDspec;
+vDspec=function(){if(!tmp.f)tmp.f=today();if(!tmp.t)tmp.t=addD(today(),2);let h=_vDspec0();
+ h=h.replace(/id="s_f" type="date" value="[^"]*"/,`id="s_f" type="date" value="${tmp.f}" onchange="specKeep();if(tmp.t<tmp.f){tmp.t=tmp.f;render()}"`).replace(/id="s_t" type="date" value="[^"]*"/,`id="s_t" type="date" value="${tmp.t}" onchange="specKeep()"`).replace('id="s_n"','id="s_n" oninput="tmp.note=this.value"');
+ if(tmp.ok)h=h.replace('<div class="err" id="serr"></div>',`<div class="err" id="serr" style="color:#0F6E56">${tmp.ok}</div>`);return h};
+tg2=function(f,x){specKeep();tmp.ok='';const a=tmp[f];const i=a.indexOf(x);i<0?a.push(x):a.splice(i,1);render()};
+saveSpec=function(){specKeep();const er=m=>{const e=document.getElementById('serr');if(e){e.style.color='';e.textContent=m}};
+ const n=(tmp.note||'').trim();if(!n)return er('নির্দেশ লিখুন');if(!tmp.g||!tmp.g.length)return er('গ্রুপ বেছে নিন');
+ if(!tmp.f||!tmp.t)return er('কবে থেকে ও কবে পর্যন্ত — দুটো তারিখই দিন');if(tmp.t<tmp.f)return er('"কবে পর্যন্ত" তারিখ "কবে থেকে"-র আগে হতে পারে না');
+ if(!Array.isArray(S.spec))S.spec=[];S.spec.push({from:tmp.f,to:tmp.t,groups:tmp.g.slice(),run:tmp.run.slice(),note:n});save();
+ tmp={ok:'নির্দেশ জমা হয়েছে। উপরের তালিকায় দেখুন।'};render();window.scrollTo(0,0)};
+VIEWS.dspec=vDspec;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
