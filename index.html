@@ -1389,12 +1389,12 @@ function vNurc(){nurInit();const cid=V.c,C=nurCls(cid);if(!C)return vNur();const
  if(pend.length)h+=`<div class="card" style="border-color:#F09595"><b style="color:#791F1F">দরখাস্ত বাকি · এদের নাম হাজিরায় আসবে না</b>${pend.map(([s,l])=>`<div class="li"><span>${esc(s.name)} <span class="mut">· ${dBn(l)} না জানিয়ে অনুপস্থিত</span></span><button class="btn s" onclick="S.nurApp['${s.id}']=D;save();render()">দরখাস্ত জমা দিয়েছে</button></div>`).join('')}</div>`;
  if(!L.length)h+=`<div class="ban b">এই ক্লাসে এখনো কোনো শিক্ষার্থী নেই। নিচের বোতাম দিয়ে নাম যোগ করুন।</div>`;
  else{h+=`<div class="ban b">ঘরে টিপুন: খালি → <b style="color:#0F6E56">✓</b> পেরেছে → <b style="color:#A32D2D">✗</b> পারেনি → খালি · হাজিরায় টিপলে অনুপস্থিত/ছুটি · উস্তাদের নামে টিপলে বদলি · বিষয়ের নামে টিপলে বদলানো যায়</div>`;
- h+=`<div class="ntw"><table><tr><th class="nm" rowspan="2">শিক্ষার্থীর নাম</th><th rowspan="2">হাজিরা</th>${subs.map(([n,t,w],j)=>{const sb=d.sub[j];return `<th ${w?'colspan="2"':'rowspan="2"'} class="sg"><span class="nsn" onclick="nurSubEd('${cid}',${j})">${esc(n)}</span><span class="ntch ${sb!=null?'sub':''}" onclick="nurPickT('${cid}',${j})">${sb!=null?'বদলি: '+esc(T[sb]||''):esc(T[t]||'')}</span>${w?'':`<span class="nall" onclick="nurAll('${cid}','m',${j})">সবাই ✓</span>`}</th>`}).join('')}<th rowspan="2" class="sg"><span class="nall" onclick="nurSubAdd('${cid}')">+ বিষয়</span></th></tr>
+ h+=`<div class="ntw"><table><tr><th class="nm" rowspan="2">শিক্ষার্থীর নাম</th><th rowspan="2">হাজিরা</th>${subs.map(([n,t,w],j)=>{const sb=d.sub[j];return `<th ${w?'colspan="2"':'rowspan="2"'} class="sg"><span class="nsn" onclick="nurSubEd('${cid}',${j})">${esc(n)}</span><span class="ntch ${sb!=null?'sub':''}" onclick="nurPickT('${cid}',${j})">${sb!=null?'বদলি: '+esc(T[sb]||''):esc(T[t]||'')}</span>${w?'':`<span class="nall" onclick="nurAll('${cid}','m',${j})">সবাই ✓</span>`}${(d.nc||{})[j]?`<span class="nall" style="color:#A32D2D;font-weight:600" onclick="nurNc('${cid}',${j})">ক্লাস হয়নি${d.nc[j].why?' · '+esc(d.nc[j].why):''}</span>`:`<span class="nall" style="color:#8a948f" onclick="nurNc('${cid}',${j})">ক্লাস হয়নি?</span>`}</th>`}).join('')}<th rowspan="2" class="sg"><span class="nall" onclick="nurSubAdd('${cid}')">+ বিষয়</span></th></tr>
  <tr>${subs.map(([n,t,w],j)=>w?`<th class="sg">পড়া<br><span class="nall" onclick="nurAll('${cid}','m',${j})">সবাই ✓</span></th><th class="w">লেখা<br><span class="nall" onclick="nurAll('${cid}','w',${j})">সবাই ✓</span></th>`:'').join('')}</tr>`;
  rows.forEach((s,i)=>{const a=nurAtt(s,D);const off=a!=='P'||fri;const lv=nurOnLeave(s.id,D);
   h+=`<tr><td class="nm">${bn(i+1)}. ${esc(s.name)}</td><td><span class="nat ${a}" onclick="${fri?'':`nurAttTap('${s.id}')`}">${a==='P'?'উপস্থিত':a==='L'?'ছুটি'+(lv?' · '+bn(Math.round((pk(lv.to)-pk(D))/864e5)+1)+' দিন বাকি':''):'অনুপস্থিত'}</span></td>`;
-  subs.forEach((x,j)=>{const v=(d.m[s.id]||{})[j];h+=off?`<td class="c off sg">–</td>`:`<td class="c sg ${v===1?'ok':v===0?'no':''}" onclick="nurCyc('${cid}','m','${s.id}',${j})">${v===1?'✓':v===0?'✗':''}</td>`;
-   if(x[2]){const y=(d.w[s.id]||{})[j];h+=off?`<td class="c off w">–</td>`:`<td class="c w ${y===1?'ok':y===0?'no':''}" onclick="nurCyc('${cid}','w','${s.id}',${j})">${y===1?'✓':y===0?'✗':''}</td>`}});
+  subs.forEach((x,j)=>{const v=(d.m[s.id]||{})[j];const ofs=off||!!(d.nc||{})[j];h+=ofs?`<td class="c off sg">–</td>`:`<td class="c sg ${v===1?'ok':v===0?'no':''}" onclick="nurCyc('${cid}','m','${s.id}',${j})">${v===1?'✓':v===0?'✗':''}</td>`;
+   if(x[2]){const y=(d.w[s.id]||{})[j];h+=ofs?`<td class="c off w">–</td>`:`<td class="c w ${y===1?'ok':y===0?'no':''}" onclick="nurCyc('${cid}','w','${s.id}',${j})">${y===1?'✓':y===0?'✗':''}</td>`}});
   h+='<td class="sg"></td></tr>'});
  h+='</table></div>'}
  h+=`<div class="row" style="margin-top:12px"><button class="btn" onclick="nurStAdd('${cid}')">+ শিক্ষার্থী যোগ করুন</button></div><p class="mut">সব টেপা সঙ্গে সঙ্গে জমা হয়।</p></div>`;return h}
@@ -1645,7 +1645,7 @@ const _doAdmit1=doAdmit;doAdmit=function(){const n=S.students.length,d=tmp.adocs
 /* নূরানী বিভাগ: হিফযের মতো ছোট ঘর */
 function nurSoon(n){nurModal(`<b>${n}</b><div class="mut" style="margin-top:8px">এই অংশ শীঘ্রই আসছে।</div><div style="margin-top:12px"><button class="btn" onclick="nurModal('')">ঠিক আছে</button></div>`)}
 vNur=function(){let h=_vNur0();
- const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','শীঘ্রই আসছে',"nurSoon('ছুটি ও দরখাস্ত')",'y')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শীঘ্রই আসছে',"nurSoon('মাসিক ও বাৎসরিক রিপোর্ট')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
+ const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','শীঘ্রই আসছে',"nurSoon('ছুটি ও দরখাস্ত')",'y')}${OT_('উ','উস্তাদদের হাজিরা','উপস্থিত, ছুটি, অনুপস্থিত',"D=today();go('nurta')",'g')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শীঘ্রই আসছে',"nurSoon('মাসিক ও বাৎসরিক রিপোর্ট')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
  h=h.replace('<div class="sec">ক্লাস</div>',t);return h.replace(/<p class="mut" style="margin-top:14px">ভর্তি, উস্তাদ হাজিরা[^<]*<\/p>/,'')};
 VIEWS.nur=vNur;
 /* নূরানী: ভর্তি ও শিক্ষার্থী তথ্য */
@@ -1744,9 +1744,25 @@ function vNurrt(){rtInit();const C=S.nurCfg,r=rtCur(),cn=id=>(C.classes.find(c=>
  <div class="row" style="margin-top:10px"><div><label class="l">শুরু</label><input id="h_f" type="date"></div><div><label class="l">শেষ</label><input id="h_t" type="date"></div></div><label class="l">ছুটির কারণ</label><input id="h_n" placeholder="যেমন ঈদুল ফিতরের ছুটি" style="width:100%"><div class="err" id="herr"></div><button class="btn pri w" style="margin-top:8px" onclick="holAdd()">ছুটি যোগ করুন</button></div></div>`}
 VIEWS.nurrt=vNurrt;
 
+/* নূরানী: বিষয়ভিত্তিক "ক্লাস হয়নি" */
+function nurNc(cid,j){const d=nurDayOf(D,cid);if(d.nc&&d.nc[j]){delete d.nc[j];save();render();return}
+ nurModal(`<b>এই বিষয়ের ক্লাস আজ হয়নি</b><label class="l">কারণ</label><input id="nc_w" placeholder="যেমন উস্তাদ ছুটিতে" style="width:100%"><div class="row" style="margin-top:12px"><button class="btn pri" onclick="nurNcS('${cid}',${j})">রাখুন</button><button class="btn" onclick="nurModal('')">বাতিল</button></div>`)}
+function nurNcS(cid,j){const d=nurDayOf(D,cid);d.nc=d.nc||{};d.nc[j]={why:document.getElementById('nc_w').value.trim()};save();nurModal('');render()}
+/* নূরানী: উস্তাদদের হাজিরা */
+function nurTeach(){return (S.nurCfg.teach||[]).map((n,i)=>[i,n]).filter(([i,n])=>n&&!/^উস্তাদ\s*[০-৯0-9]+$/.test(n))}
+function nurTASet(i,v){S.nurTA=S.nurTA||{};S.nurTA[D]=S.nurTA[D]||{};if(S.nurTA[D][i]===v)delete S.nurTA[D][i];else S.nurTA[D][i]=v;save();render()}
+function nurTAAll(){S.nurTA=S.nurTA||{};S.nurTA[D]=S.nurTA[D]||{};nurTeach().forEach(([i])=>{if(!S.nurTA[D][i])S.nurTA[D][i]='P'});save();render()}
+function vNurta(){nurInit();const A=(S.nurTA||{})[D]||{};const L=nurTeach();const hol=nurHolOn(D),fri=dow(D)===5;
+ return nurCss+nurTop('উস্তাদদের হাজিরা','নূরানী বিভাগ',"go('nur')")+`<div class="wrap">
+ <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px"><button class="btn" onclick="D=addD(D,-1);render()">‹ আগের দিন</button><b>${dBn(D)}</b><button class="btn" onclick="D=addD(D,1);render()">পরের দিন ›</button></div>
+ ${fri?'<div class="ban y">শুক্রবার, সাপ্তাহিক ছুটি</div>':hol?`<div class="ban y">ছুটি: ${esc(hol.name)}</div>`:''}
+ <div class="card">${L.map(([i,n])=>{const v=A[i];return `<div class="li"><b style="flex:1">${esc(n)}</b><div class="chs" style="margin:0"><span class="ch ${v==='P'?'on-g':''}" onclick="nurTASet(${i},'P')">উপস্থিত</span><span class="ch ${v==='L'?'on-y':''}" onclick="nurTASet(${i},'L')">ছুটি</span><span class="ch ${v==='A'?'on-r':''}" style="${v==='A'?'background:#FCEBEB;border-color:#E24B4A;color:#791F1F':''}" onclick="nurTASet(${i},'A')">অনুপস্থিত</span></div></div>`}).join('')}</div>
+ <button class="btn w" style="margin-top:8px" onclick="nurTAAll()">বাকি সবাই উপস্থিত</button><p class="mut">উস্তাদের নাম ও বিষয় দৈনিক শিটের বিষয়ের ঘর থেকে বদলানো যায়।</p></div>`}
+VIEWS.nurta=vNurta;
+
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
-const DEEP={nurDay:2,nurX:2,plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
+const DEEP={nurDay:2,nurX:2,nurTA:1,plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
 const LES_MIG='2026-11-01';/* এই তারিখ থেকে প্রতিটি পড়া আলাদা সারিতে: les|তারিখ|শিক্ষার্থী|পড়া */
 const DESC={log:1,alerts:1,beh:1,contact:1};
 const NOPIN={'settings|dirPin':1,'settings|routinePin':1,'settings|subPin':1,'settings|officePin':1};
@@ -1774,7 +1790,7 @@ function build(rows){const base=seed();delete base.settings.dirPin;delete base.s
  S=base}
 function diff(){const F=flat(),P=[];Object.keys(F).forEach(p=>{if(F[p]!==LAST[p])P.push({p,v:F[p]})});Object.keys(LAST).forEach(p=>{if(!(p in F))P.push({p,v:null})});return P}
 /* ফোনে শুধু এই মাস ও আগের মাসের তথ্য থাকে; পুরোনো সব তথ্য গুগল শিটে */
-const DATED={nurDay:1,nurX:1,att:1,les:1,til:1,shab:1,mashq:1,kitab:1,ret:1,nocls:1,sent:1,given:1,target:1,tgWhy:1};
+const DATED={nurDay:1,nurX:1,nurTA:1,att:1,les:1,til:1,shab:1,mashq:1,kitab:1,ret:1,nocls:1,sent:1,given:1,target:1,tgWhy:1};
 function cutoff(){const d=new Date();return key(new Date(d.getFullYear(),d.getMonth()-1,1))}
 function isOld(p,v,c){const m=p.match(/^([^#|\/]+)\|(\d{4}-\d{2}(?:-\d{2})?)\|/);if(m&&DATED[m[1]])return m[2].length===7?m[2]<c.slice(0,7):m[2]<c;
  const a=p.match(/^(log|alerts)#(.+)$/);if(a&&v){try{const x=JSON.parse(v);const d=x.date||(x.t||'').slice(0,10);return !!d&&d<c}catch(e){}}return false}
