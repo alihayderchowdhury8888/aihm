@@ -1513,7 +1513,28 @@ VIEWS.dspec=vDspec;
 function specEdit(i){const x=S.spec[i];if(!x)return;tmp={ed:i,f:x.from,t:x.to,g:(x.groups||[]).slice(),run:(x.run||[]).slice(),note:x.note||''};render();setTimeout(()=>{const e=document.getElementById('s_n');if(e)e.scrollIntoView({block:'center'})},50)}
 /* পরীক্ষার জন্য বানানো "test" ছাত্রকে তালিকা থেকে সরানো (একবার) */
 const _renderT=render;let TESTRM=false;
-render=function(){if(!TESTRM&&S&&Array.isArray(S.students)&&S.students.length){TESTRM=true;let ch=false;S.students.forEach(s=>{if(String(s.name||'').trim().toLowerCase()==='test'&&s.status!=='out'){s.status='out';ch=true}});if(ch)try{save()}catch(e){}}return _renderT()};
+render=function(){if(!TESTRM&&S&&Array.isArray(S.students)&&S.students.length){TESTRM=true;let ch=false;S.students.forEach(s=>{if(String(s.name||'').trim().toLowerCase()==='test'&&s.status!=='out'&&!s.keep){s.status='out';s.outWhy='পরীক্ষার জন্য বানানো';s.outDate=today();ch=true}});if(ch)try{save()}catch(e){}}return _renderT()};
+/* ছাত্র তালিকা থেকে সরানো ও ফিরিয়ে আনা (পরিচালক ও অফিস সহকারী) */
+const _dirTop0=dirTop;dirTop=function(t,back){return _dirTop0(t,back||(ses&&ses.role==='office'?"go('office')":undefined))};
+vDstu=function(){
+ if(V.sid){const s=SID(V.sid);if(!s)return go('dstu');let h=vStuProfile(s);const k=h.lastIndexOf('</div>');
+  const box=s.status==='out'
+   ?`<div class="card"><b>এই ছাত্র তালিকা থেকে সরানো আছে</b><div class="mut" style="margin:4px 0 10px">${s.outDate?dShort(s.outDate)+' · ':''}${esc(s.outWhy||'')}</div><button class="btn w" onclick="stuBack('${s.id}')">ফিরিয়ে আনুন</button></div>`
+   :tmp.rmc===s.id
+   ?`<div class="card" style="border-color:#E24B4A"><b style="color:#791F1F">নিশ্চিত? ${esc(s.name)} কোনো পাতায় আর দেখাবে না।</b><div class="mut" style="margin:4px 0 10px">আগের পড়া, হাজিরা ও রিপোর্টের হিসাব থেকে যাবে।</div><div class="row"><button class="btn w" style="background:#A32D2D;color:#fff;border-color:#A32D2D" onclick="stuRm('${s.id}')">হ্যাঁ, সরান</button><button class="btn w" onclick="tmp.rmc='';render()">না</button></div></div>`
+   :`<div class="card"><b>তালিকা থেকে সরান</b><label class="l">কেন সরাচ্ছেন</label><textarea id="rm_why" rows="3" oninput="tmp.rmw=this.value" style="width:100%;font-size:16px;padding:8px;box-sizing:border-box">${esc(tmp.rmw||'')}</textarea><div class="err" id="rmerr"></div><button class="btn w" style="margin-top:8px;color:#A32D2D;border-color:#E24B4A" onclick="stuRmAsk('${s.id}')">এই ছাত্রকে তালিকা থেকে সরান</button></div>`;
+  return h.slice(0,k)+box+h.slice(k)}
+ const row=s=>`<div class="li" style="cursor:pointer" onclick="tmp={};go('dstu',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}${s.probation&&!s.probation.dec?'<span class="tag y">পর্যবেক্ষণে</span>':''}</b><small>${s.id} · ${esc(s.jamat||'')}</small></div><span>›</span></div>`;
+ const out=S.students.filter(s=>s.status==='out');
+ return dirTop('ভর্তি ও শিক্ষার্থী তথ্য')+`<div class="wrap">${['ক','খ','both'].map(g=>`<div class="sec">${g==='both'?'তাকমিল (দুই উস্তাদ)':'গ্রুপ '+g+' · '+esc(gTeacher(g).name)}</div><div class="card">${S.students.filter(s=>s.group===g&&s.status!=='out').map(row).join('')||'<div class="mut">কেউ নেই</div>'}</div>`).join('')}
+ <button class="btn pri w" onclick="addStu()">+ নতুন শিক্ষার্থী যোগ করুন</button>
+ ${out.length?`<div class="sec">সরানো ছাত্র</div><div class="card">${out.map(s=>`<div class="li"><div class="n"><b style="cursor:pointer" onclick="tmp={};go('dstu',{sid:'${s.id}'})">${esc(s.name)}</b><small>${s.id}${s.outDate?' · '+dShort(s.outDate):''}${s.outWhy?' · '+esc(s.outWhy):s.probation&&s.probation.dec==='no'?' · ভর্তি হলো না':''}</small></div><button class="btn s" onclick="stuBack('${s.id}')">ফিরিয়ে আনুন</button></div>`).join('')}</div>`:''}</div>`};
+VIEWS.dstu=vDstu;
+function stuRmAsk(id){const w=(tmp.rmw||'').trim();if(!w){const e=document.getElementById('rmerr');if(e)e.textContent='কেন সরাচ্ছেন, লিখুন';return}tmp.rmc=id;render()}
+function stuRm(id){const s=SID(id);if(!s)return;s.status='out';s.outWhy=(tmp.rmw||'').trim();s.outDate=today();save();tmp={};go('dstu')}
+function stuBack(id){const s=SID(id);if(!s)return;s.status='ok';s.keep=1;delete s.outWhy;delete s.outDate;if(s.probation&&s.probation.dec==='no')s.probation.dec='ok';save();tmp={};go('dstu')}
+const _vOffice0=vOffice;vOffice=function(){return _vOffice0().replace('<div class="sec" style="margin-top:0">হিফয বিভাগ</div>',`<div class="big" style="margin-bottom:10px" onclick="tmp={};go('dstu')"><div style="flex:1"><b>ভর্তি ও শিক্ষার্থী তথ্য</b><div class="mut">শিক্ষার্থী যোগ, তথ্য বদল ও তালিকা থেকে সরানো</div></div><span>›</span></div><div class="sec" style="margin-top:0">হিফয বিভাগ</div>`)};
+VIEWS.office=vOffice;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
