@@ -1515,7 +1515,7 @@ function specEdit(i){const x=S.spec[i];if(!x)return;tmp={ed:i,f:x.from,t:x.to,g:
 const _renderT=render;let TESTRM=false;
 render=function(){if(!TESTRM&&S&&Array.isArray(S.students)&&S.students.length){TESTRM=true;let ch=false;S.students.forEach(s=>{if(String(s.name||'').trim().toLowerCase()==='test'&&s.status!=='out'&&!s.keep){s.status='out';s.outWhy='পরীক্ষার জন্য বানানো';s.outDate=today();ch=true}});if(ch)try{save()}catch(e){}}return _renderT()};
 /* ছাত্র তালিকা থেকে সরানো ও ফিরিয়ে আনা (পরিচালক ও অফিস সহকারী) */
-const _dirTop0=dirTop;dirTop=function(t,back){return _dirTop0(t,back||(ses&&ses.role==='office'?"go('office')":undefined))};
+const _dirTop0=dirTop;dirTop=function(t,back){return _dirTop0(t,back||(ses&&ses.role==='office'?"go('office',{dep:'h'})":undefined))};
 vDstu=function(){
  if(V.sid){const s=SID(V.sid);if(!s)return go('dstu');let h=vStuProfile(s);const k=h.lastIndexOf('</div>');
   const box=s.status==='out'
@@ -1533,7 +1533,12 @@ VIEWS.dstu=vDstu;
 function stuRmAsk(id){const w=(tmp.rmw||'').trim();if(!w){const e=document.getElementById('rmerr');if(e)e.textContent='কেন সরাচ্ছেন, লিখুন';return}tmp.rmc=id;render()}
 function stuRm(id){const s=SID(id);if(!s)return;s.status='out';s.outWhy=(tmp.rmw||'').trim();s.outDate=today();save();tmp={};go('dstu')}
 function stuBack(id){const s=SID(id);if(!s)return;s.status='ok';s.keep=1;delete s.outWhy;delete s.outDate;if(s.probation&&s.probation.dec==='no')s.probation.dec='ok';save();tmp={};go('dstu')}
-const _vOffice0=vOffice;vOffice=function(){return _vOffice0().replace('<div class="sec" style="margin-top:0">হিফয বিভাগ</div>',`<div class="big" style="margin-bottom:10px" onclick="tmp={};go('dstu')"><div style="flex:1"><b>ভর্তি ও শিক্ষার্থী তথ্য</b><div class="mut">শিক্ষার্থী যোগ, তথ্য বদল ও তালিকা থেকে সরানো</div></div><span>›</span></div><div class="sec" style="margin-top:0">হিফয বিভাগ</div>`)};
+const _vOffice0=vOffice;vOffice=function(){
+ if(!V.mode&&!V.dep){const B=(t,d,fn)=>`<div class="big" style="margin-bottom:12px;padding:18px 14px" onclick="${fn}"><div style="flex:1"><b style="font-size:18px">${t}</b><div class="mut" style="font-size:14px;margin-top:4px">${d}</div></div><span style="font-size:20px">›</span></div>`;
+  return offTop('অফিস সহকারী')+`<div class="wrap">${B('হিফয বিভাগ','মাসিক ও বাৎসরিক রিপোর্ট, ভর্তি ও শিক্ষার্থী তথ্য',"go('office',{dep:'h'})")}${B('নূরানী বিভাগ','দৈনিক পড়া, হাজিরা ও ছুটি',"go('nur')")}</div>`}
+ let h=_vOffice0();const a=h.indexOf(`<div class="big" style="background:#E6F1FB`);if(a>=0){const b=h.indexOf('</span></div>',a)+13;h=h.slice(0,a)+h.slice(b)}
+ h=h.replace(/<div class="top noprint"><button class="btn s" onclick="[^"]*">[^<]*<\/button>/,`<div class="top noprint"><button class="btn s" onclick="go('office')">‹ ফিরুন</button>`).replace('<b>রিপোর্ট প্রিন্ট ও ফেরত</b>','<b>হিফয বিভাগ</b>');
+ return h.replace('<div class="sec" style="margin-top:0">হিফয বিভাগ</div>',`<div class="big" style="margin-bottom:10px" onclick="tmp={};go('dstu')"><div style="flex:1"><b>ভর্তি ও শিক্ষার্থী তথ্য</b><div class="mut">শিক্ষার্থী যোগ, তথ্য বদল ও তালিকা থেকে সরানো</div></div><span>›</span></div>`)};
 VIEWS.office=vOffice;
 /* ভর্তি ও শিক্ষার্থী তথ্য: সংক্ষিপ্ত রূপ */
 const JMS=[['হিফয প্রথম','প্রথম'],['হিফয দ্বিতীয়','দ্বিতীয়'],['হিফয তাকমিল','তাকমিল']];
