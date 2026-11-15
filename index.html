@@ -1511,6 +1511,9 @@ saveSpec=function(){specKeep();const er=m=>{const e=document.getElementById('ser
 VIEWS.dspec=vDspec;
 
 function specEdit(i){const x=S.spec[i];if(!x)return;tmp={ed:i,f:x.from,t:x.to,g:(x.groups||[]).slice(),run:(x.run||[]).slice(),note:x.note||''};render();setTimeout(()=>{const e=document.getElementById('s_n');if(e)e.scrollIntoView({block:'center'})},50)}
+/* পরীক্ষার জন্য বানানো "test" ছাত্রকে তালিকা থেকে সরানো (একবার) */
+const _renderT=render;let TESTRM=false;
+render=function(){if(!TESTRM&&S&&Array.isArray(S.students)&&S.students.length){TESTRM=true;let ch=false;S.students.forEach(s=>{if(String(s.name||'').trim().toLowerCase()==='test'&&s.status!=='out'){s.status='out';ch=true}});if(ch)try{save()}catch(e){}}return _renderT()};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
