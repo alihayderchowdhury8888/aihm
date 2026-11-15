@@ -1498,6 +1498,7 @@ const _vDspec0=vDspec;
 vDspec=function(){if(!tmp.f)tmp.f=today();if(!tmp.t)tmp.t=addD(today(),2);let h=_vDspec0();
  h=h.replace(/id="s_f" type="date" value="[^"]*"/,`id="s_f" type="date" value="${tmp.f}" onchange="specKeep();if(tmp.t<tmp.f){tmp.t=tmp.f;render()}"`).replace(/id="s_t" type="date" value="[^"]*"/,`id="s_t" type="date" value="${tmp.t}" onchange="specKeep()"`).replace('id="s_n"','id="s_n" oninput="tmp.note=this.value"');
  h=h.replace(/<button class="btn s" onclick="S\.spec\.splice\((\d+),1\);save\(\);render\(\)">মুছুন<\/button>/g,(m,i)=>`<div style="display:flex;gap:6px"><button class="btn s" onclick="specEdit(${i})">সংশোধন</button>${m}</div>`);
+ h=h.replace(/<input id="s_n" oninput="tmp\.note=this\.value" value="[^"]*" placeholder="([^"]*)">/,(m,ph)=>`<textarea id="s_n" rows="5" oninput="tmp.note=this.value" placeholder="${ph}" style="width:100%;font-size:17px;line-height:1.6;padding:10px;box-sizing:border-box;resize:vertical">${esc(tmp.note||'')}</textarea>`);
  if(tmp.ed!=null){h=h.replace('<div class="sec">নতুন নির্দেশ</div>','<div class="sec">নির্দেশ সংশোধন</div>').replace('onclick="saveSpec()">জমা দিন</button>','onclick="saveSpec()">সংশোধন জমা দিন</button><button class="btn w" style="margin-top:8px" onclick="tmp={};render()">বাতিল</button>')}
  if(tmp.ok)h=h.replace('<div class="err" id="serr"></div>',`<div class="err" id="serr" style="color:#0F6E56">${tmp.ok}</div>`);return h};
 tg2=function(f,x){specKeep();tmp.ok='';const a=tmp[f];const i=a.indexOf(x);i<0?a.push(x):a.splice(i,1);render()};
