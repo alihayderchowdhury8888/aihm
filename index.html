@@ -1262,7 +1262,7 @@ function vDir(){
  return `<style>.dg{width:100%;border-collapse:collapse;font-size:13px}.dg th{font-weight:400;color:#6b7772;font-size:12px;text-align:center;padding:3px}.dg td{padding:4px 3px;text-align:center;border-top:1px solid #eef1f0}.dg td:first-child{text-align:left}.dts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dt{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;cursor:pointer}.dt .ic{flex:0 0 32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}.dt b{display:block;font-size:13px;line-height:1.3}.dt small{display:block;font-size:11px;color:#6b7772;line-height:1.35;margin-top:2px}</style>
  <div class="top"><button class="btn s" onclick="ses=null;go('home')">বের হন</button><div class="t"><b>কর্তৃপক্ষ</b><span>${dBn(today())}</span></div></div><div class="wrap">
  <div class="big" style="background:#FCEBEB;border-color:#F09595;margin-top:4px" onclick="D=today();go('dtoday')"><div class="ic" style="background:#E24B4A">⚠️</div><div style="flex:1"><b style="color:#791F1F">আজকের অবস্থা</b><div style="font-size:12px;color:#A32D2D">${al.length?bn(al.length)+'টি জরুরি বিষয় · ':''}পড়ার হিসাব, হাজিরা, উস্তাদ</div></div><span style="color:#A32D2D">›</span></div>
- <div class="big" style="background:#E1F5EE;border-color:#5DCAA5;margin-top:8px" onclick="tmp={};go('admit')"><div class="ic" style="background:#0F6E56">➕</div><div style="flex:1"><b style="color:#085041">নতুন ভর্তি</b><div style="font-size:12px;color:#0F6E56">নতুন শিক্ষার্থী ভর্তি করুন</div></div><span style="color:#0F6E56">›</span></div>
+ 
  <div class="big" style="background:#E6F1FB;border-color:#85B7EB;margin-top:8px" onclick="go('nur')"><div class="ic" style="background:#185FA5">📗</div><div style="flex:1"><b style="color:#0C447C">নূরানী বিভাগ</b><div style="font-size:12px;color:#185FA5">ক্লাসের দৈনিক পাঠ মূল্যায়ন শিট</div></div><span style="color:#185FA5">›</span></div>
  <div class="sec">হিফয বিভাগ · গ্রুপের পাতা</div><div class="row" style="margin-bottom:4px"><button class="btn" onclick="ses={role:'dir',g:'ক'};tmp={};D=today();go('g')">গ্রুপ ক</button><button class="btn" onclick="ses={role:'dir',g:'খ'};tmp={};D=today();go('g')">গ্রুপ খ</button></div>
  <div class="sec">রিপোর্ট ও হিসাব</div><div class="dts">
@@ -1535,6 +1535,39 @@ function stuRm(id){const s=SID(id);if(!s)return;s.status='out';s.outWhy=(tmp.rmw
 function stuBack(id){const s=SID(id);if(!s)return;s.status='ok';s.keep=1;delete s.outWhy;delete s.outDate;if(s.probation&&s.probation.dec==='no')s.probation.dec='ok';save();tmp={};go('dstu')}
 const _vOffice0=vOffice;vOffice=function(){return _vOffice0().replace('<div class="sec" style="margin-top:0">হিফয বিভাগ</div>',`<div class="big" style="margin-bottom:10px" onclick="tmp={};go('dstu')"><div style="flex:1"><b>ভর্তি ও শিক্ষার্থী তথ্য</b><div class="mut">শিক্ষার্থী যোগ, তথ্য বদল ও তালিকা থেকে সরানো</div></div><span>›</span></div><div class="sec" style="margin-top:0">হিফয বিভাগ</div>`)};
 VIEWS.office=vOffice;
+/* ভর্তি ও শিক্ষার্থী তথ্য: সংক্ষিপ্ত রূপ */
+const JMS=[['হিফয প্রথম','প্রথম'],['হিফয দ্বিতীয়','দ্বিতীয়'],['হিফয তাকমিল','তাকমিল']];
+const AF2=['a_name','a_gn','a_wa','a_dt','a_mem','a_kacha','a_tg'];
+admKeep=function(){AF2.forEach(f=>{const e=document.getElementById(f);if(e)tmp[f]=e.value})};
+vAdmit=function(){const g=tmp.ag||'ক',j=tmp.aj||'হিফয প্রথম',tk=j==='হিফয তাকমিল',gid=tk?'both':g;
+ const I=(f,lab,ph,ty)=>`<label class="l">${lab}</label><input id="${f}" ${ty?`type="${ty}"`:''} placeholder="${ph||''}" value="${esc(tmp[f]||(f==='a_dt'?today():''))}" style="width:100%">`;
+ const ch=(on,lab,fn)=>`<span class="ch ${on?'on-g':''}" onclick="admKeep();${fn};render()">${lab}</span>`;
+ return dirTop('নতুন ভর্তি',"tmp={};go('dstu')")+`<div class="wrap"><div class="card">
+ <label class="l" style="margin-top:0">জামাত</label><div class="chs">${JMS.map(([k,n])=>ch(j===k,n,`tmp.aj='${k}'`)).join('')}</div>
+ ${tk?'':`<label class="l">গ্রুপ</label><div class="chs">${['ক','খ'].map(x=>ch(g===x,'গ্রুপ '+x,`tmp.ag='${x}'`)).join('')}</div>`}
+ <div style="margin-top:8px;font-size:14px">নতুন আইডি: <b style="color:#085041">${nextId(gid)}</b></div>
+ ${I('a_name','শিক্ষার্থীর নাম')}${I('a_gn','অভিভাবকের নাম')}${I('a_wa','WhatsApp নম্বর','০১৭xxxxxxxx','tel')}${I('a_dt','ভর্তির তারিখ','','date')}
+ <div class="row"><div>${I('a_mem','ভর্তির সময় মুখস্থ (পারা)')}</div><div>${I('a_kacha','ভর্তির সময় কাঁচা পারা')}</div></div>
+ ${I('a_tg','এই বছরের লক্ষ্য (পারা)','যেমন ৫')}
+ <div class="err" id="aerr"></div><button class="btn pri w" style="margin-top:10px" onclick="doAdmit()">ভর্তি করুন</button></div></div>`};
+doAdmit=function(){admKeep();const j=tmp.aj||'হিফয প্রথম',tk=j==='হিফয তাকমিল',g=tk?'both':(tmp.ag||'ক');const nm=(tmp.a_name||'').trim();
+ if(!nm){document.getElementById('aerr').textContent='শিক্ষার্থীর নাম লিখুন';return}
+ const id=nextId(g);const mem=bn(en(tmp.a_mem||'').trim()||'0'),kc=bn(en(tmp.a_kacha||'').trim()||'0');const yad=bn(Math.max(0,(parseInt(en(mem))||0)-(parseInt(en(kc))||0)));
+ const s={id,name:nm,group:g,type:tk?'takmil':'hifz',jamat:j,status:'ok',weak:false,guardianName:(tmp.a_gn||'').trim(),wa:(tmp.a_wa||'').trim(),admDate:tmp.a_dt||today(),yearTarget:(tmp.a_tg||'').trim(),boarding:'সাধারণ বোর্ডিং',
+  admMem:mem,admKacha:kc,startMem:mem,startYad:yad,startKacha:kc,curMem:mem,curYad:yad,curKacha:kc,para:Math.max(1,(parseInt(en(mem))||0)+1),page:1};
+ if(tk){s.stage='half';s.khatm=0}S.students.push(s);save();tmp={};go('dstu',{sid:id})};
+VIEWS.admit=vAdmit;
+function vStuProfile(s){const i=S.students.indexOf(s);
+ const F=(f,lab,ph,ty,fb)=>`<label class="l">${lab}</label><input ${ty?`type="${ty}"`:''} value="${esc(s[f]||fb||'')}" placeholder="${ph||''}" onchange="S.students[${i}]['${f}']=this.value;save()" style="width:100%">`;
+ const ch=(on,lab,fn)=>`<span class="ch ${on?'on-g':''}" onclick="${fn}">${lab}</span>`;
+ return dirTop(esc(s.name),"tmp={};go('dstu')")+`<div class="wrap"><div class="card">
+ <div class="mut">${s.id}</div>
+ ${F('name','শিক্ষার্থীর নাম')}${F('guardianName','অভিভাবকের নাম','',0,s.father)}${F('wa','WhatsApp নম্বর','','tel')}
+ <label class="l">জামাত</label><div class="chs">${JMS.map(([k,n])=>ch(s.jamat===k,n,`setJamat(${i},'${k}')`)).join('')}</div>
+ ${s.type==='takmil'?'':`<label class="l">গ্রুপ</label><div class="chs">${['ক','খ'].map(x=>ch(s.group===x,'গ্রুপ '+x,`setGrp(${i},'${x}')`)).join('')}</div>`}
+ ${F('admDate','ভর্তির তারিখ','','date')}
+ <div class="row"><div>${F('admMem','ভর্তির সময় মুখস্থ (পারা)')}</div><div>${F('admKacha','ভর্তির সময় কাঁচা পারা')}</div></div>
+ ${F('yearTarget','এই বছরের লক্ষ্য (পারা)','যেমন ৫')}</div></div>`}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
