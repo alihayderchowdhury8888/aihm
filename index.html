@@ -1514,6 +1514,7 @@ function specEdit(i){const x=S.spec[i];if(!x)return;tmp={ed:i,f:x.from,t:x.to,g:
 /* পরীক্ষার জন্য বানানো "test" ছাত্রকে তালিকা থেকে সরানো (একবার) */
 const _renderT=render;let TESTRM=false;
 render=function(){if(!TESTRM&&S&&Array.isArray(S.students)&&S.students.length){TESTRM=true;let ch=false;S.students.forEach(s=>{if(String(s.name||'').trim().toLowerCase()==='test'&&s.status!=='out'&&!s.keep){s.status='out';s.outWhy='পরীক্ষার জন্য বানানো';s.outDate=today();ch=true}});if(ch)try{save()}catch(e){}}return _renderT()};
+const OTCSS=`<style>.dts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dt{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;cursor:pointer}.dt .ic{flex:0 0 32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}.dt b{display:block;font-size:13px;line-height:1.3}.dt small{display:block;font-size:11px;color:#6b7772;line-height:1.35;margin-top:2px}</style>`;const OT_=(ic,n,sm,go_,c)=>{const col={g:['#E1F5EE','#0F6E56'],b:['#E6F1FB','#185FA5'],y:['#FAEEDA','#854F0B']}[c];return `<div class="dt" onclick="${go_}"><div class="ic" style="background:${col[0]};color:${col[1]};font-weight:700">${ic}</div><div><b>${n}</b><small>${sm}</small></div></div>`};
 /* ছাত্র তালিকা থেকে সরানো ও ফিরিয়ে আনা (পরিচালক ও অফিস সহকারী) */
 const _dirTop0=dirTop;dirTop=function(t,back){return _dirTop0(t,back||(ses&&ses.role==='office'?"go('office',{dep:'h'})":undefined))};
 vDstu=function(){
@@ -1535,10 +1536,10 @@ function stuRm(id){const s=SID(id);if(!s)return;s.status='out';s.outWhy=(tmp.rmw
 function stuBack(id){const s=SID(id);if(!s)return;s.status='ok';s.keep=1;delete s.outWhy;delete s.outDate;if(s.probation&&s.probation.dec==='no')s.probation.dec='ok';save();tmp={};go('dstu')}
 const _vOffice0=vOffice;vOffice=function(){
  if(!V.mode&&!V.dep){const B=(t,d,fn)=>`<div class="big" style="margin-bottom:12px;padding:18px 14px" onclick="${fn}"><div style="flex:1"><b style="font-size:18px">${t}</b><div class="mut" style="font-size:14px;margin-top:4px">${d}</div></div><span style="font-size:20px">›</span></div>`;
-  return offTop('অফিস সহকারী')+`<div class="wrap">${B('হিফয বিভাগ','মাসিক ও বাৎসরিক রিপোর্ট, ভর্তি ও শিক্ষার্থী তথ্য',"go('office',{dep:'h'})")}${B('নূরানী বিভাগ','দৈনিক পড়া, হাজিরা ও ছুটি',"go('nur')")}</div>`}
+  return offTop('অফিস সহকারী')+OTCSS+`<div class="wrap"><div class="dts">${OT_('হি','হিফয বিভাগ','রিপোর্ট ও শিক্ষার্থী তথ্য',"go('office',{dep:'h'})",'g')}${OT_('নূ','নূরানী বিভাগ','দৈনিক পড়া ও হাজিরা',"go('nur')",'b')}</div></div>`}
  let h=_vOffice0();const a=h.indexOf(`<div class="big" style="background:#E6F1FB`);if(a>=0){const b=h.indexOf('</span></div>',a)+13;h=h.slice(0,a)+h.slice(b)}
  h=h.replace(/<div class="top noprint"><button class="btn s" onclick="[^"]*">[^<]*<\/button>/,`<div class="top noprint"><button class="btn s" onclick="go('office')">‹ ফিরুন</button>`).replace('<b>রিপোর্ট প্রিন্ট ও ফেরত</b>','<b>হিফয বিভাগ</b>');
- return h.replace('<div class="sec" style="margin-top:0">হিফয বিভাগ</div>',`<div class="big" style="margin-bottom:10px" onclick="tmp={};go('dstu')"><div style="flex:1"><b>ভর্তি ও শিক্ষার্থী তথ্য</b><div class="mut">শিক্ষার্থী যোগ, তথ্য বদল ও তালিকা থেকে সরানো</div></div><span>›</span></div><div class="big" style="margin-bottom:10px" onclick="go('pbrep')"><div style="flex:1"><b>পর্যবেক্ষণ রিপোর্ট</b><div class="mut">পর্যবেক্ষণে থাকা ছাত্রদের রিপোর্ট প্রিন্ট</div></div><span>›</span></div>`)};
+ return h.replace('<div class="sec" style="margin-top:0">হিফয বিভাগ</div>',`${OTCSS}<div class="dts" style="margin-bottom:10px">${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','যোগ, বদল ও সরানো',"tmp={};go('dstu')",'g')}${OT_('প','পর্যবেক্ষণ রিপোর্ট','প্রিন্ট করে অভিভাবককে',"go('pbrep')",'y')}</div>`)};
 VIEWS.office=vOffice;
 /* ভর্তি ও শিক্ষার্থী তথ্য: সংক্ষিপ্ত রূপ */
 const JMS=[['হিফয প্রথম','প্রথম'],['হিফয দ্বিতীয়','দ্বিতীয়'],['হিফয তাকমিল','তাকমিল']];
