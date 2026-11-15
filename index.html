@@ -1187,8 +1187,7 @@ function vOffice(){const mode=V.mode||'m';const mk=V.mk||today().slice(0,7);cons
  ${mode==='m'?monthPick():`<div class="ban b">শিক্ষাবর্ষ: ${esc(S.year.name)} · ${dShort(S.year.from)} থেকে ${dShort(S.year.to)}</div>`}
  <div class="tiles" style="grid-template-columns:repeat(${mode==='m'?4:3},1fr);gap:6px;margin-bottom:10px">${box(bn(L.length),'মোট')}${mode==='m'?box(bn(ev),'মূল্যায়ন লেখা',ev<L.length?'#854F0B':'#0F6E56'):''}${box(bn(gv),'দেওয়া হয়েছে')}${box(bn(rt),'স্বাক্ষরসহ ফেরত',rt<gv?'#A32D2D':'#0F6E56')}</div>
  <button class="btn pri w" onclick="go('oprint',{mode:'${mode}',mk:'${mk}'})">🖨️ সবগুলো একসাথে প্রিন্ট</button>
- ${['ক','খ','both'].map(g=>{const Lg=L.filter(s=>s.group===g);if(!Lg.length)return '';return `<div class="sec">${g==='both'?'তাকমিল':'গ্রুপ '+g}</div>`+Lg.map(s=>{const x=G[s.id];const e=(S.cmtOv[mode+mk+s.id]||'').trim();return `<div class="card"><div class="row"><div><b>${esc(s.name)}</b><div class="mut">${s.id}${mode==='m'?' · '+(e?'<span style="color:#0F6E56">মূল্যায়ন লেখা হয়েছে</span>':'<span style="color:#854F0B">মূল্যায়ন বাকি</span>'):''}</div></div><button class="btn s" style="flex:0 0 auto" onclick="go('oprint',{mode:'${mode}',mk:'${mk}',sid:'${s.id}'})">দেখুন</button></div>
- <div class="chs" style="margin-top:8px"><span class="ch ${x?'on-g':''}" onclick="ofGive('${gk}','${s.id}')">${x?'✓ ':''}দেওয়া হয়েছে</span><span class="ch ${x&&x.ret?'on-g':''}" onclick="ofRet('${gk}','${s.id}')">${x&&x.ret?'✓ ':''}স্বাক্ষরসহ ফেরত এসেছে</span>${x&&!x.ret?'<span class="tag r" style="align-self:center">ফেরত আসেনি</span>':''}</div></div>`}).join('')}).join('')}</div>`}
+ ${['ক','খ','both'].map(g=>{const Lg=L.filter(s=>s.group===g);if(!Lg.length)return '';return `<div class="sec">${g==='both'?'তাকমিল':'গ্রুপ '+g}</div><div class="card" style="padding:4px 12px">`+Lg.map(s=>{const x=G[s.id];const e=(S.cmtOv[mode+mk+s.id]||'').trim();return `<div class="ofr"><div class="ofn" onclick="go('oprint',{mode:'${mode}',mk:'${mk}',sid:'${s.id}'})"><b>${esc(s.name)}</b><small>${s.id}${mode==='m'?' · '+(e?'<span style="color:#0F6E56">মূল্যায়ন লেখা</span>':'<span style="color:#854F0B">মূল্যায়ন বাকি</span>'):''}${x&&!x.ret?' · <span style="color:#A32D2D">ফেরত আসেনি</span>':''}</small></div><div class="ofb"><span class="ch ${x?'on-g':''}" onclick="ofGive('${gk}','${s.id}')">${x?'✓ ':''}দেওয়া</span><span class="ch ${x&&x.ret?'on-g':''}" onclick="ofRet('${gk}','${s.id}')">${x&&x.ret?'✓ ':''}ফেরত</span></div></div>`}).join('')+'</div>'}).join('')}).join('')}</div>`}
 function ofGive(gk,sid){const G=S.given[gk];if(G[sid])delete G[sid];else G[sid]={how:'হাতে',date:today(),by:'অফিস'};save();render()}
 function ofRet(gk,sid){const G=S.given[gk];if(!G[sid])G[sid]={how:'হাতে',date:today(),by:'অফিস'};if(G[sid].ret)delete G[sid].ret;else G[sid].ret=today();save();render()}
 function vOprint(){const mode=V.mode||'m',mk=V.mk||today().slice(0,7);const back=`go('office',{mode:'${mode}',mk:'${mk}'})`;
@@ -1897,6 +1896,28 @@ nurAll=function(cid,t,j){const d=nurDayOf(D,cid);const L=nurStOf(cid).filter(s=>
  if(F&&F.length&&F.every(id=>(d[t][id]||{})[j]===1)){F.forEach(id=>delete d[t][id][j]);delete d.fill[key]}
  else{const nf=[];L.forEach(s=>{d[t][s.id]=d[t][s.id]||{};if(d[t][s.id][j]===undefined){d[t][s.id][j]=1;nf.push(s.id)}});if(nf.length)d.fill[key]=nf;else delete d.fill[key]}
  if(!Object.keys(d.fill).length)delete d.fill;save();render()};
+/* নকশা: ইমোজির বদলে অক্ষর, গাঢ় রং, বড় লেখা */
+Object.keys(IC).forEach(k=>IC[k]='');
+const EMJ=/(?:[\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2B50}\u{23F0}-\u{23FF}\u{2700}-\u{2705}\u{2709}-\u{2712}\u{2714}\u{2716}-\u{2753}\u{2795}-\u{27BF}\u{2934}\u{2935}\u{3297}\u{3299}\u{1F000}-\u{1F2FF}])️?/gu;
+function deEmoji(){try{document.querySelectorAll('p.mut').forEach(p=>{if(p.textContent.includes('নমুনা সংস্করণ'))p.remove()});document.querySelectorAll('.ic').forEach(e=>{const t=e.textContent;if(!t.trim()||EMJ.test(t)){EMJ.lastIndex=0;const p=e.parentElement;const b=p&&(p.querySelector('b')||p);const n=(b.textContent||'').trim().replace(EMJ,'').trim();const nn=n.replace(/^[\s·]+/,'');const g=nn.match(/^গ্রুপ\s+(\S)/);const ch=[...(g?g[1]:nn)];let s=ch[0]||'';let i=1;while(!g&&i<ch.length&&/[ঁ-ঃা-ৌৗ]/.test(ch[i])){s+=ch[i];i++}e.textContent=s;e.classList.add('icl')}EMJ.lastIndex=0});
+ const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const L=[];while(w.nextNode())L.push(w.currentNode);L.forEach(n=>{if(EMJ.test(n.nodeValue)){EMJ.lastIndex=0;n.nodeValue=n.nodeValue.replace(EMJ,'').replace(/^\s+/,m=>m.includes('\n')?m:'')}EMJ.lastIndex=0})}catch(e){}}
+(function(){const st=document.createElement('style');st.textContent=`
+:root{--txt:#111a16;--mut:#4f5b56;--line:#d6dfdb;--bg:#eef2f0}
+body{font-size:16px}
+.mut,small{color:var(--mut)}
+.top .t b{font-size:16px}.top .t span{font-size:13px}
+.btn{min-height:42px;font-size:15px}.btn.s{min-height:36px;font-size:14px}
+.ch{font-size:14px;padding:6px 12px}
+.sec{font-size:14px;font-weight:700;color:#24302b;margin:18px 2px 8px}
+.card{border-color:var(--line)}
+.dt{padding:12px;border-color:var(--line)}.dt b{font-size:14.5px}.dt small{font-size:12px}
+.dt .ic,.ic.icl{font-weight:700;font-size:15px}
+.ofr{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #edf1ef}.ofr:last-child{border-bottom:0}
+.ofn{flex:1;min-width:0;cursor:pointer}.ofn b{display:block;font-size:15px}.ofn small{font-size:12.5px}
+.ofb{display:flex;gap:6px;flex:0 0 auto}.ofb .ch{padding:5px 10px;font-size:13px}
+.li small{font-size:12.5px}
+`;document.head.appendChild(st)})();
+const _renderEm=render;render=function(){const r=_renderEm.apply(this,arguments);deEmoji();return r};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
