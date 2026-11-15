@@ -1555,7 +1555,7 @@ doAdmit=function(){admKeep();const j=tmp.aj||'হিফয প্রথম',tk=j
  const id=nextId(g);const mem=bn(en(tmp.a_mem||'').trim()||'0'),kc=bn(en(tmp.a_kacha||'').trim()||'0');const yad=bn(Math.max(0,(parseInt(en(mem))||0)-(parseInt(en(kc))||0)));
  const s={id,name:nm,group:g,type:tk?'takmil':'hifz',jamat:j,status:'ok',weak:false,guardianName:(tmp.a_gn||'').trim(),wa:(tmp.a_wa||'').trim(),admDate:tmp.a_dt||today(),yearTarget:(tmp.a_tg||'').trim(),boarding:'সাধারণ বোর্ডিং',
   admMem:mem,admKacha:kc,startMem:mem,startYad:yad,startKacha:kc,curMem:mem,curYad:yad,curKacha:kc,para:Math.max(1,(parseInt(en(mem))||0)+1),page:1};
- if(tk){s.stage='half';s.khatm=0}S.students.push(s);save();tmp={};go('dstu',{sid:id})};
+ s.probation={from:s.admDate,to:addD(s.admDate,30),c1:'',c2:'',c3:'',dec:''};if(tk){s.stage='half';s.khatm=0}S.students.push(s);save();tmp={};go('dstu',{sid:id})};
 VIEWS.admit=vAdmit;
 function vStuProfile(s){const i=S.students.indexOf(s);
  const F=(f,lab,ph,ty,fb)=>`<label class="l">${lab}</label><input ${ty?`type="${ty}"`:''} value="${esc(s[f]||fb||'')}" placeholder="${ph||''}" onchange="S.students[${i}]['${f}']=this.value;save()" style="width:100%">`;
@@ -1567,7 +1567,12 @@ function vStuProfile(s){const i=S.students.indexOf(s);
  ${s.type==='takmil'?'':`<label class="l">গ্রুপ</label><div class="chs">${['ক','খ'].map(x=>ch(s.group===x,'গ্রুপ '+x,`setGrp(${i},'${x}')`)).join('')}</div>`}
  ${F('admDate','ভর্তির তারিখ','','date')}
  <div class="row"><div>${F('admMem','ভর্তির সময় মুখস্থ (পারা)')}</div><div>${F('admKacha','ভর্তির সময় কাঁচা পারা')}</div></div>
- ${F('yearTarget','এই বছরের লক্ষ্য (পারা)','যেমন ৫')}</div></div>`}
+ ${F('yearTarget','এই বছরের লক্ষ্য (পারা)','যেমন ৫')}</div>${pbBox(s,i)}</div>`}
+function pbBox(s,i){const pb=s.probation;return `<div class="sec">পর্যবেক্ষণকাল</div><div class="card">${pb?`<div class="row"><div><label class="l" style="margin-top:0">শুরু</label><input type="date" value="${pb.from}" onchange="S.students[${i}].probation.from=this.value;save()"></div><div><label class="l" style="margin-top:0">শেষ</label><input type="date" value="${pb.to}" onchange="S.students[${i}].probation.to=this.value;save()"></div></div>
+ ${[['c1','শুরুতে উস্তাদের মন্তব্য'],['c2','অগ্রগতি ও মূল্যায়ন'],['c3','শেষে উস্তাদের মন্তব্য']].map(([f,n])=>`<label class="l">${n}</label><input value="${esc(pb[f])}" onchange="S.students[${i}].probation['${f}']=this.value;save()">`).join('')}
+ <label class="l">পরিচালকের সিদ্ধান্ত</label><div class="chs"><span class="ch ${pb.dec==='ok'?'on-g':''}" onclick="pbDec(${i},'ok')">ভর্তি নিশ্চিত</span><span class="ch ${pb.dec==='ext'?'on-y':''}" onclick="pbDec(${i},'ext')">আরও ১৫ দিন বাড়ানো</span><span class="ch ${pb.dec==='no'?'on-r':''}" onclick="pbDec(${i},'no')">ভর্তি হলো না</span></div>`
+ :`<div class="mut">পর্যবেক্ষণকাল শেষ, ভর্তি নিশ্চিত</div><button class="btn s" style="margin-top:6px" onclick="S.students[${i}].probation={from:today(),to:addD(today(),30),c1:'',c2:'',c3:'',dec:''};save();render()">পর্যবেক্ষণকাল যোগ করুন</button>`}</div>`}
+
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
