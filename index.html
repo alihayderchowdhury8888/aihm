@@ -1526,7 +1526,7 @@ vDstu=function(){
   return h.slice(0,k)+box+h.slice(k)}
  const row=s=>`<div class="li" style="cursor:pointer" onclick="tmp={};go('dstu',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}${s.probation&&!s.probation.dec?'<span class="tag y">পর্যবেক্ষণে</span>':''}</b><small>${s.id} · ${esc(s.jamat||'')}</small></div><span>›</span></div>`;
  const out=S.students.filter(s=>s.status==='out');
- return dirTop('ভর্তি ও শিক্ষার্থী তথ্য')+`<div class="wrap">${['ক','খ','both'].map(g=>`<div class="sec">${g==='both'?'তাকমিল (দুই উস্তাদ)':'গ্রুপ '+g+' · '+esc(gTeacher(g).name)}</div><div class="card">${S.students.filter(s=>s.group===g&&s.status!=='out').map(row).join('')||'<div class="mut">কেউ নেই</div>'}</div>`).join('')}
+ return dirTop('ভর্তি ও শিক্ষার্থী তথ্য')+`<div class="wrap">${['ক','খ','both'].map(g=>`<div class="sec">${g==='both'?'তাকমিল (দুই উস্তাদ)':'গ্রুপ '+g+((gTeacher(g)||{}).name?' · '+esc(gTeacher(g).name):'')}</div><div class="card">${S.students.filter(s=>s.group===g&&s.status!=='out').map(row).join('')||'<div class="mut">কেউ নেই</div>'}</div>`).join('')}
  <button class="btn pri w" onclick="addStu()">+ নতুন শিক্ষার্থী যোগ করুন</button>
  ${out.length?`<div class="sec">সরানো ছাত্র</div><div class="card">${out.map(s=>`<div class="li"><div class="n"><b style="cursor:pointer" onclick="tmp={};go('dstu',{sid:'${s.id}'})">${esc(s.name)}</b><small>${s.id}${s.outDate?' · '+dShort(s.outDate):''}${s.outWhy?' · '+esc(s.outWhy):s.probation&&s.probation.dec==='no'?' · ভর্তি হলো না':''}</small></div><button class="btn s" onclick="stuBack('${s.id}')">ফিরিয়ে আনুন</button></div>`).join('')}</div>`:''}</div>`};
 VIEWS.dstu=vDstu;
