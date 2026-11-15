@@ -1605,10 +1605,34 @@ function vPbrep(){const back=ses&&ses.role==='office'?"go('office',{dep:'h'})":(
  const L=S.students.filter(s=>s.probation&&s.status!=='out'&&(!s.probation.dec||s.probation.to>=addD(today(),-60)));
  return offTop('পর্যবেক্ষণ রিপোর্ট',back)+`<div class="wrap"><div class="card">${L.map(s=>`<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id} · ${dShort(s.probation.from)} থেকে ${dShort(s.probation.to)}${s.probation.dec==='ok'?' · ভর্তি নিশ্চিত':''}</small></div><button class="btn s" onclick="go('pbrep',{sid:'${s.id}'})">প্রিন্ট</button></div>`).join('')||'<div class="mut">এখন কেউ পর্যবেক্ষণে নেই</div>'}</div></div>`}
 VIEWS.pbrep=vPbrep;
+/* নূরানী: বাড়তি পাঠ সময় (২০/৪০ মিনিট) ও অভিভাবককে WhatsApp */
+function nurXMsg(s,m){const c=(S.nurCfg.classes.find(x=>x.id===s.cls)||{}).name||'';
+ return `আসসালামু আলাইকুম। আজ আপনার সন্তান ${s.name} (${c} শ্রেণি)-এর পড়া আরেকটু মজবুত করার জন্য ছুটির পর ${bn(m)} মিনিট বাড়তি পাঠ সময় রাখা হয়েছে। অনুগ্রহ করে ${bn(m)} মিনিট পরে নিতে আসবেন। — ${S.settings.madrasa||'আলী ইন্টারন্যাশনাল হাফিজিয়া মাদ্রাসা'}`}
+function nurXSet(sid,m){const s=S.nurSt.find(x=>x.id===sid);if(!s)return;const n=waNum(s);if(!n){const e=document.getElementById('nxe_'+sid);if(e)e.textContent='আগে অভিভাবকের WhatsApp নম্বর লিখুন';return}
+ S.nurX=S.nurX||{};S.nurX[D]=S.nurX[D]||{};const o=S.nurX[D][sid]||{};S.nurX[D][sid]={m,sent:1,lv:o.lv||0,at:nowT()};save();render();
+ window.open(`https://wa.me/${n}?text=${encodeURIComponent(nurXMsg(s,m))}`,'_blank')}
+function nurXDel(sid){if(S.nurX&&S.nurX[D]){delete S.nurX[D][sid];save();render()}}
+function nurXLv(sid){const x=((S.nurX||{})[D]||{})[sid];if(!x)return;x.lv=x.lv?0:1;save();render()}
+function nurXWa(sid,v){const s=S.nurSt.find(x=>x.id===sid);if(!s)return;s.wa=v.trim();save();render()}
+function nurXFind(q){q=(q||'').trim();tmp.nq=q;document.querySelectorAll('[data-nx]').forEach(e=>{e.style.display=!q||e.dataset.nx.includes(q)?'':'none'})}
+function vNurx(){nurInit();const C=S.nurCfg,X=(S.nurX||{})[D]||{};const cls=C.classes.filter(c=>c.name!=='শিশু');
+ const tot=Object.keys(X).length,t20=Object.values(X).filter(x=>x.m===20).length,t40=tot-t20;
+ return nurCss+nurTop('বাড়তি পাঠ সময়',dShort(D)+' · ছুটির পর ২০ বা ৪০ মিনিট',"go('nur')")+`<div class="wrap">
+ <div class="card" style="display:flex;gap:10px;text-align:center"><div style="flex:1"><b style="font-size:20px">${bn(tot)}</b><div class="mut">আজ মোট</div></div><div style="flex:1"><b style="font-size:20px">${bn(t20)}</b><div class="mut">২০ মিনিট</div></div><div style="flex:1"><b style="font-size:20px">${bn(t40)}</b><div class="mut">৪০ মিনিট</div></div></div>
+ <input placeholder="নাম খুঁজুন" value="${esc(tmp.nq||'')}" oninput="nurXFind(this.value)" style="width:100%;margin:4px 0 10px;font-size:16px">
+ ${cls.map(c=>{const L=nurStOf(c.id);return `<div class="sec">${esc(c.name)} শ্রেণি</div><div class="card">${L.map(s=>{const x=X[s.id];const has=!!waNum(s);
+  return `<div data-nx="${esc(s.name)}" style="${tmp.nq&&!s.name.includes(tmp.nq)?'display:none;':''}padding:10px 0;border-bottom:1px solid #eef1f0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="flex:1 1 140px;font-size:15px">${esc(s.name)}</b>
+  ${x?`<span style="color:#0F6E56;font-weight:600">${bn(x.m)} মিনিট · বার্তা পাঠানো হয়েছে</span>`:`<button class="btn s" onclick="nurXSet('${s.id}',20)">২০ মিনিট</button><button class="btn s" onclick="nurXSet('${s.id}',40)">৪০ মিনিট</button>`}</div>
+  ${x?`<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><span class="ch ${x.lv?'on-y':''}" onclick="nurXLv('${s.id}')">${x.lv?'✓ ':''}ছুটি দেওয়া হয়েছে</span><span class="ch" onclick="nurXSet('${s.id}',${x.m})">আবার পাঠান</span><span class="ch" onclick="nurXDel('${s.id}')">বাতিল</span></div>`:''}
+  ${has?'':`<div style="margin-top:6px"><input type="tel" placeholder="অভিভাবকের WhatsApp নম্বর" onchange="nurXWa('${s.id}',this.value)" style="width:100%"></div>`}<div class="err" id="nxe_${s.id}"></div></div>`}).join('')||'<div class="mut">কেউ নেই</div>'}</div>`}).join('')}
+ </div>`}
+VIEWS.nurx=vNurx;
+const _vNur0=vNur;vNur=function(){return _vNur0().replace('<div class="sec">ক্লাস</div>',`<div class="card" style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px" onclick="D=today();go('nurx')"><div style="flex:1"><b>বাড়তি পাঠ সময়</b><div class="mut">ছুটির পর ২০ বা ৪০ মিনিট · অভিভাবককে WhatsApp</div></div><span>›</span></div><div class="sec">ক্লাস</div>`)};
+VIEWS.nur=vNur;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
-const DEEP={nurDay:2,plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
+const DEEP={nurDay:2,nurX:2,plan:1,att:3,les:2,til:2,shab:3,mashq:2,kitab:2,ret:2,nocls:2,sent:2,given:2,prepq:2,exams:2,target:2,cmtOv:1,tgWhy:1,tcmt:1,settings:1};
 const LES_MIG='2026-11-01';/* এই তারিখ থেকে প্রতিটি পড়া আলাদা সারিতে: les|তারিখ|শিক্ষার্থী|পড়া */
 const DESC={log:1,alerts:1,beh:1,contact:1};
 const NOPIN={'settings|dirPin':1,'settings|routinePin':1,'settings|subPin':1,'settings|officePin':1};
@@ -1636,7 +1660,7 @@ function build(rows){const base=seed();delete base.settings.dirPin;delete base.s
  S=base}
 function diff(){const F=flat(),P=[];Object.keys(F).forEach(p=>{if(F[p]!==LAST[p])P.push({p,v:F[p]})});Object.keys(LAST).forEach(p=>{if(!(p in F))P.push({p,v:null})});return P}
 /* ফোনে শুধু এই মাস ও আগের মাসের তথ্য থাকে; পুরোনো সব তথ্য গুগল শিটে */
-const DATED={nurDay:1,att:1,les:1,til:1,shab:1,mashq:1,kitab:1,ret:1,nocls:1,sent:1,given:1,target:1,tgWhy:1};
+const DATED={nurDay:1,nurX:1,att:1,les:1,til:1,shab:1,mashq:1,kitab:1,ret:1,nocls:1,sent:1,given:1,target:1,tgWhy:1};
 function cutoff(){const d=new Date();return key(new Date(d.getFullYear(),d.getMonth()-1,1))}
 function isOld(p,v,c){const m=p.match(/^([^#|\/]+)\|(\d{4}-\d{2}(?:-\d{2})?)\|/);if(m&&DATED[m[1]])return m[2].length===7?m[2]<c.slice(0,7):m[2]<c;
  const a=p.match(/^(log|alerts)#(.+)$/);if(a&&v){try{const x=JSON.parse(v);const d=x.date||(x.t||'').slice(0,10);return !!d&&d<c}catch(e){}}return false}
