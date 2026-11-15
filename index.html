@@ -1918,6 +1918,30 @@ body{font-size:16px}
 .li small{font-size:12.5px}
 `;document.head.appendChild(st)})();
 const _renderEm=render;render=function(){const r=_renderEm.apply(this,arguments);deEmoji();return r};
+/* উস্তাদের পাতা: কাজের ধারাবাহিকতা অনুযায়ী সাজানো */
+const GRP_ORD=[['প্রতিদিনের পড়া',['পড়া সাজানো','দৈনিক পাঠ গ্রহণ','মশক','তিলাওয়াত','কিতাব']],
+ ['হাজিরা ও ছুটি',['হাজিরা','ছুটি ও অসুস্থতা','ছুটি-পরবর্তী উপস্থিতি','ক্লাস হয়নি','বদলি ক্লাস']],
+ ['অভিভাবক',['অভিভাবক বার্তা','যোগাযোগ']],
+ ['সাপ্তাহিক ও মাসিক',['শবিনা','মাসিক লক্ষ্যমাত্রা','পরীক্ষার নম্বর প্রদান','প্রস্তুতির প্রশ্ন']],
+ ['শৃঙ্খলা',['আচরণ','জরিমানা']]];
+const _vGroup0=vGroup;vGroup=function(){let h=_vGroup0();
+ h=h.replace(/<div class="mut">নমুনায় আগের দিনগুলোর হিসাবও বসানো আছে<\/div>/,'');
+ const a=h.indexOf('<div class="sec">প্রতিদিন</div>');if(a<0)return h;
+ const re=/<div class="tile" onclick="[^"]*"><div class="ic"[^>]*>[^<]*<\/div><b>([^<]*)<\/b>(?:<small>[\s\S]*?<\/small>)?<\/div>/g;
+ const body=h.slice(a);const T={};let m,last=0;while((m=re.exec(body))){T[m[1]]=m[0];last=re.lastIndex}
+ const used=new Set();let out='';GRP_ORD.forEach(([sec,L])=>{const ts=L.filter(n=>T[n]).map(n=>{used.add(n);return T[n]});if(ts.length)out+=`<div class="sec">${sec}</div><div class="tiles">${ts.join('')}</div>`});
+ const rest=Object.keys(T).filter(n=>!used.has(n));if(rest.length)out+=`<div class="sec">অন্যান্য</div><div class="tiles">${rest.map(n=>T[n]).join('')}</div>`;
+ const tail=body.slice(last).replace(/^\s*<\/div>/,'');return h.slice(0,a)+out+tail};
+VIEWS.g=vGroup;
+vNur=function(){let h=_vNur0();h=h.replace(/<p class="mut" style="margin-top:14px">ভর্তি, উস্তাদ হাজিরা[^<]*<\/p>/,'');
+ const T=(a,b,c,d,e)=>OT_(a,b,c,d,e);
+ const pre=OTCSS+`<div class="sec" style="margin-top:4px">প্রতিদিন</div><div class="dts" style="margin-bottom:6px">${T('উ','উস্তাদদের হাজিরা','উপস্থিত, ছুটি, অনুপস্থিত',"D=today();go('nurta')",'g')}${T('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${T('ছু','ছুটি ও দরখাস্ত','কে ছুটিতে, কার দরখাস্ত বাকি',"tmp={};go('nurlv')",'y')}</div>
+ <div class="sec">দৈনিক পাঠ মূল্যায়ন · শ্রেণি বেছে নিন</div>`;
+ const post=`<div class="sec">শিক্ষার্থী</div><div class="dts">${T('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}</div>
+ <div class="sec">পরীক্ষা ও রিপোর্ট</div><div class="dts">${T('প','পরীক্ষা ও ফলাফল','নম্বর, মেধাস্থান ও ৮৫% হাজিরা',"go('nurex')",'b')}${T('রি','মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থী ও উস্তাদদের হিসাব',"go('nurrep')",'g')}</div>
+ <div class="sec">ব্যবস্থাপনা</div><div class="dts">${T('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}</div>`;
+ h=h.replace('<div class="sec">ক্লাস</div>',pre);const k=h.lastIndexOf('</div>');return h.slice(0,k)+post+h.slice(k)};
+VIEWS.nur=vNur;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
