@@ -1645,9 +1645,46 @@ const _doAdmit1=doAdmit;doAdmit=function(){const n=S.students.length,d=tmp.adocs
 /* নূরানী বিভাগ: হিফযের মতো ছোট ঘর */
 function nurSoon(n){nurModal(`<b>${n}</b><div class="mut" style="margin-top:8px">এই অংশ শীঘ্রই আসছে।</div><div style="margin-top:12px"><button class="btn" onclick="nurModal('')">ঠিক আছে</button></div>`)}
 vNur=function(){let h=_vNur0();
- const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','শীঘ্রই আসছে',"nurSoon('ভর্তি ও শিক্ষার্থী তথ্য')",'g')}${OT_('রু','ক্লাস রুটিন','শীঘ্রই আসছে',"nurSoon('ক্লাস রুটিন')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','শীঘ্রই আসছে',"nurSoon('ছুটি ও দরখাস্ত')",'y')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শীঘ্রই আসছে',"nurSoon('মাসিক ও বাৎসরিক রিপোর্ট')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
+ const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','শীঘ্রই আসছে',"nurSoon('ক্লাস রুটিন')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','শীঘ্রই আসছে',"nurSoon('ছুটি ও দরখাস্ত')",'y')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শীঘ্রই আসছে',"nurSoon('মাসিক ও বাৎসরিক রিপোর্ট')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
  h=h.replace('<div class="sec">ক্লাস</div>',t);return h.replace(/<p class="mut" style="margin-top:14px">ভর্তি, উস্তাদ হাজিরা[^<]*<\/p>/,'')};
 VIEWS.nur=vNur;
+/* নূরানী: ভর্তি ও শিক্ষার্থী তথ্য */
+function nsGet(sid){return S.nurSt.find(x=>x.id===sid)}
+function nsDocTg(sid,j){const s=nsGet(sid);if(!s)return;s.docs=s.docs||{};const k=DOCS_N[j];s.docs[k]=!s.docs[k];save();render()}
+function nsSet(sid,f,v){const s=nsGet(sid);if(!s)return;s[f]=v;save()}
+function nsCls(sid,c){const s=nsGet(sid);if(!s)return;s.cls=c;save();render()}
+function nsKeep(){['n_name','n_fa','n_gn','n_wa','n_dt','n_mk'].forEach(f=>{const e=document.getElementById(f);if(e)tmp[f]=e.value})}
+function nsDocA(j){nsKeep();tmp.ndocs=tmp.ndocs||{};const k=DOCS_N[j];tmp.ndocs[k]=!tmp.ndocs[k];render()}
+function nsAdd(){nsKeep();const n=(tmp.n_name||'').trim();if(!n){document.getElementById('nerr').textContent='শিক্ষার্থীর নাম লিখুন';return}
+ const id='n'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+ S.nurSt.push({id,name:n,cls:tmp.ncl||S.nurCfg.classes[0].id,adm:tmp.n_dt||today(),status:'in',father:(tmp.n_fa||'').trim(),gname:(tmp.n_gn||'').trim(),wa:(tmp.n_wa||'').trim(),mark:(tmp.n_mk||'').trim(),docs:tmp.ndocs||{}});save();tmp={};go('nurs',{sid:id})}
+function nsRmAsk(sid){const w=(tmp.rmw||'').trim();if(!w){const e=document.getElementById('rmerr');if(e)e.textContent='কেন সরাচ্ছেন, লিখুন';return}tmp.rmc=sid;render()}
+function nsRm(sid){const s=nsGet(sid);if(!s)return;s.status='out';s.outWhy=(tmp.rmw||'').trim();s.outDate=today();save();tmp={};go('nurs')}
+function nsBack(sid){const s=nsGet(sid);if(!s)return;s.status='in';delete s.outWhy;delete s.outDate;save();tmp={};go('nurs')}
+function vNurs(){nurInit();const C=S.nurCfg;const left=s=>DOCS_N.filter(x=>!(s.docs||{})[x]).length;
+ const chs=(cur,fn)=>`<div class="chs">${C.classes.map(c=>`<span class="ch ${cur===c.id?'on-g':''}" onclick="${fn.replace('#',c.id)}">${esc(c.name)}</span>`).join('')}</div>`;
+ const I=(f,lab,val,on,ty,ph)=>`<label class="l">${lab}</label><input ${f?`id="${f}"`:''} ${ty?`type="${ty}"`:''} placeholder="${ph||''}" value="${esc(val||'')}" ${on?`onchange="${on}"`:''} style="width:100%">`;
+ if(V.add){const cl=tmp.ncl||C.classes[0].id;
+  return nurCss+nurTop('নতুন শিক্ষার্থী ভর্তি','নূরানী বিভাগ',"tmp={};go('nurs')")+`<div class="wrap"><div class="card"><label class="l" style="margin-top:0">ক্লাস</label>${chs(cl,"nsKeep();tmp.ncl='#';render()")}
+  ${I('n_name','শিক্ষার্থীর নাম',tmp.n_name)}${I('n_fa','পিতার নাম',tmp.n_fa)}${I('n_gn','অভিভাবকের নাম',tmp.n_gn)}${I('n_wa','অভিভাবকের WhatsApp নম্বর',tmp.n_wa,'','tel','০১৭xxxxxxxx')}
+  <div class="row"><div>${I('n_dt','ভর্তির তারিখ',tmp.n_dt||today(),'','date')}</div><div>${I('n_mk','ভর্তি পরীক্ষার নম্বর',tmp.n_mk)}</div></div>
+  ${docBox(tmp.ndocs,DOCS_N,'nsDocA(#)')}<div class="err" id="nerr"></div><button class="btn pri w" style="margin-top:10px" onclick="nsAdd()">ভর্তি করুন</button></div></div>`}
+ if(V.sid){const s=nsGet(V.sid);if(!s)return go('nurs');const sid=s.id;
+  const box=s.status==='out'
+   ?`<div class="card"><b>এই শিক্ষার্থী তালিকা থেকে সরানো আছে</b><div class="mut" style="margin:4px 0 10px">${s.outDate?dShort(s.outDate)+' · ':''}${esc(s.outWhy||'')}</div><button class="btn w" onclick="nsBack('${sid}')">ফিরিয়ে আনুন</button></div>`
+   :tmp.rmc===sid
+   ?`<div class="card" style="border-color:#E24B4A"><b style="color:#791F1F">নিশ্চিত? ${esc(s.name)} কোনো পাতায় আর দেখাবে না।</b><div class="mut" style="margin:4px 0 10px">আগের পড়া ও হাজিরার হিসাব থেকে যাবে।</div><div class="row"><button class="btn w" style="background:#A32D2D;color:#fff;border-color:#A32D2D" onclick="nsRm('${sid}')">হ্যাঁ, সরান</button><button class="btn w" onclick="tmp.rmc='';render()">না</button></div></div>`
+   :`<div class="card"><b>তালিকা থেকে সরান</b><label class="l">কেন সরাচ্ছেন</label><textarea rows="3" oninput="tmp.rmw=this.value" style="width:100%;font-size:16px;padding:8px;box-sizing:border-box">${esc(tmp.rmw||'')}</textarea><div class="err" id="rmerr"></div><button class="btn w" style="margin-top:8px;color:#A32D2D;border-color:#E24B4A" onclick="nsRmAsk('${sid}')">এই শিক্ষার্থীকে তালিকা থেকে সরান</button></div>`;
+  const on=f=>`nsSet('${sid}','${f}',this.value)`;
+  return nurCss+nurTop(esc(s.name),'নূরানী বিভাগ',"tmp={};go('nurs')")+`<div class="wrap"><div class="card"><label class="l" style="margin-top:0">ক্লাস</label>${chs(s.cls,`nsCls('${sid}','#')`)}
+  ${I('','শিক্ষার্থীর নাম',s.name,on('name'))}${I('','পিতার নাম',s.father,on('father'))}${I('','অভিভাবকের নাম',s.gname,on('gname'))}${I('','অভিভাবকের WhatsApp নম্বর',s.wa,on('wa'),'tel')}
+  <div class="row"><div>${I('','ভর্তির তারিখ',s.adm,on('adm'),'date')}</div><div>${I('','ভর্তি পরীক্ষার নম্বর',s.mark,on('mark'))}</div></div>
+  ${docBox(s.docs,DOCS_N,`nsDocTg('${sid}',#)`)}</div>${box}</div>`}
+ const out=S.nurSt.filter(s=>s.status==='out');
+ return nurCss+nurTop('ভর্তি ও শিক্ষার্থী তথ্য','নূরানী বিভাগ',"go('nur')")+`<div class="wrap"><button class="btn pri w" style="margin-bottom:12px" onclick="tmp={};go('nurs',{add:1})">+ নতুন শিক্ষার্থী ভর্তি</button>
+ ${C.classes.map(c=>{const L=nurStOf(c.id);return `<div class="sec">${esc(c.name)} · ${bn(L.length)} জন</div><div class="card">${L.map(s=>{const l=left(s);return `<div class="li" style="cursor:pointer" onclick="tmp={};go('nurs',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}</b><small>${l?`<span style="color:#A32D2D">${bn(l)}টি কাগজ বাকি</span>`:'<span style="color:#0F6E56">সব কাগজ জমা</span>'}${s.wa?'':' · WhatsApp নম্বর নেই'}</small></div><span>›</span></div>`}).join('')||'<div class="mut">কেউ নেই</div>'}</div>`}).join('')}
+ ${out.length?`<div class="sec">সরানো শিক্ষার্থী</div><div class="card">${out.map(s=>`<div class="li"><div class="n"><b style="cursor:pointer" onclick="tmp={};go('nurs',{sid:'${s.id}'})">${esc(s.name)}</b><small>${s.outDate?dShort(s.outDate):''}${s.outWhy?' · '+esc(s.outWhy):''}</small></div><button class="btn s" onclick="nsBack('${s.id}')">ফিরিয়ে আনুন</button></div>`).join('')}</div>`:''}</div>`}
+VIEWS.nurs=vNurs;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
