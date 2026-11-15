@@ -1538,7 +1538,7 @@ const _vOffice0=vOffice;vOffice=function(){
   return offTop('অফিস সহকারী')+`<div class="wrap">${B('হিফয বিভাগ','মাসিক ও বাৎসরিক রিপোর্ট, ভর্তি ও শিক্ষার্থী তথ্য',"go('office',{dep:'h'})")}${B('নূরানী বিভাগ','দৈনিক পড়া, হাজিরা ও ছুটি',"go('nur')")}</div>`}
  let h=_vOffice0();const a=h.indexOf(`<div class="big" style="background:#E6F1FB`);if(a>=0){const b=h.indexOf('</span></div>',a)+13;h=h.slice(0,a)+h.slice(b)}
  h=h.replace(/<div class="top noprint"><button class="btn s" onclick="[^"]*">[^<]*<\/button>/,`<div class="top noprint"><button class="btn s" onclick="go('office')">‹ ফিরুন</button>`).replace('<b>রিপোর্ট প্রিন্ট ও ফেরত</b>','<b>হিফয বিভাগ</b>');
- return h.replace('<div class="sec" style="margin-top:0">হিফয বিভাগ</div>',`<div class="big" style="margin-bottom:10px" onclick="tmp={};go('dstu')"><div style="flex:1"><b>ভর্তি ও শিক্ষার্থী তথ্য</b><div class="mut">শিক্ষার্থী যোগ, তথ্য বদল ও তালিকা থেকে সরানো</div></div><span>›</span></div>`)};
+ return h.replace('<div class="sec" style="margin-top:0">হিফয বিভাগ</div>',`<div class="big" style="margin-bottom:10px" onclick="tmp={};go('dstu')"><div style="flex:1"><b>ভর্তি ও শিক্ষার্থী তথ্য</b><div class="mut">শিক্ষার্থী যোগ, তথ্য বদল ও তালিকা থেকে সরানো</div></div><span>›</span></div><div class="big" style="margin-bottom:10px" onclick="go('pbrep')"><div style="flex:1"><b>পর্যবেক্ষণ রিপোর্ট</b><div class="mut">পর্যবেক্ষণে থাকা ছাত্রদের রিপোর্ট প্রিন্ট</div></div><span>›</span></div>`)};
 VIEWS.office=vOffice;
 /* ভর্তি ও শিক্ষার্থী তথ্য: সংক্ষিপ্ত রূপ */
 const JMS=[['হিফয প্রথম','প্রথম'],['হিফয দ্বিতীয়','দ্বিতীয়'],['হিফয তাকমিল','তাকমিল']];
@@ -1578,6 +1578,32 @@ function pbBox(s,i){const pb=s.probation;return `<div class="sec">পর্য�
  <label class="l">পরিচালকের সিদ্ধান্ত</label><div class="chs"><span class="ch ${pb.dec==='ok'?'on-g':''}" onclick="pbDec(${i},'ok')">ভর্তি নিশ্চিত</span><span class="ch ${pb.dec==='ext'?'on-y':''}" onclick="pbDec(${i},'ext')">আরও ১৫ দিন বাড়ানো</span><span class="ch ${pb.dec==='no'?'on-r':''}" onclick="pbDec(${i},'no')">ভর্তি হলো না</span></div>`
  :`<div class="mut">পর্যবেক্ষণকাল শেষ, ভর্তি নিশ্চিত</div><button class="btn s" style="margin-top:6px" onclick="S.students[${i}].probation={from:today(),to:addD(today(),30),c1:'',c2:'',c3:'',dec:''};save();render()">পর্যবেক্ষণকাল যোগ করুন</button>`}</div>`}
 
+/* পর্যবেক্ষণকালীন মূল্যায়ন: হিসাব, রিপোর্ট ও প্রিন্ট */
+const PBK=[['sabak','সবক'],['sat','সাতসবক'],['amu','আমুখতা'],['kp','কাঁচা পারা'],['sp','সবকের পারা'],['tk','দাওর']];
+function pbStats(s){const pb=s.probation;if(!pb)return null;const end=pb.to<today()?pb.to:today();const L={};PBK.forEach(([k])=>L[k]={ok:0,no:0});
+ let pres=0,lv=0,ab=0;for(let k=pb.from;k<=end;k=addD(k,1)){const r=(S.les[k]||{})[s.id]||{};
+  Object.keys(r).forEach(q=>{const x=r[q];const kk=q==='sp2'?'sp':q;if(x&&x.st===2&&L[kk])x.ok?L[kk].ok++:L[kk].no++});
+  if(dow(k)===5)continue;const c=calOn(k);if(c&&(OFFT.includes(c.type)||c.type==='exam'))continue;
+  if(awayOn(s.id,k))lv++;else if(absentNow(s.id,k))ab++;else pres++}
+ return {L,pres,lv,ab,end}}
+function pbTable(s,cls){const t=pbStats(s);if(!t)return'';const rows=PBK.filter(([k])=>['sabak','sat','amu'].includes(k)||t.L[k].ok+t.L[k].no);
+ return `<table class="${cls||''}" style="width:100%;border-collapse:collapse;font-size:14px"><tr><th style="text-align:left;padding:6px;border:1px solid #cfd8d4">পড়া</th><th style="padding:6px;border:1px solid #cfd8d4">পেরেছে (দিন)</th><th style="padding:6px;border:1px solid #cfd8d4">পারেনি (দিন)</th></tr>${rows.map(([k,n])=>`<tr><td style="text-align:left;padding:6px;border:1px solid #e3e8e6">${n}</td><td style="text-align:center;padding:6px;border:1px solid #e3e8e6">${bn(t.L[k].ok)}</td><td style="text-align:center;padding:6px;border:1px solid #e3e8e6">${bn(t.L[k].no)}</td></tr>`).join('')}</table>
+ <div style="margin-top:8px;font-size:14px">হাজিরা: উপস্থিত ${bn(t.pres)} দিন · ছুটি ${bn(t.lv)} দিন · অনুপস্থিত ${bn(t.ab)} দিন</div><div class="mut" style="font-size:12px;margin-top:2px">${dShort(s.probation.from)} থেকে ${dShort(t.end)} পর্যন্ত হিসাব</div>`}
+const _pbBox0=pbBox;pbBox=function(s,i){let h=_pbBox0(s,i);if(!s.probation)return h;
+ return h.replace('<div class="card">',`<div class="card"><b>এ পর্যন্ত পড়ার হিসাব</b><div style="margin:8px 0 12px">${pbTable(s)}</div><button class="btn s" style="margin-bottom:10px" onclick="go('pbrep',{sid:'${s.id}'})">রিপোর্ট দেখুন ও প্রিন্ট</button>`)};
+function vPbrep(){const back=ses&&ses.role==='office'?"go('office',{dep:'h'})":(V.sid?`go('dstu',{sid:'${V.sid}'})`:"go('dir')");
+ if(V.sid){const s=SID(V.sid);if(!s||!s.probation)return offTop('পর্যবেক্ষণ রিপোর্ট',back)+'<div class="wrap"><div class="mut">তথ্য নেই</div></div>';const pb=s.probation;
+  const dec={ok:'ভর্তি নিশ্চিত',no:'ভর্তি হলো না'}[pb.dec]||'এখনো সিদ্ধান্ত হয়নি';const R=(a,b)=>`<tr><td style="padding:5px;border:1px solid #e3e8e6;width:42%">${a}</td><td style="padding:5px;border:1px solid #e3e8e6;text-align:left">${b}</td></tr>`;
+  return offTop(esc(s.name),back)+RCSS+`<div class="wrap"><div class="noprint" style="margin-bottom:10px"><button class="btn pri w" onclick="window.print()">ডাউনলোড / প্রিন্ট</button></div>
+  <div class="rp">${rpHead('পর্যবেক্ষণকালীন মূল্যায়ন রিপোর্ট','g')}
+  <div class="s"><div class="st" style="border-color:#0F6E56;color:#085041">শিক্ষার্থীর তথ্য</div><table>${R('শিক্ষার্থীর নাম',esc(s.name))}${R('আইডি',s.id)}${R('অভিভাবকের নাম',esc(s.guardianName||s.father||''))}${R('জামাত',esc(s.jamat||''))}${R('ভর্তির তারিখ',s.admDate?dShort(s.admDate)+' '+bn(s.admDate.slice(0,4)):'')}${R('পর্যবেক্ষণের সময়',dShort(pb.from)+' থেকে '+dShort(pb.to))}${R('ভর্তির সময় মুখস্থ',bn(en(s.admMem||'0'))+' পারা')}${R('ভর্তির সময় কাঁচা পারা',en(s.admKacha||'0')==='0'?'কোনো কাঁচা পারা নেই':bn(en(s.admKacha))+' পারা')}</table></div>
+  <div class="s"><div class="st" style="border-color:#0F6E56;color:#085041">পড়ার হিসাব</div>${pbTable(s)}</div>
+  <div class="s"><div class="st" style="border-color:#0F6E56;color:#085041">উস্তাদের মন্তব্য</div><table>${R('শুরুতে',esc(pb.c1||''))}${R('অগ্রগতি ও মূল্যায়ন',esc(pb.c2||''))}${R('শেষে',esc(pb.c3||''))}</table></div>
+  <div class="s"><div class="st" style="border-color:#0F6E56;color:#085041">পরিচালকের সিদ্ধান্ত</div><div style="font-size:15px;font-weight:600">${dec}</div></div>
+  <div class="sig"><div>উস্তাদের স্বাক্ষর</div><div>পরিচালকের স্বাক্ষর</div><div>অভিভাবকের স্বাক্ষর</div></div></div></div>`}
+ const L=S.students.filter(s=>s.probation&&s.status!=='out'&&(!s.probation.dec||s.probation.to>=addD(today(),-60)));
+ return offTop('পর্যবেক্ষণ রিপোর্ট',back)+`<div class="wrap"><div class="card">${L.map(s=>`<div class="li"><div class="n"><b>${esc(s.name)}</b><small>${s.id} · ${dShort(s.probation.from)} থেকে ${dShort(s.probation.to)}${s.probation.dec==='ok'?' · ভর্তি নিশ্চিত':''}</small></div><button class="btn s" onclick="go('pbrep',{sid:'${s.id}'})">প্রিন্ট</button></div>`).join('')||'<div class="mut">এখন কেউ পর্যবেক্ষণে নেই</div>'}</div></div>`}
+VIEWS.pbrep=vPbrep;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
@@ -1658,7 +1684,7 @@ function setPinUI(which,id,inp){const el=document.getElementById(inp);const v=en
  api('setPin',[which,id,v]).then(()=>{el.value='';m.textContent='নতুন PIN জমা হয়েছে';m.style.color='#0F6E56'}).catch(err=>{m.style.color='#A32D2D';m.textContent=err.server?(/taken/.test(err.message)?'এই PIN অন্য কারো, আরেকটা দিন':'আবার কর্তৃপক্ষের PIN দিয়ে ঢুকে চেষ্টা করুন'):'ইন্টারনেট নেই, নেট থাকলে আবার চেষ্টা করুন'})}
 function pinRow(which,id,lab){const k='np_'+which+'_'+(id||'x');return `<div><label class="l">${lab}</label><div class="row"><input id="${k}" type="password" inputmode="numeric" maxlength="4" placeholder="নতুন PIN"><button class="btn s" style="flex:0 0 auto" onclick="setPinUI('${which}','${id||''}','${k}')">বদলান</button></div><div class="mut" id="${k}_m"></div></div>`}
 
-const FULLV=['drep','dtrep','office','oprint','trep','dbak','dlog','exam'];
+const FULLV=['drep','dtrep','office','oprint','pbrep','dstu','trep','dbak','dlog','exam'];
 const _go=go;go=function(p,o){_go(p,o);if(FULLV.includes(p)&&!FULL)ensureFull(()=>{if(V.p===p)render()});if(['home','g','dir','dtoday','office','news','away'].includes(p))refresh()};
 const _render=render;render=function(){if(!READY){document.getElementById('app').innerHTML='<div style="text-align:center;padding:80px 20px;color:#55615c">তথ্য আনা হচ্ছে…</div>';return}_render()};
 let BOOTT=Date.now();function boot(){BOOTT=Date.now();let C=null;try{C=JSON.parse(localStorage.getItem(CK)||'null')}catch(e){}
