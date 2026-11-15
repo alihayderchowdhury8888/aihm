@@ -1645,7 +1645,7 @@ const _doAdmit1=doAdmit;doAdmit=function(){const n=S.students.length,d=tmp.adocs
 /* নূরানী বিভাগ: হিফযের মতো ছোট ঘর */
 function nurSoon(n){nurModal(`<b>${n}</b><div class="mut" style="margin-top:8px">এই অংশ শীঘ্রই আসছে।</div><div style="margin-top:12px"><button class="btn" onclick="nurModal('')">ঠিক আছে</button></div>`)}
 vNur=function(){let h=_vNur0();
- const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','শীঘ্রই আসছে',"nurSoon('ক্লাস রুটিন')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','শীঘ্রই আসছে',"nurSoon('ছুটি ও দরখাস্ত')",'y')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শীঘ্রই আসছে',"nurSoon('মাসিক ও বাৎসরিক রিপোর্ট')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
+ const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','শীঘ্রই আসছে',"nurSoon('ছুটি ও দরখাস্ত')",'y')}${OT_('প','পরীক্ষা ও ফলাফল','শীঘ্রই আসছে',"nurSoon('পরীক্ষা ও ফলাফল')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শীঘ্রই আসছে',"nurSoon('মাসিক ও বাৎসরিক রিপোর্ট')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
  h=h.replace('<div class="sec">ক্লাস</div>',t);return h.replace(/<p class="mut" style="margin-top:14px">ভর্তি, উস্তাদ হাজিরা[^<]*<\/p>/,'')};
 VIEWS.nur=vNur;
 /* নূরানী: ভর্তি ও শিক্ষার্থী তথ্য */
@@ -1685,6 +1685,64 @@ function vNurs(){nurInit();const C=S.nurCfg;const left=s=>DOCS_N.filter(x=>!(s.d
  ${C.classes.map(c=>{const L=nurStOf(c.id);return `<div class="sec">${esc(c.name)} · ${bn(L.length)} জন</div><div class="card">${L.map(s=>{const l=left(s);return `<div class="li" style="cursor:pointer" onclick="tmp={};go('nurs',{sid:'${s.id}'})"><div class="n"><b>${esc(s.name)}</b><small>${l?`<span style="color:#A32D2D">${bn(l)}টি কাগজ বাকি</span>`:'<span style="color:#0F6E56">সব কাগজ জমা</span>'}${s.wa?'':' · WhatsApp নম্বর নেই'}</small></div><span>›</span></div>`}).join('')||'<div class="mut">কেউ নেই</div>'}</div>`}).join('')}
  ${out.length?`<div class="sec">সরানো শিক্ষার্থী</div><div class="card">${out.map(s=>`<div class="li"><div class="n"><b style="cursor:pointer" onclick="tmp={};go('nurs',{sid:'${s.id}'})">${esc(s.name)}</b><small>${s.outDate?dShort(s.outDate):''}${s.outWhy?' · '+esc(s.outWhy):''}</small></div><button class="btn s" onclick="nsBack('${s.id}')">ফিরিয়ে আনুন</button></div>`).join('')}</div>`:''}</div>`}
 VIEWS.nurs=vNurs;
+/* নূরানী: দিনভিত্তিক ক্লাস রুটিন ও ছুটির ক্যালেন্ডার */
+const RT_DAYS=[[6,'শনি'],[0,'রবি'],[1,'সোম'],[2,'মঙ্গল'],[3,'বুধ'],[4,'বৃহঃ']];
+function rtUid(){return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+function rtInit(){nurInit();const C=S.nurCfg;if(C.rt)return;const cn=n=>(C.classes.find(c=>c.name===n)||{}).id||'';
+ const P=[['৯:০০','৯:৪০'],['৯:৪০','১০:২০'],['১০:২০','১০:৫৫'],['১০:৫৫','১১:৩০'],['১১:৩০','১১:৫০',1],['১১:৫০','১২:২৫'],['১২:২৫','১:০৫'],['১:০৫','১:৪৫']].map((x,i)=>({id:'p'+i,s:x[0],e:x[1],brk:!!x[2]}));
+ const T=(n,a)=>({id:rtUid(),name:n,cells:Object.fromEntries(a.map((x,i)=>x?['p'+(i<4?i:i+1),{sub:x[0],cls:cn(x[1])}]:null).filter(Boolean))});
+ const gen={id:'rg',name:'সাধারণ রুটিন',days:[6,0,1,2,3],from:'',to:'',periods:P,note:'শিশু শ্রেণির ছুটি ১১:৩০ · ১ম শ্রেণির ছুটি ১:০৫',teachers:[
+  T('মাওলানা তাহের আহমদ চৌধুরী',[['আরবি লেখা ও দ্বীন শিক্ষা','শিশু'],['আরবি লেখা','১ম'],['আরবি লেখা ও তাজবিদ','৩য়'],['আরবি লেখা ও তাজবিদ','২য়'],['কায়দা ও তাজবিদ','১ম'],['দ্বীন শিক্ষা','৩য়'],null]),
+  T('মৌলভী আলী আজগর',[['বাংলা','১ম'],['বাংলা','শিশু'],['বাংলা','২য়'],['বাংলা','৩য়'],['দ্বীন শিক্ষা','২য়'],['দ্বীন শিক্ষা','১ম'],null]),
+  T('মৌলভী জুবায়ের আহমদ',[['ইংরেজি','২য়'],['ইংরেজি','৩য়'],['ইংরেজি','শিশু'],['ইংরেজি','১ম'],['আদ-দুরুসুল আরাবিয়া ও মেরি কিতাব','৩য়'],['উর্দু কা আবজাদ','২য়'],null]),
+  T('মাস্টার মামুনুর রহমান',[['গণিত','৩য়'],['গণিত','২য়'],['গণিত','১ম'],['গণিত','শিশু'],null,null,null]),
+  T('হাফিজ শাহাদাত হোসেন চৌধুরী',[null,null,null,null,null,null,['কালিমাতের সূরা ও আমপারা','২য়']]),
+  T('হাফিজ মাহফুজুর ইসলাম',[null,null,null,null,null,null,['কুরআন মাজিদ (১–৩ পারা) ও কালিমাতের সূরা','৩য়']])]};
+ const thu={id:'rt',name:'বৃহস্পতিবারের রুটিন',days:[4],from:'',to:'',periods:P.map(p=>({...p})),note:'',teachers:gen.teachers.map(t=>({id:rtUid(),name:t.name,cells:{}}))};
+ C.rt=[gen,thu];C.hol=C.hol||[];save()}
+function rtFor(k){const L=(S.nurCfg&&S.nurCfg.rt)||[];return L.find(r=>r.from&&r.to&&k>=r.from&&k<=r.to)||L.find(r=>!r.from&&(r.days||[]).includes(dow(k)))||null}
+function nurHolOn(k){return ((S.nurCfg&&S.nurCfg.hol)||[]).find(h=>k>=h.from&&k<=(h.to||h.from))||null}
+function rtCur(){const L=S.nurCfg.rt;return L.find(r=>r.id===tmp.rid)||L[0]}
+function rtSave(){save();nurModal('');render()}
+function rtCell(ti,pid){const r=rtCur(),t=r.teachers[ti],c=t.cells[pid]||{};tmp.rcl=c.cls||'';
+ nurModal(`<b>${esc(t.name)} · ${esc((r.periods.find(p=>p.id===pid)||{}).s||'')}</b><label class="l">বিষয়</label><input id="rc_sub" value="${esc(c.sub||'')}" style="width:100%"><label class="l">শ্রেণি</label><div class="chs" id="rc_cls">${S.nurCfg.classes.map(x=>`<span class="ch ${c.cls===x.id?'on-g':''}" onclick="tmp.rcl='${x.id}';document.querySelectorAll('#rc_cls .ch').forEach(e=>e.classList.remove('on-g'));this.classList.add('on-g')">${esc(x.name)}</span>`).join('')}</div>
+ <div class="row" style="margin-top:12px"><button class="btn pri" onclick="rtCellS(${ti},'${pid}')">রাখুন</button><button class="btn" onclick="delete rtCur().teachers[${ti}].cells['${pid}'];rtSave()">ঘর খালি করুন</button><button class="btn" onclick="nurModal('')">বাতিল</button></div>`)}
+function rtCellS(ti,pid){const sub=document.getElementById('rc_sub').value.trim();const t=rtCur().teachers[ti];if(!sub)delete t.cells[pid];else t.cells[pid]={sub,cls:tmp.rcl||''};rtSave()}
+function rtPer(pid){const r=rtCur(),p=r.periods.find(x=>x.id===pid);
+ nurModal(`<b>পিরিয়ড</b><div class="row"><div><label class="l">শুরু</label><input id="rp_s" value="${esc(p.s)}"></div><div><label class="l">শেষ</label><input id="rp_e" value="${esc(p.e)}"></div></div>
+ <div class="chs" style="margin-top:10px"><span class="ch ${p.brk?'on-y':''}" id="rp_b" onclick="this.classList.toggle('on-y')">এই পিরিয়ড বিরতি</span></div>
+ <div class="row" style="margin-top:12px"><button class="btn pri" onclick="rtPerS('${pid}')">রাখুন</button><button class="btn" style="color:#A32D2D" onclick="rtPerDel('${pid}')">পিরিয়ড বাদ দিন</button><button class="btn" onclick="nurModal('')">বাতিল</button></div>`)}
+function rtPerS(pid){const p=rtCur().periods.find(x=>x.id===pid);p.s=document.getElementById('rp_s').value.trim();p.e=document.getElementById('rp_e').value.trim();p.brk=document.getElementById('rp_b').classList.contains('on-y');rtSave()}
+function rtPerDel(pid){const r=rtCur();r.periods=r.periods.filter(x=>x.id!==pid);r.teachers.forEach(t=>delete t.cells[pid]);rtSave()}
+function rtPerAdd(){const r=rtCur();const l=r.periods[r.periods.length-1];r.periods.push({id:rtUid(),s:l?l.e:'',e:'',brk:false});save();render()}
+function rtTch(ti){const t=rtCur().teachers[ti];nurModal(`<b>উস্তাদ</b><label class="l">নাম</label><input id="rt_n" value="${esc(t.name)}" style="width:100%"><div class="row" style="margin-top:12px"><button class="btn pri" onclick="rtCur().teachers[${ti}].name=document.getElementById('rt_n').value.trim()||'উস্তাদ';rtSave()">রাখুন</button><button class="btn" style="color:#A32D2D" onclick="rtCur().teachers.splice(${ti},1);rtSave()">সারি বাদ দিন</button><button class="btn" onclick="nurModal('')">বাতিল</button></div>`)}
+function rtTchAdd(){nurModal(`<b>নতুন উস্তাদ</b><label class="l">নাম</label><input id="rt_n" style="width:100%"><div class="row" style="margin-top:12px"><button class="btn pri" onclick="const n=document.getElementById('rt_n').value.trim();if(n){rtCur().teachers.push({id:rtUid(),name:n,cells:{}});rtSave()}">যোগ করুন</button><button class="btn" onclick="nurModal('')">বাতিল</button></div>`)}
+function rtNew(){nurModal(`<b>নতুন রুটিন</b><label class="l">নাম</label><input id="rn_n" placeholder="যেমন পরীক্ষাকালীন রুটিন" style="width:100%"><div class="row" style="margin-top:12px"><button class="btn pri" onclick="rtNewS()">তৈরি করুন</button><button class="btn" onclick="nurModal('')">বাতিল</button></div>`)}
+function rtNewS(){const n=document.getElementById('rn_n').value.trim();if(!n)return;const b=S.nurCfg.rt[0];const id=rtUid();
+ S.nurCfg.rt.push({id,name:n,days:[],from:'',to:'',periods:b.periods.map(p=>({...p})),note:'',teachers:b.teachers.map(t=>({id:rtUid(),name:t.name,cells:{}}))});tmp.rid=id;rtSave()}
+function rtDay(d){const r=rtCur();r.days=r.days||[];const i=r.days.indexOf(d);i<0?r.days.push(d):r.days.splice(i,1);save();render()}
+function rtDel(){const r=rtCur();if(S.nurCfg.rt.length<2)return;if(tmp.rdc!==r.id){tmp.rdc=r.id;render();return}S.nurCfg.rt=S.nurCfg.rt.filter(x=>x.id!==r.id);tmp={};save();render()}
+function holAdd(){const f=document.getElementById('h_f').value,t=document.getElementById('h_t').value||f,n=document.getElementById('h_n').value.trim();const e=document.getElementById('herr');
+ if(!f||!n){e.textContent='তারিখ ও ছুটির কারণ লিখুন';return}if(t<f){e.textContent='শেষের তারিখ শুরুর আগে হতে পারে না';return}S.nurCfg.hol.push({from:f,to:t,name:n});S.nurCfg.hol.sort((a,b)=>a.from<b.from?-1:1);save();render()}
+function vNurrt(){rtInit();const C=S.nurCfg,r=rtCur(),cn=id=>(C.classes.find(c=>c.id===id)||{}).name||'';const pn=i=>bn(i+1)+(['ম','য়','য়','র্থ','ম','ষ্ঠ','ম','ম','ম','ম'][i]||'');
+ let pi=0;const cols=r.periods.map(p=>({...p,label:p.brk?'বিরতি':pn(p.brk?0:pi++)}));
+ const td='border:1px solid #cfd8d4;padding:6px;font-size:12px;text-align:center;vertical-align:middle;min-width:84px';
+ const tbl=`<div style="overflow-x:auto"><table style="border-collapse:collapse;background:#fff"><tr><th style="${td};min-width:110px">পিরিয়ড</th>${cols.map(p=>`<th style="${td};cursor:pointer;background:${p.brk?'#FAEEDA':'#F1F5F3'}" onclick="rtPer('${p.id}')"><b>${p.label}</b><div style="font-weight:400">${esc(p.s)}–${esc(p.e)}</div></th>`).join('')}</tr>
+ ${r.teachers.map((t,ti)=>`<tr><td style="${td};text-align:left;font-weight:600;cursor:pointer" onclick="rtTch(${ti})">${esc(t.name)}</td>${cols.map(p=>{if(p.brk)return ti===0?`<td rowspan="${r.teachers.length}" style="${td};background:#FAEEDA;color:#854F0B;font-weight:600;min-width:40px">বি<br>র<br>তি</td>`:'';const c=t.cells[p.id];return `<td style="${td};cursor:pointer" onclick="rtCell(${ti},'${p.id}')">${c?`${esc(c.sub)}${c.cls?`<div class="mut">(${esc(cn(c.cls))})</div>`:''}`:'<span style="color:#c7d0cc">+</span>'}</td>`}).join('')}</tr>`).join('')}</table></div>`;
+ const hol=C.hol||[];
+ return nurCss+RCSS+nurTop('ক্লাস রুটিন','নূরানী বিভাগ',"tmp={};go('nur')")+`<div class="wrap">
+ <div class="chs noprint" style="margin-bottom:10px">${C.rt.map(x=>`<span class="ch ${x.id===r.id?'on-g':''}" onclick="tmp={rid:'${x.id}'};render()">${esc(x.name)}</span>`).join('')}<span class="ch" onclick="rtNew()">+ নতুন রুটিন</span></div>
+ <div class="card noprint"><label class="l" style="margin-top:0">রুটিনের নাম</label><input value="${esc(r.name)}" onchange="rtCur().name=this.value.trim()||'রুটিন';save();render()" style="width:100%">
+ <label class="l">কোন দিন চলবে</label><div class="chs">${RT_DAYS.map(([d,n])=>`<span class="ch ${(r.days||[]).includes(d)?'on-g':''}" onclick="rtDay(${d})">${n}</span>`).join('')}</div>
+ <label class="l">অথবা নির্দিষ্ট সময় (পরীক্ষা ইত্যাদি) · দিলে এই তারিখগুলোতে এটিই চলবে</label><div class="row"><div><input type="date" value="${r.from||''}" onchange="rtCur().from=this.value;save()"></div><div><input type="date" value="${r.to||''}" onchange="rtCur().to=this.value;save()"></div></div></div>
+ <div class="rp" style="padding:10px"><div style="text-align:center;font-weight:700;margin-bottom:6px">${esc(S.settings.madrasa||'আলী ইন্টারন্যাশনাল হাফিজিয়া মাদ্রাসা')} · নূরানী বিভাগ · ${esc(r.name)}</div>${tbl}
+ <label class="l">নোট (ছুটির সময় ইত্যাদি)</label><input value="${esc(r.note||'')}" onchange="rtCur().note=this.value;save()" style="width:100%"></div>
+ <div class="row noprint" style="margin-top:10px"><button class="btn s" onclick="rtTchAdd()">+ উস্তাদ যোগ করুন</button><button class="btn s" onclick="rtPerAdd()">+ পিরিয়ড যোগ করুন</button><button class="btn s" onclick="window.print()">প্রিন্ট</button></div>
+ <div class="mut noprint" style="margin-top:6px">কোনো ঘরে চাপ দিলে বিষয় ও শ্রেণি বদলানো যাবে। পিরিয়ডের মাথায় চাপ দিলে সময় বদলানো বা বিরতি করা যাবে। উস্তাদের নামে চাপ দিলে নাম বদলানো যাবে।</div>
+ ${C.rt.length>1?`<button class="btn s noprint" style="margin-top:8px;color:#A32D2D" onclick="rtDel()">${tmp.rdc===r.id?'নিশ্চিত? আবার চাপলে এই রুটিন বাদ যাবে':'এই রুটিন বাদ দিন'}</button>`:''}
+ <div class="sec noprint">ছুটির ক্যালেন্ডার</div><div class="card noprint">${hol.map((h,i)=>`<div class="li"><div class="n"><b>${esc(h.name)}</b><small>${dShort(h.from)}${h.to&&h.to!==h.from?' থেকে '+dShort(h.to):''}</small></div><button class="btn s" onclick="S.nurCfg.hol.splice(${i},1);save();render()">বাদ দিন</button></div>`).join('')||'<div class="mut">কোনো ছুটি যোগ করা হয়নি</div>'}
+ <div class="row" style="margin-top:10px"><div><label class="l">শুরু</label><input id="h_f" type="date"></div><div><label class="l">শেষ</label><input id="h_t" type="date"></div></div><label class="l">ছুটির কারণ</label><input id="h_n" placeholder="যেমন ঈদুল ফিতরের ছুটি" style="width:100%"><div class="err" id="herr"></div><button class="btn pri w" style="margin-top:8px" onclick="holAdd()">ছুটি যোগ করুন</button></div></div>`}
+VIEWS.nurrt=vNurrt;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
