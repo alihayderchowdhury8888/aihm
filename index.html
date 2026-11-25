@@ -2079,6 +2079,11 @@ VIEWS.nurdr=vNurdr;
 /* পরিচালকের আজকের অবস্থা: অফিস সহকারীর কাজ */
 const _vDtoday2=vDtoday;vDtoday=function(){const h=_vDtoday2();return h.replace('<div class="sec">পড়ার হিসাব</div>',`<div class="sec">পড়ার হিসাব ও প্রতিবেদন</div>`).replace(/(<div class="sec" style="color:#A32D2D;margin-top:4px">১\. সতর্কতা<\/div>)/,otBox('dir')+'$1')};
 VIEWS.dtoday=vDtoday;
+/* দাপ্তরিক কাগজপত্র: আলাদা পাতা kagoj.html */
+ICMAP.unshift(['দাপ্তরিক','file']);
+function kagojTile(){return `<div class="sec">দাপ্তরিক কাগজপত্র</div><div class="dts">${OT_('','দাপ্তরিক কাগজপত্র','',"location.href='kagoj.html'",'p')}</div>`}
+const _vOffice3=vOffice;vOffice=function(){const h=_vOffice3();if(V.mode||V.dep)return h;return h.replace(/<\/div>\s*$/,kagojTile()+'</div>')};VIEWS.office=vOffice;
+const _vDirK=vDir;vDir=function(){const h=_vDirK();return h.replace(/<\/div>\s*$/,kagojTile()+'</div>')};VIEWS.dir=vDir;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';

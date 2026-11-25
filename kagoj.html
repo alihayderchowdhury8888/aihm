@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#085041">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png">
+<title>দাপ্তরিক কাগজপত্র · AIHM</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Nirmala UI","Noto Sans Bengali","Hind Siliguri",sans-serif;background:#eef2f1;color:#1d2b27}
+.top{position:sticky;top:0;z-index:20;background:#085041;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 12px}
+.top b{font-size:16px;flex:1;line-height:1.3}.btn{border:1px solid #cfdcd8;background:#fff;color:#085041;border-radius:9px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+.top .btn{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.35)}.btn.pri{background:#C9A227;border-color:#C9A227;color:#3a2c00;font-weight:600}
+.wrap{max-width:900px;margin:0 auto;padding:12px}
+.srch{width:100%;padding:10px 12px;border:1px solid #cfdcd8;border-radius:10px;font:inherit;font-size:15px;margin-bottom:6px}
+.sec{margin:16px 2px 8px;font-weight:700;color:#0F5E52;border-left:4px solid #C9A227;padding-left:8px}
+.it{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #dde6e3;border-radius:12px;padding:11px 12px;margin-bottom:7px;cursor:pointer}
+.it:hover{border-color:#0F5E52}.it svg{flex:0 0 22px;color:#0F5E52}.it span{flex:1;font-size:15px;line-height:1.35}.it small{color:#6b7772;font-size:12px}
+.mut{color:#6b7772;font-size:13px;line-height:1.6}
+.tb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.hint{background:#FFF8E1;border:1px solid #EBD58A;border-radius:10px;padding:8px 10px;font-size:13px;color:#5c4a00;margin-bottom:10px;line-height:1.55}
+.pg{position:relative;margin:0 auto 14px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.18);container-type:inline-size;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.pg img{display:block;width:100%;height:auto;pointer-events:none}
+.ly{position:absolute;inset:0;cursor:text}
+.bx{position:absolute;color:#0a1f6b;line-height:1.25;font-family:"Nirmala UI","Noto Sans Bengali",sans-serif}
+.ed{min-width:2cqw;min-height:1.2em;white-space:pre-wrap;outline:1px dashed rgba(8,80,65,.45);padding:0 .15em;user-select:text;-webkit-user-select:text;cursor:text}
+.bx.on .ed{outline:1.5px solid #C9A227;background:rgba(255,248,225,.6)}
+.hd{position:absolute;left:-1.6em;top:0;width:1.4em;height:1.4em;border-radius:4px;background:#085041;color:#fff;font-size:.75em;display:none;align-items:center;justify-content:center;cursor:move;touch-action:none}
+.bx.on .hd,.bx.drag .hd{display:flex}
+@media print{
+ body{background:#fff}.np,.top,.tb,.hint{display:none!important}.wrap{padding:0;max-width:none}
+ @page{size:A4 portrait;margin:0}@page land{size:A4 landscape;margin:0}
+ .pg{box-shadow:none;margin:0;width:210mm!important;break-after:page}.pg.l{page:land;width:297mm!important}
+ .pg{height:297mm;overflow:hidden}.pg.l{height:210mm}.pg:last-child{break-after:auto}.ed{outline:none!important;background:none!important}.hd{display:none!important}
+}
+</style></head><body>
+<div id="app"></div>
+<script>
+const IDX=[{"s":"মূল দলিল","items":[{"id":"d01","t":"গঠনতন্ত্র - আলী ইন্টারন্যাশনাল হাফিজিয়া মাদ্রাসা","p":[[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754]]},{"id":"d02","t":"শিক্ষক ও কর্মচারী নিয়োগ ও চাকরি নীতিমালা","p":[[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754],[1241,1754]]}]},{"s":"অফিস সংক্রান্ত","items":[{"id":"d03","t":"ছাত্র সুরক্ষা কমিটি গঠনের অফিস আদেশ","p":[[1241,1754]]},{"id":"d04","t":"নোটিশ (খালি)","p":[[1241,1754]]},{"id":"d05","t":"নোটিশ - ছাত্র সুরক্ষা ও অভিযোগ জানানোর নম্বর","p":[[1241,1754]]},{"id":"d06","t":"নোটিশের নমুনা (ছুটি, পরীক্ষা, অভিভাবক সভা)","p":[[1241,1754],[1241,1754],[1241,1754]]},{"id":"d07","t":"প্যাড (লেটারহেড) - আলী ইন্টারন্যাশনাল হাফিজিয়া মাদ্রাসা","p":[[1240,1754]]}]},{"s":"ছাত্র সংক্রান্ত","items":[{"id":"d08","t":"চারিত্রিক সনদপত্র (ছাত্র)","p":[[1241,1754]]},{"id":"d09","t":"ছাড়পত্র (ছাত্র)","p":[[1241,1754]]},{"id":"d10","t":"ছাত্র পরিচয়পত্র (আইডি কার্ড)","p":[[1241,1754],[1241,1754]]},{"id":"d11","t":"পর্যবেক্ষণকালীন শিক্ষার্থী তথ্য ফরম - হিফজ বিভাগ","p":[[1241,1754]]},{"id":"d12","t":"প্রত্যয়নপত্র (ছাত্র)","p":[[1241,1754]]},{"id":"d13","t":"প্রবেশপত্র (অ্যাডমিট কার্ড)","p":[[1241,1754]]},{"id":"d14","t":"বহির্গমন অনুমতিপত্র","p":[[1241,1754]]},{"id":"d15","t":"ভর্তি পরীক্ষার প্রশ্নপত্র - নূরানী বিভাগ","p":[[1241,1754],[1241,1754],[1241,1754]]},{"id":"d16","t":"ভর্তি ফরম - নূরানী বিভাগ","p":[[1241,1754],[1241,1754]]},{"id":"d17","t":"ভর্তি ফরম - হিফজ বিভাগ","p":[[1241,1754],[1241,1754]]},{"id":"d18","t":"সম্মাননা সনদ","p":[[1754,1241]]},{"id":"d19","t":"হিফজুল কুরআন সমাপনী সনদ","p":[[1754,1241]]}]},{"s":"শিক্ষক ও কর্মচারী","items":[{"id":"d20","t":"উস্তাদ ও কর্মচারী সম্মাননা সনদ - নিয়মিত উপস্থিতি","p":[[1754,1241]]},{"id":"d21","t":"উস্তাদ ও কর্মচারী সম্মাননা সনদ - পূর্ণ উপস্থিতি","p":[[1754,1241]]},{"id":"d22","t":"উস্তাদ ও কর্মচারী সম্মাননা সনদ - শ্রেষ্ঠ উস্তাদ","p":[[1754,1241]]},{"id":"d23","t":"পদভিত্তিক দায়িত্ব বিবরণী (৪টি পদ)","p":[[1241,1754],[1241,1754],[1241,1754],[1241,1754]]},{"id":"d24","t":"ফরম ০১ - নিয়োগ আবেদন ফরম","p":[[1241,1754]]},{"id":"d25","t":"ফরম ০২ - সাক্ষাৎকার মূল্যায়ন ফরম","p":[[1241,1754]]},{"id":"d26","t":"ফরম ০৩ - নিয়োগপত্র ও অঙ্গীকারনামা","p":[[1241,1754],[1241,1754]]},{"id":"d27","t":"ফরম ০৪ - ছুটির আবেদন ফরম","p":[[1241,1754]]},{"id":"d28","t":"ফরম ০৫ - সতর্কীকরণ পত্র","p":[[1241,1754]]},{"id":"d29","t":"ফরম ০৬ - কারণ দর্শানোর নোটিশ","p":[[1241,1754]]},{"id":"d30","t":"ফরম ০৭ - অব্যাহতি পত্র","p":[[1241,1754]]},{"id":"d31","t":"ফরম ০৮ - পদত্যাগপত্র ও অভিজ্ঞতা সনদ","p":[[1241,1754],[1241,1754]]},{"id":"d32","t":"ফরম ০৯ - শিক্ষানবিশকাল মূল্যায়ন ফরম","p":[[1241,1754]]},{"id":"d33","t":"ফরম ১০ - শিক্ষানবিশকাল বৃদ্ধির পত্র","p":[[1241,1754]]},{"id":"d34","t":"ফরম ১১ - বার্ষিক কর্মমূল্যায়ন ফরম","p":[[1241,1754]]}]},{"s":"রেজিস্টার খাতা","items":[{"id":"d35","t":"অভিভাবক সমাবেশ খাতা","p":[[1754,1241],[1241,1754]]},{"id":"d36","t":"অভিভাবক সাক্ষাৎ রেজিস্টার","p":[[1754,1241]]},{"id":"d37","t":"অভিযোগ রেজিস্টার (উস্তাদ ও কর্মচারী)","p":[[1754,1241]]},{"id":"d38","t":"অসুস্থতা ও চিকিৎসা রেজিস্টার","p":[[1754,1241]]},{"id":"d39","t":"আয়-ব্যয় খাতা (সাধারণ তহবিল)","p":[[1754,1241]]},{"id":"d40","t":"উস্তাদ ও কর্মচারী হাজিরা খাতা","p":[[1241,1754]]},{"id":"d41","t":"চিঠি আদান-প্রদান রেজিস্টার","p":[[1754,1241]]},{"id":"d42","t":"বেতন রেজিস্টার","p":[[1754,1241]]},{"id":"d43","t":"মালামাল রেজিস্টার","p":[[1754,1241]]},{"id":"d44","t":"মেহমান মন্তব্য খাতা","p":[[1241,1754]]},{"id":"d45","t":"যাকাত তহবিল হিসাব খাতা","p":[[1754,1241]]},{"id":"d46","t":"রেজুলেশন খাতা (মাসিক সভা)","p":[[1241,1754],[1241,1754]]}]}];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const IC='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>';
+const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+let cur=null,fs=2;
+function ls(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||'null');if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
+function find(id){for(const s of IDX)for(const it of s.items)if(it.id===id)return it}
+let nav=0;function backIdx(){if(nav)history.back();else{location.hash=''}}
+function home(q){cur=null;q=(q||'').trim();
+ let h=`<div class="top"><button class="btn" onclick="location.href='./'">‹ অ্যাপ</button><b>দাপ্তরিক কাগজপত্র</b></div><div class="wrap">
+ <input class="srch" placeholder="কাগজের নাম লিখে খুঁজুন" value="${esc(q)}" oninput="home(this.value);setTimeout(()=>{const e=$('.srch');e.focus();e.setSelectionRange(e.value.length,e.value.length)})">`;
+ let any=0;IDX.forEach((s,si)=>{const L=s.items.filter(it=>!q||it.t.includes(q));if(!L.length)return;any=1;
+  h+=`<div class="sec">${bn(si+1)}. ${esc(s.s)}</div>`+L.map(it=>`<div class="it" onclick="location.hash='${it.id}'">${IC}<span>${esc(it.t)}</span><small>${bn(it.p.length)} পাতা${ls('kg_'+it.id)?' · লেখা আছে':''}</small></div>`).join('')});
+ if(!any)h+='<p class="mut">এই নামে কোনো কাগজ পাওয়া যায়নি।</p>';
+ h+=`<div class="sec">নেট ছাড়া ব্যবহার</div><p class="mut">যে কাগজ একবার খোলা হয়, সেটি এই ফোন বা কম্পিউটারে জমা থাকে। সব কাগজ একবারে জমা রাখতে নিচের বোতাম চাপুন (নেট লাগবে)।</p><button class="btn" id="dlb" onclick="dlAll()">সব কাগজ নেট ছাড়া ব্যবহারের জন্য রাখুন</button><div style="height:30px"></div></div>`;
+ $('#app').innerHTML=h;window.scrollTo(0,0)}
+async function dlAll(){const b=$('#dlb');const U=[];IDX.forEach(s=>s.items.forEach(it=>it.p.forEach((_,i)=>U.push(`kagoj/${it.id}-${i+1}.webp`))));let ok=0;
+ for(const u of U){try{const r=await fetch(u);if(r.ok)ok++}catch(e){}b.textContent=`নামানো হচ্ছে… ${bn(ok)} / ${bn(U.length)}`}
+ b.textContent=ok===U.length?'সব কাগজ রাখা হয়েছে ✓':`${bn(ok)} / ${bn(U.length)} রাখা হয়েছে, নেট এলে আবার চাপুন`}
+function openDoc(id){const it=find(id);if(!it)return;cur=it;
+ const saved=ls('kg_'+id)||[];
+ let h=`<div class="top"><button class="btn" onclick="backIdx()">‹ সূচি</button><b>${esc(it.t)}</b></div><div class="wrap">
+ <div class="tb np"><button class="btn pri" onclick="doPrint()">প্রিন্ট</button><button class="btn" onclick="sz(1)">লেখা বড়</button><button class="btn" onclick="sz(-1)">লেখা ছোট</button><button class="btn" onclick="clearAll()">সব লেখা মুছুন</button></div>
+ <div class="hint np">কাগজের যেকোনো ফাঁকা জায়গায় চাপুন, তারপর লিখুন। লেখা সরাতে বাম পাশের ছোট সবুজ ঘরটি ধরে টানুন। লেখা মুছে দিলে ঘরটিও চলে যাবে। লেখা নিজে থেকেই জমা থাকে।</div>`;
+ it.p.forEach(([w,hh],i)=>{const l=w>hh;h+=`<div class="pg${l?' l':''}" data-i="${i}" style="max-width:${l?'100%':'760px'}"><img src="kagoj/${it.id}-${i+1}.webp" alt=""><div class="ly"></div></div>`});
+ h+='</div>';$('#app').innerHTML=h;window.scrollTo(0,0);
+ document.querySelectorAll('.pg').forEach(pg=>{const ly=pg.querySelector('.ly');
+  ly.addEventListener('pointerdown',e=>{if(e.target!==ly)return;e.preventDefault();const r=ly.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*100,y=(e.clientY-r.top)/r.height*100;const ed=mk(pg,{x,y:Math.max(0,y-.9),t:'',f:fs});setTimeout(()=>ed.focus(),0)})});
+ saved.forEach(o=>{const pg=document.querySelectorAll('.pg')[o.p];if(pg)mk(pg,o)})}
+function mk(pg,o){const ly=pg.querySelector('.ly');const w=document.createElement('div');w.className='bx';
+ w.style.left=o.x+'%';w.style.top=o.y+'%';w.style.fontSize=(o.f||fs)+'cqw';w.dataset.f=o.f||fs;
+ const hd=document.createElement('span');hd.className='hd';hd.textContent='⇕';
+ const e=document.createElement('div');e.className='ed';e.contentEditable='true';e.spellcheck=false;e.textContent=o.t||'';
+ w.append(hd,e);
+ e.addEventListener('input',saveDoc);e.addEventListener('focus',()=>w.classList.add('on'));
+ e.addEventListener('blur',()=>{w.classList.remove('on');setTimeout(()=>{if(!e.innerText.trim()&&!w.classList.contains('drag')){w.remove();saveDoc()}},120)});
+ hd.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();hd.setPointerCapture(ev.pointerId);w.classList.add('drag');const r=ly.getBoundingClientRect();
+  const mv=v=>{w.style.left=Math.max(0,Math.min(98,(v.clientX-r.left)/r.width*100+1))+'%';w.style.top=Math.max(0,Math.min(98,(v.clientY-r.top)/r.height*100-.5))+'%'};
+  const up=()=>{hd.removeEventListener('pointermove',mv);hd.removeEventListener('pointerup',up);w.classList.remove('drag');saveDoc();e.focus()};
+  hd.addEventListener('pointermove',mv);hd.addEventListener('pointerup',up)});
+ ly.appendChild(w);return e}
+function txt(w){const e=w.querySelector('.ed');return e?e.innerText.replace(/\n$/,''):''}
+function saveDoc(){if(!cur)return;const A=[];document.querySelectorAll('.pg').forEach((pg,p)=>pg.querySelectorAll('.bx').forEach(b=>{const t=txt(b);if(t.trim())A.push({p,x:parseFloat(b.style.left),y:parseFloat(b.style.top),f:+b.dataset.f,t})}));ls('kg_'+cur.id,A.length?A:null)}
+function sz(d){const a=document.activeElement;const b=a&&a.classList.contains('ed')?a.parentElement:null;
+ if(b){const f=Math.max(.9,Math.min(4,+b.dataset.f+d*.2));b.dataset.f=f;b.style.fontSize=f+'cqw';saveDoc();a.focus()}else{fs=Math.max(.9,Math.min(4,fs+d*.2));alertMsg('নতুন লেখার মাপ বদলানো হলো')}}
+function alertMsg(t){const h=$('.hint');if(h){const o=h.textContent;h.textContent=t;setTimeout(()=>h.textContent=o,1500)}}
+function clearAll(){if(!cur)return;if(!confirm('এই কাগজের সব লেখা মুছে যাবে। নিশ্চিত?'))return;ls('kg_'+cur.id,null);openDoc(cur.id)}
+function doPrint(){if(document.activeElement)document.activeElement.blur();saveDoc();setTimeout(()=>window.print(),150)}
+window.addEventListener('hashchange',()=>{const id=decodeURIComponent(location.hash.slice(1));if(id&&find(id)){nav=1;openDoc(id)}else{nav=0;home()}});
+const h0=location.hash.slice(1);h0&&find(h0)?openDoc(h0):home();
+</script></body></html>
