@@ -2617,6 +2617,33 @@ function vTcert(){const t=T(V.tid)||{};return RCSS+`<div class="top noprint"><bu
 VIEWS.tcert=vTcert;
 DHUB.rep.it.splice(3,0,['উস্তাদদের মূল্যায়ন',"go('teval',{mode:'m'})"]);
 ICMAP.unshift(['উস্তাদদের মূল্যায়ন','award']);
+/* লক্ষ্য পূরণের হিসাব: মাসিক ও বাৎসরিক (২৭ নভেম্বর) */
+function tgNum(v){const n=parseFloat(en(String(v==null?'':v)));return isNaN(n)?null:n}
+function tgFill(s,mode,mk){const P=[];
+ if(mode==='m'){const tg=(S.target[mk]||{})[s.id]||{};const [f,t]=mRange(mk);const o=stat(s.id,f,t);
+  const sp=tgNum(tg.sp);if(sp)P.push(['সবক',o.les.sabak.ok,sp,'পৃষ্ঠা']);
+  const af=tgNum(tg.af),at=tgNum(tg.at);if(af!=null&&at!=null&&at>=af)P.push(['আমুখতা',Math.floor((o.les.amu.ok+o.les.tk.ok)/2),at-af+1,'পারা']);
+  const k=tgNum(tg.k);if(k){const d=Math.max(0,(tgNum(s.startKacha)||0)-(tgNum(s.curKacha)||0));P.push(['কাঁচা পারা ইয়াদ',d,k,'পারা'])}}
+ else{const tg=(S.target.year||{})[s.id]||{};const sf=tgNum(tg.sf),st=tgNum(tg.st);if(sf!=null&&st!=null&&st>=sf){const cur=tgNum(s.curMem)||0;P.push(['সবক',Math.max(0,Math.min(st-sf+1,cur-sf+1)),st-sf+1,'পারা'])}
+  const k=tgNum(tg.k),sk=tgNum(s.startKacha),ck=tgNum(s.curKacha);if(k!=null&&sk!=null&&ck!=null){const need=Math.max(0,sk-k);P.push(['কাঁচা পারা কমানো',Math.max(0,Math.min(need,sk-ck)),need||1,'পারা'])}}
+ if(!P.length)return null;const pct=Math.round(P.reduce((a,x)=>a+Math.min(1,x[1]/x[2]),0)/P.length*100);return {P,pct}}
+function grpTgPct(g,mk){const L=onlyG(g).map(s=>tgFill(s,'m',mk)).filter(Boolean);return L.length?Math.round(L.reduce((a,x)=>a+x.pct,0)/L.length):null}
+function vTgfill(){const mode=V.mode||'m';const mk=V.mk||today().slice(0,7);const nav=o=>`go('tgfill',${JSON.stringify(Object.assign({mode,mk},o)).replace(/"/g,"'")})`;
+ const mshift=d=>{const [y,m]=mk.split('-').map(Number);const x=new Date(y,m-1+d,1);return x.getFullYear()+'-'+pad(x.getMonth()+1)};const [y,m]=mk.split('-').map(Number);
+ const col=p=>p>=80?'#0F6E56':p>=50?'#C9A227':'#E24B4A';
+ const grp=g=>{const L=onlyG(g);if(!L.length)return '';const R=L.map(s=>[s,tgFill(s,mode,mk)]);const ok=R.filter(x=>x[1]);const av=ok.length?Math.round(ok.reduce((a,x)=>a+x[1].pct,0)/ok.length):null;const tc=g==='both'?null:gTeacher(g);
+  return `<div class="card" style="border-left:5px solid ${DSCOL[g]}"><div class="row" style="align-items:center"><b style="color:${DSCOL[g]}">${g==='both'?'তাকমিল':'গ্রুপ '+g}${tc?' · '+esc(tc.name):''}</b>${av!=null?`<b style="flex:0 0 auto;font-size:20px;color:${col(av)}">${bn(av)}%</b>`:''}</div>
+  ${R.map(([s,x])=>`<div style="padding:8px 0;border-top:1px solid #eef1f0"><div style="display:flex;align-items:center;gap:8px"><span style="flex:1;font-size:14.5px">${esc(s.name)}</span>${x?`<b style="color:${col(x.pct)}">${bn(x.pct)}%</b>`:'<span class="mut">লক্ষ্য দেওয়া হয়নি</span>'}</div>
+  ${x?`<div style="height:7px;background:#EEF2F0;border-radius:4px;margin:5px 0;overflow:hidden"><div style="width:${Math.min(100,x.pct)}%;height:100%;background:${col(x.pct)}"></div></div><div class="mut" style="font-size:12.5px">${x.P.map(p=>p[0]+': '+bn(p[1])+'/'+bn(p[2])+' '+p[3]).join(' · ')}</div>`:''}</div>`).join('')}</div>`};
+ return `<div class="top noprint"><button class="btn s" onclick="go('dhub',{h:'rep'})">‹ ফিরুন</button><div class="t"><b>লক্ষ্য পূরণ</b><span>হিফয বিভাগ · প্রত্যেক শিক্ষার্থী</span></div></div><div class="wrap">
+ <div class="row noprint" style="margin-bottom:10px"><span class="ch ${mode==='m'?'on-g':''}" onclick="${nav({mode:'m'})}">মাসিক লক্ষ্য</span><span class="ch ${mode==='y'?'on-g':''}" onclick="${nav({mode:'y'})}">বাৎসরিক লক্ষ্য</span></div>
+ ${mode==='m'?`<div class="datebar"><button class="btn s" onclick="${nav({mk:mshift(-1)})}">‹ আগের মাস</button><b>${MON[m-1]} ${bn(y)}</b><button class="btn s" onclick="${nav({mk:mshift(1)})}">পরের মাস ›</button></div>`:`<div class="ban b">শিক্ষাবর্ষ: ${esc(S.year.name||'')} · এখন পর্যন্ত</div>`}
+ ${['ক','খ','both'].map(grp).join('')}<p class="mut">লক্ষ্য দেন উস্তাদ, তাঁর পাতার "মাসিক লক্ষ্য" ঘর থেকে। ৮০% বা বেশি সবুজ, ৫০% থেকে কম হলে লাল।</p></div>`}
+VIEWS.tgfill=vTgfill;
+DHUB.rep.it.splice(4,0,['লক্ষ্য পূরণ',"go('tgfill',{mode:'m'})"]);
+ICMAP.unshift(['লক্ষ্য পূরণ','target']);
+/* মূল্যায়নে লক্ষ্য পূরণ যোগ: শিক্ষার্থীদের ফল = অর্ধেক পড়া পারা, অর্ধেক লক্ষ্য পূরণ */
+const _tEvalCalcT=tEvalCalc;tEvalCalc=function(tid,from,to,mk){const o=_tEvalCalcT(tid,from,to,mk);if(!o)return o;try{const t=T(tid);const gp=grpTgPct(t.group,mk);if(gp!=null){const pass=o.ok+o.no?o.ok/(o.ok+o.no):1;const v=Math.round((pass*12.5+gp/100*12.5)*10)/10;o.parts[1]=['শিক্ষার্থীদের ফল ও লক্ষ্য পূরণ',v,25];o.total=Math.round(o.parts.reduce((a,x)=>a+x[1],0))}}catch(e){}return o};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
