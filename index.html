@@ -2538,6 +2538,13 @@ VIEWS.dhub=vDhub;
 ICMAP.unshift(['গ্রুপ ক','layers'],['গ্রুপ খ','layers'],['হিফযের রিপোর্ট','chart'],['শৃঙ্খলা','shield'],['ক্যালেন্ডার ও রুটিন','cal'],['নোটিশ বোর্ড','bell'],['নিয়ম ও গ্রেড','file'],['ব্যবস্থাপনা','gear'],['পিন','key'],['মাদ্রাসার তথ্য','file'],['প্রবেশের খাতা','hist'],['ব্যাকআপ','box'],['ক্যালেন্ডার','cal'],['রুটিন','clock'],['শিক্ষাবর্ষ','cal'],['পাঠ ও ছুটি','file'],['গ্রেড','award'],['জরিমানা','coin'],['আচরণ','star'],['প্রস্তুতি','file'],['পরীক্ষার ফলাফল','award']);
 
 document.head.insertAdjacentHTML('beforeend','<style>@media (min-width:900px){.gpg.g5{grid-template-columns:repeat(5,1fr)!important}}</style>');
+/* স্বয়ংক্রিয় হালনাগাদের সময় ফরমে লেখা মুছে না যায় (২৭ নভেম্বর) */
+let _rfKey='',_rfTmp=null;
+const _renderKeep=render;render=function(){const a=document.getElementById('app');const key=JSON.stringify(V);const keep={};let foc=null;
+ try{if(a&&key===_rfKey&&tmp===_rfTmp){a.querySelectorAll('input[id],select[id],textarea[id]').forEach(e=>{if(e.type==='file')return;keep[e.id]=e.value});const f=document.activeElement;if(f&&f.id&&a.contains(f))foc=f.id}}catch(e){}
+ const r=_renderKeep.apply(this,arguments);_rfKey=JSON.stringify(V);_rfTmp=tmp;
+ try{Object.keys(keep).forEach(id=>{const e=document.getElementById(id);if(e&&e.value!==keep[id])e.value=keep[id]});if(foc){const e=document.getElementById(foc);if(e)e.focus()}}catch(e){}
+ return r};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
