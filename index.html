@@ -2102,7 +2102,7 @@ const HOMECSS=`<style>
 vHome=function(){const t1=gTeacher('ক')||{},t2=gTeacher('খ')||{};
  const T=(n,sm,on,bg,col)=>`<div class="tile" onclick="${on}" style="border-top:4px solid ${col}"><div class="ic" style="background:${bg};color:${col}"></div><b style="color:${col}">${n}</b>${sm?`<small>${esc(sm)}</small>`:''}</div>`;
  return HOMECSS+`<div class="hmw"><div class="hmh"><div class="lg"><img src="logo.webp" alt=""></div><div class="nm">${esc(S.settings.madrasa)}</div><div class="hdt">${dBn(today())}</div></div>
- <div class="hmg">${T('কর্তৃপক্ষ','পরিচালক',"go('pin',{to:'dir'})",'#FAEEDA','#854F0B')}${T('অফিস সহকারী','নূরানী শিট, প্রতিবেদন ও রিপোর্ট',"go('pin',{to:'office'})",'#EEEDFE','#534AB7')}${T('গ্রুপ ক',t1.name,"go('pin',{to:'g',g:'ক'})",'#E1F5EE','#0F6E56')}${T('গ্রুপ খ',t2.name,"go('pin',{to:'g',g:'খ'})",'#E6F1FB','#185FA5')}</div>
+ <div class="hmg">${T('কর্তৃপক্ষ','পরিচালক',"go('pin',{to:'dir'})",'#FAEEDA','#854F0B')}${T('অফিস সহকারী','মাস্টার মামুনুর রহমান',"go('pin',{to:'office'})",'#EEEDFE','#534AB7')}${T('গ্রুপ ক',t1.name,"go('pin',{to:'g',g:'ক'})",'#E1F5EE','#0F6E56')}${T('গ্রুপ খ',t2.name,"go('pin',{to:'g',g:'খ'})",'#E6F1FB','#185FA5')}</div>
  <div class="hmf">প্রতিষ্ঠিত ২০২২ · কায়স্থগ্রাম, হেতিমগঞ্জ, গোলাপগঞ্জ, সিলেট</div></div>`};
 VIEWS.home=vHome;
 /* আজকের অবস্থা: নতুন করে লেখা (২৭ নভেম্বর) */
@@ -2523,7 +2523,7 @@ vDir=function(){const al=liveAlerts().filter(a=>a[0]==='r').length+(function(){t
  const cell=(n,sm,on,c,pr)=>`<div class="gpc${pr?' pr':''}" onclick="${on}">${ic(c)}<b style="${pr?'':'color:'+GPCOL[c][1]}">${n}</b>${sm?`<small>${sm}</small>`:''}</div>`;
  const t1=gTeacher('ক')||{},t2=gTeacher('খ')||{};
  const cells=[cell('গ্রুপ ক',esc(t1.name||''),"ses={role:'dir',g:'ক'};tmp={};D=today();go('g')",'g',1),cell('গ্রুপ খ',esc(t2.name||''),"ses={role:'dir',g:'খ'};tmp={};D=today();go('g')",'g',1),
-  cell('অফিস সহকারী','নূরানী বিভাগ ও দাপ্তরিক রিপোর্ট',"go('office')",'g'),cell('হিফযের রিপোর্ট','মাসিক, বাৎসরিক, উস্তাদ, পরীক্ষা',"go('dhub',{h:'rep'})",'b'),
+  cell('অফিস সহকারী','মাস্টার মামুনুর রহমান',"go('office')",'g'),cell('হিফযের রিপোর্ট','মাসিক, বাৎসরিক, উস্তাদ, পরীক্ষা',"go('dhub',{h:'rep'})",'b'),
   cell('শৃঙ্খলা',dueF?`<span style="color:#A32D2D">${bn(dueF)}টি জরিমানা বাকি</span>`:'জরিমানা ও আচরণ',"go('dhub',{h:'dis'})",'y'),cell('ভর্তি ও শিক্ষার্থী তথ্য','হিফয বিভাগ',"go('dstu')",'y'),
   cell('ক্যালেন্ডার ও রুটিন','ছুটি, রুটিন, শিক্ষাবর্ষ',"go('dhub',{h:'time'})",'g'),cell('নোটিশ বোর্ড','উস্তাদদের জন্য বিজ্ঞপ্তি',"go('dspec')",'g'),
   cell('নিয়ম ও গ্রেড','নীতিমালা ও গ্রেড',"go('dhub',{h:'rule'})",'b'),cell('ব্যবস্থাপনা','পিন, তথ্য, খাতা, ব্যাকআপ',"go('dhub',{h:'set'})",'b')];
