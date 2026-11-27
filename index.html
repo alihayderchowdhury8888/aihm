@@ -2390,6 +2390,17 @@ function vNurpick(){nurInit();const C=S.nurCfg.classes;const k=today();const c=G
  <div class="gpb"><div class="gpg hb" style="--n:${C.length>4?3:2};grid-template-columns:1fr 1fr">${cells}</div></div><div class="gpf">${esc(S.settings.madrasa)}</div></div>`}
 VIEWS.nurpick=vNurpick;
 const _vNurcP=vNurc;vNurc=function(){const h=_vNurcP();return ses&&ses.role==='office'?h.replace(`onclick="go('nur')"`,`onclick="go('nurpick')"`):h};VIEWS.nurc=vNurc;
+/* নূরানী: দরখাস্ত ছাড়া হাজিরা নয় (২৭ নভেম্বর, আগের নিয়ম বাদ) */
+const _nurAttA=nurAtt;nurAtt=function(s,k){const x=nurPeek(k,s.cls);if(x&&x.att&&x.att[s.id])return x.att[s.id];if(nurOnLeave(s.id,k))return 'L';if(nurBlocked(s,k))return 'A';return 'P'};
+const _nurAttTapA=nurAttTap;nurAttTap=function(sid){const s=S.nurSt.find(x=>x.id===sid);const a=nurAtt(s,D);const b=nurBlocked(s,D);
+ if(a!=='P'&&b){nurModal(`<b>${esc(s.name)}</b><div style="margin-top:6px;color:#A32D2D">${dBn(b)} না জানিয়ে অনুপস্থিত ছিল।</div><div style="margin-top:10px;font-size:16px;font-weight:600">দরখাস্ত দিয়েছে?</div>
+ <div class="row" style="margin-top:12px"><button class="btn pri" onclick="nurAppYes('${sid}')">হ্যাঁ, দিয়েছে</button><button class="btn" style="color:#A32D2D;border-color:#F09595" onclick="nurAppNo('${sid}')">না, দেয়নি</button></div>
+ <div class="mut" style="margin-top:10px">দরখাস্ত না দিলে উপস্থিত দেওয়া যাবে না, অনুপস্থিত থাকবে।</div>`);return}
+ _nurAttTapA(sid)};
+function nurAppYes(sid){const s=S.nurSt.find(x=>x.id===sid);S.nurApp[sid]=D;const d=nurDayOf(D,s.cls);delete d.att[sid];if(d.noapp)delete d.noapp[sid];save();nurModal('');render()}
+function nurAppNo(sid){const s=S.nurSt.find(x=>x.id===sid);const d=nurDayOf(D,s.cls);d.att[sid]='A';d.noapp=d.noapp||{};d.noapp[sid]=1;save();nurModal('');render()}
+const _liveAlertsN=liveAlerts;liveAlerts=function(){const out=_liveAlertsN();try{const k=today();const cn=c=>((S.nurCfg&&S.nurCfg.classes||[]).find(x=>x.id===c)||{}).name||'';
+ (S.nurSt||[]).filter(s=>s.status!=='out').forEach(s=>{const x=nurPeek(k,s.cls);if(x&&x.noapp&&x.noapp[s.id]&&nurBlocked(s,k))out.push(['r',`নূরানী ${cn(s.cls)} · ${s.name}: এসেছে, কিন্তু দরখাস্ত দেয়নি, তাই অনুপস্থিত ধরা হয়েছে`])})}catch(e){}return out};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
