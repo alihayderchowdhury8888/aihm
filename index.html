@@ -2704,6 +2704,20 @@ VIEWS.sreport=vSreport;
 DHUB.rep.it.unshift(['হিফয বিভাগের প্রতিবেদন',"go('sreport',{dep:'h',pd:'d'})"]);
 DHUB.nur.it.unshift(['নূরানী বিভাগের প্রতিবেদন',"go('sreport',{dep:'n',pd:'d'})"]);
 ICMAP.unshift(['বিভাগের প্রতিবেদন','chart']);
+/* দৈনিক প্রতিবেদন: টাকার হিসাব সহজ, উস্তাদ হাজিরা ও বাড়তি পাঠ যোগ (২৭ নভেম্বর) */
+const _vNurdrB=vNurdr;vNurdr=function(){let h=_vNurdrB();const k=V.k||D;
+ h=h.replace(/<input id="dm_inc_d" placeholder="[^"]*" style="width:100%">/,'<select id="dm_inc_d" style="width:100%"><option value="বাবুল ভাই মারফত">বাবুল ভাই মারফত</option><option value="শিক্ষার্থী মারফত">শিক্ষার্থী মারফত</option></select>');
+ h=h.replace('placeholder="কোথায় খরচ, কে খরচ করেছেন"','placeholder="কী বাবদ · কার মাধ্যমে"');
+ h=h.replace('<b>আজকের প্রাপ্তি</b>','<b>আজকের প্রাপ্তি</b> <span class="mut">(বাবুল ভাই বা শিক্ষার্থী মারফত)</span>').replace('<b>আজকের খরচ</b>','<b>আজকের খরচ</b> <span class="mut">(কী বাবদ, কার মাধ্যমে)</span>');
+ try{const mk=k.slice(0,7);let mi=0,me=0;Object.keys(S.nurDR||{}).filter(d=>d.slice(0,7)===mk).forEach(d=>{(S.nurDR[d].inc||[]).forEach(x=>mi+=+x.a||0);(S.nurDR[d].exp||[]).forEach(x=>me+=+x.a||0)});
+  h=h.replace(/(মোট প্রাপ্তি <b>[^<]*<\/b> · মোট খরচ <b>[^<]*<\/b> · অবশিষ্ট <b>[^<]*<\/b> টাকা<\/div>)/,`$1<div style="margin-top:8px;padding:8px 10px;background:#FBF3DC;border-radius:10px;font-size:14px"><b>${MON[+mk.slice(5,7)-1]} মাসে</b> মোট এসেছে <b>${bn(mi)}</b> · মোট খরচ <b>${bn(me)}</b> · হাতে আছে <b>${bn(mi-me)}</b> টাকা</div>`);
+  const TA=(S.nurTA||{})[k]||{};const tn={P:'উপস্থিত',L:'ছুটি',A:'অনুপস্থিত'},tc={P:'#0F6E56',L:'#854F0B',A:'#A32D2D'};
+  const ta=nurTeach().map(([i,n])=>`<div class="li"><span class="n">${esc(n)}</span><b style="color:${tc[TA[i]]||'#8a948f'}">${tn[TA[i]]||'হাজিরা নেওয়া হয়নি'}</b></div>`).join('');
+  const X=(S.nurX||{})[k]||{};const xs=Object.keys(X).map(id=>{const s=nsGet(id);return s?`<div class="li"><span class="n">${esc(s.name)} <span class="mut">· ${esc((nurCls(s.cls)||{}).name||'')}</span></span><b>${bn(X[id].m)} মিনিট</b></div>`:''}).join('');
+  h=h.replace('<div class="sec">৩. পড়া না দিয়ে আগাম প্রস্থান</div>',`<div class="sec">উস্তাদদের হাজিরা</div><div class="card">${ta||'<div class="mut">কোনো উস্তাদ নেই</div>'}</div><div class="sec">বাড়তি পাঠ সময়</div><div class="card">${xs||'<div class="mut">আজ কাউকে রাখা হয়নি</div>'}</div><div class="sec">৩. পড়া না দিয়ে আগাম প্রস্থান</div>`)}catch(e){}
+ return h};VIEWS.nurdr=vNurdr;
+/* উস্তাদদের হিসাব রিপোর্ট থেকে "আংশিক" বাদ */
+{const f=tchReport;tchReport=function(){const h=f.apply(this,arguments);const d=document.createElement('div');d.innerHTML=h;d.querySelectorAll('.bc').forEach(e=>{if(/আংশিক/.test(e.textContent))e.remove()});return d.innerHTML}}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
