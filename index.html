@@ -2308,6 +2308,27 @@ const _vAttOld=vAtt;vAtt=function(){let h=_vAttOld();const d=document.createElem
  if(bt)bt.remove();
  return LOCSS+`<div class="low">${d.innerHTML}${bar}</div>`};
 VIEWS.att=vAtt;
+/* জমা না দিয়ে বের হওয়া আটকানো (২৭ নভেম্বর): হাজিরা ও ক্লাস স্থগিত */
+function pgDirty(){try{if(ro())return false;
+ if(V.p==='att'&&tmp.a&&tmp.a0)return JSON.stringify([tmp.a,tmp.r])!==tmp.a0;
+ if(V.p==='nocls'&&tmp.sel&&tmp.sel0!==undefined)return JSON.stringify(tmp.sel)!==tmp.sel0}catch(e){}return false}
+const _vAttG=vAtt;vAtt=function(){const h=_vAttG();if(tmp.a&&tmp.a0s!==tmp.slot){tmp.a0=JSON.stringify([tmp.a,tmp.r]);tmp.a0s=tmp.slot}return h};VIEWS.att=vAtt;
+const _vNoclsG=vNocls;vNocls=function(){const h=_vNoclsG();if(tmp.sel&&tmp.sel0===undefined)tmp.sel0=JSON.stringify(tmp.sel);return h};VIEWS.nocls=vNocls;
+const _saveAttG=saveAtt;saveAtt=function(a,b){_saveAttG(a,b);if(tmp.a)tmp.a0=JSON.stringify([tmp.a,tmp.r])};
+const _saveNcG=saveNc;saveNc=function(){_saveNcG();if(tmp.sel)tmp.sel0=JSON.stringify(tmp.sel)};
+let _goPend=null;
+function dirtyModal(){document.getElementById('dmod')?.remove();document.body.insertAdjacentHTML('beforeend',`<div id="dmod" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99;display:flex;align-items:center;justify-content:center;padding:20px">
+ <div style="background:#fff;border-radius:16px;max-width:360px;width:100%;overflow:hidden;border-top:5px solid #E24B4A">
+ <div style="padding:18px 18px 8px;font-size:17px;font-weight:700;color:#791F1F">আপনি এখনো জমা দেননি</div>
+ <div style="padding:0 18px 14px;font-size:14.5px;color:#3d4a46;line-height:1.6">যা লিখেছেন, জমা না দিলে তা হারিয়ে যাবে। আগে জমা দিন।</div>
+ <div style="display:flex;flex-direction:column;gap:8px;padding:0 18px 18px">
+ <button style="background:#0F6E56;color:#fff;border:0;border-radius:12px;padding:13px;font-size:16px;font-family:inherit" onclick="document.getElementById('dmod').remove();const b=document.querySelector('[onclick^=&quot;saveAtt&quot;],[onclick^=&quot;saveNc&quot;]');if(b)b.click()">জমা দিন</button>
+ <button style="background:#fff;color:#6b7772;border:1px solid #D4E2DC;border-radius:12px;padding:11px;font-size:14px;font-family:inherit" onclick="document.getElementById('dmod').remove();const p=_goPend;_goPend=null;tmp={};if(p)go(p[0],p[1]);else history.back()">জমা না দিয়ে বের হন</button>
+ </div></div></div>`)}
+const _goG=go;go=function(p,o){if(pgDirty()&&!(p===V.p&&p==='att')){_goPend=[p,o];dirtyModal();return}_goG(p,o)};
+/* ফোনের পেছনের বোতাম ও জানালা বন্ধ */
+try{history.pushState({aihm:1},'');window.addEventListener('popstate',()=>{if(pgDirty()){history.pushState({aihm:1},'');_goPend=null;dirtyModal()}else history.back()});
+ window.addEventListener('beforeunload',e=>{if(pgDirty()){e.preventDefault();e.returnValue=''}})}catch(e){}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
