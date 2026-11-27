@@ -663,7 +663,7 @@ function stuReport(sid,mode,key){
  <div class="nt">লক্ষ্য পূরণ না হওয়ার কারণ: <input class="ln" value="${esc((S.tgWhy||{})[ck]||'')}" oninput="S.tgWhy=S.tgWhy||{};S.tgWhy['${ck}']=this.value;save()" placeholder="উস্তাদ লিখবেন"></div></div>
  <div class="s">${secT(++n,'হাজিরা','g')}<div class="bg"><div class="bc"><b>${bn(o.days)}</b><span>মোট কার্যদিবস</span></div><div class="bc"><b class="ok">${bn(o.P)}</b><span>উপস্থিত</span></div><div class="bc"><b class="bad">${bn(absent)}</b><span>অনুপস্থিত</span></div></div>
  <div class="nt">অনুপস্থিতির কারণ: ছুটি ${bn(o.L)} দিন · অসুস্থ ${bn(o.S)} দিন · অনুমতি ছাড়া ${bn(o.A)} দিন${o.U?' · হিসাব লেখা হয়নি '+bn(o.U)+' দিন':''}</div></div>
- <div class="s">${secT(++n,'পড়া','g')}<table><tr><th style="${th};text-align:left">পড়া</th><th style="${th}">পেরেছে</th><th style="${th}">পারেনি</th><th style="${th}">বন্ধ ছিল</th><th style="${th}">ক্লাস হয়নি</th></tr>
+ <div class="s">${secT(++n,'পড়া','g')}<table><tr><th style="${th};text-align:left">পড়া</th><th style="${th}">পেরেছে</th><th style="${th}">পারেনি</th><th style="${th}">বন্ধ ছিল</th><th style="${th}">ক্লাস স্থগিত</th></tr>
  ${C?lrow('দাওর',o.les.tk):lrow('সবক',o.les.sabak)+lrow('সাতসবক',o.les.sat)+lrow('আমুখতা',o.les.amu)+(o.les.sp.ok+o.les.sp.no+o.les.sp.off?lrow('সবকের পারা',o.les.sp):'')}</table>${o.spDone.length?`<div class="nt">সবকের পারা শেষ: ${o.spDone.map(x=>esc(x.para)+' পারা ('+dShort(x.date)+')').join(', ')}</div>`:''}
  <table style="margin-top:8px"><tr><th style="${th};text-align:left">তিলাওয়াত</th><th style="${th}">করেছে</th><th style="${th}">করেনি</th></tr><tr><td>নামাজে তিলাওয়াত</td><td class="ok">${d2(o.til.namaz[0],'দিন')}</td><td class="bad">${d2(o.til.namaz[1],'দিন')}</td></tr><tr><td>তিলাওয়াত</td><td class="ok">${d2(o.til.til[0],'দিন')}</td><td class="bad">${d2(o.til.til[1],'দিন')}</td></tr></table>
  ${o.prepOff?`<div class="nt">পরীক্ষার প্রস্তুতির জন্য সবক বন্ধ ছিল: ${bn(o.prepOff)} দিন</div>`:''}</div>
@@ -1776,7 +1776,7 @@ const NRT='border:1px solid #cfd8d4;padding:5px;font-size:13px;text-align:center
 function nrTbl(head,rows){return `<table style="width:100%;border-collapse:collapse"><tr>${head.map((h,i)=>`<th style="${NRT};background:#F1F5F3;${i?'':'text-align:left'}">${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map((c,i)=>`<td style="${NRT};${i?'':'text-align:left'}">${c}</td>`).join('')}</tr>`).join('')}</table>`}
 const N0=n=>bn(n||0);
 function nrStuPage(s,mode,key){const cn=(S.nurCfg.classes.find(c=>c.id===s.cls)||{}).name||'';const sig=`<div class="sig"><div>উস্তাদের স্বাক্ষর</div><div>পরিচালকের স্বাক্ষর</div><div>অভিভাবকের স্বাক্ষর</div></div>`;
- const info=`<div class="s"><table>${[['শিক্ষার্থীর নাম',esc(s.name)],['শ্রেণি',esc(cn)],['পিতার নাম',esc(s.father||'')],[mode==='r'?'সময়':mode==='m'?'মাস':'বছর',mode==='r'?rngLab(key):mode==='m'?MON[+key.slice(5,7)-1]+' '+bn(key.slice(0,4)):bn(key)]].map(([a,b])=>`<tr><td style="padding:4px;border:1px solid #e3e8e6;width:38%">${a}</td><td style="padding:4px;border:1px solid #e3e8e6;text-align:left">${b}</td></tr>`).join('')}</table></div>`;
+ const info=`<div class="s"><table>${[['শিক্ষার্থীর নাম',esc(s.name)],['শ্রেণি',esc(cn)],['রোল নম্বর',esc(s.roll||'—')],['পিতার নাম',esc(s.father||'')],[mode==='r'?'সময়':mode==='m'?'মাস':'বছর',mode==='r'?rngLab(key):mode==='m'?MON[+key.slice(5,7)-1]+' '+bn(key.slice(0,4)):bn(key)]].map(([a,b])=>`<tr><td style="padding:4px;border:1px solid #e3e8e6;width:38%">${a}</td><td style="padding:4px;border:1px solid #e3e8e6;text-align:left">${b}</td></tr>`).join('')}</table></div>`;
  const st=(t)=>`<div class="s"><div class="st" style="border-color:#0F6E56;color:#085041">${t}</div>`;
  if(mode==='m'||mode==='r'){const [f,t]=mode==='r'?key.split('~'):nrMonthRange(key);const r=nrStat(s,f,t);
   return `<div class="rp" style="page-break-after:always">${nrHead(mode==='r'?'নির্দিষ্ট সময়ের রিপোর্ট':'মাসিক রিপোর্ট')}${info}
@@ -2672,6 +2672,9 @@ DHUB.nur={n:'নূরানীর রিপোর্ট ও মূল্যা�
 DHUB.time.n='ক্যালেন্ডার, রুটিন ও নোটিশ';DHUB.time.it.push(['নোটিশ বোর্ড',"go('dspec')"]);
 {const f=vDir;vDir=function(){return f().replace(/<div class="gpc" onclick="go\('dspec'\)">[\s\S]*?<\/div>(?=<div class="gpc)/,`<div class="gpc" onclick="go('dhub',{h:'nur'})"><div class="ic" style="background:#FAEEDA;color:#854F0B"></div><b style="color:#854F0B">নূরানীর রিপোর্ট ও মূল্যায়ন</b><small>উস্তাদ, শিক্ষার্থী, পরীক্ষা</small></div>`).replace('<b style="color:#0F6E56">ক্যালেন্ডার ও রুটিন</b><small>ছুটি, রুটিন, শিক্ষাবর্ষ</small>','<b style="color:#0F6E56">ক্যালেন্ডার, রুটিন ও নোটিশ</b><small>ছুটি, রুটিন, শিক্ষাবর্ষ, নোটিশ</small>')};VIEWS.dir=vDir}
 ICMAP.unshift(['নূরানীর রিপোর্ট','chart'],['শিক্ষার্থীদের রিপোর্ট','chart'],['ক্যালেন্ডার, রুটিন','cal']);
+
+/* রুটিন থেকে লুকানো উস্তাদদের খালি সারি বাদ (২৭ নভেম্বর) */
+{const f=VIEWS.nurrt;VIEWS.nurrt=function(){const h=f.apply(this,arguments);const d=document.createElement('div');d.innerHTML=h;d.querySelectorAll('tr').forEach(tr=>{const c=tr.querySelector('td,th');if(c&&NUR_HIDE.test(c.textContent.trim()))tr.remove()});return d.innerHTML}}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
