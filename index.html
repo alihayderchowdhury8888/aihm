@@ -2501,6 +2501,15 @@ const _vNurlvB=vNurlv;vNurlv=function(){let h=_vNurlvB().replace(`onclick="go('n
  h=h.replace(/(<div class="sec">আজ ছুটিতে[^<]*<\/div><div class="card")/,'$1 style="border-left:5px solid #C9A227"');
  h=h.replace(/(<div class="sec">দরখাস্ত বাকি[^<]*<\/div><div class="card" )style="border-color:#F09595"/,'$1style="border-color:#F09595;border-left:5px solid #E24B4A"');
  return h};VIEWS.nurlv=vNurlv;
+/* পরীক্ষা ও ফলাফল: ফেরার পথ, শিক্ষার্থী আছে এমন শ্রেণি আগে (২৭ নভেম্বর) */
+const _vNurexB=vNurex;vNurex=function(){nurInit();if(V.e&&!V.c){const c=S.nurCfg.classes.find(x=>nurStOf(x.id).length);if(c)V.c=c.id}
+ let h=_vNurexB();if(!V.e)h=h.replace(`onclick="go('nur')"`,`onclick="${nurHomeBack()}"`);
+ if(V.e&&V.c&&!V.pr&&!nurStOf(V.c).length)h=h.replace('<div class="ban b">','<div class="ban y">এই শ্রেণিতে এখনো কোনো শিক্ষার্থী নেই। উপরে অন্য শ্রেণি বেছে নিন।</div><div class="ban b">');
+ return h};VIEWS.nurex=vNurex;
+/* ক্লাস রুটিন, রিপোর্ট ও উস্তাদদের হিসাব: অফিস থেকে এলে অফিসে ফেরা */
+['nurrt','nurrep','nurta','nurdr'].forEach(v=>{const f=VIEWS[v];if(!f)return;VIEWS[v]=function(){const h=f.apply(this,arguments);return h.replace(`onclick="go('nur')"`,`onclick="${nurHomeBack()}"`)}});
+{const f=VIEWS.nurrt;VIEWS.nurrt=function(){return f.apply(this,arguments).replace(`onclick="tmp={};go('nur')"`,`onclick="tmp={};${nurHomeBack()}"`)}}
+{const f=VIEWS.nurrep;VIEWS.nurrep=function(){const h=f.apply(this,arguments);return V.tch?h.replace(/(<div class="top[^"]*"><button class="btn s" onclick=")[^"]*(")/,`$1${nurHomeBack()}$2`):h}}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
