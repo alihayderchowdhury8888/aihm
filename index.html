@@ -2472,6 +2472,21 @@ vNurx=function(){nurInit();const C=S.nurCfg,X=(S.nurX||{})[D]||{};const cls=C.cl
 VIEWS.nurx=vNurx;
 
 function nxLock(m){S.nurX=S.nurX||{};S.nurX[D]=S.nurX[D]||{};(tmp.xsel||[]).forEach(id=>{if(!S.nurX[D][id])S.nurX[D][id]={m,sent:0,lv:0,at:nowT()}});save();tmp.xsend=tmp.xsel.slice();tmp.xsm=m;render()}
+/* নূরানী: রোল নম্বর ও শিক্ষার্থী তালিকা (২৭ নভেম্বর) */
+const _nurStOfR=nurStOf;nurStOf=function(cid){const L=_nurStOfR(cid);const r=s=>{const v=parseInt(en(String(s.roll||'')));return isNaN(v)?1e9:v};return L.map((s,i)=>[s,i]).sort((a,b)=>r(a[0])-r(b[0])||a[1]-b[1]).map(x=>x[0])};
+function nurNextRoll(cid){let m=0;S.nurSt.filter(s=>s.cls===cid&&s.status!=='out').forEach(s=>{const v=parseInt(en(String(s.roll||'')));if(!isNaN(v)&&v>m)m=v});return m+1}
+const _nsKeepR=nsKeep;nsKeep=function(){_nsKeepR();const e=document.getElementById('n_roll');if(e)tmp.n_roll=e.value};
+const _nsAddR=nsAdd;nsAdd=function(){nsKeep();const r=(tmp.n_roll||'').trim();const n0=S.nurSt.length;_nsAddR();if(S.nurSt.length>n0&&r){S.nurSt[S.nurSt.length-1].roll=r;save();render()}};
+const _vNursR=vNurs;vNurs=function(){nurInit();const C=S.nurCfg;
+ if(V.add){const cl=tmp.ncl||C.classes[0].id;const h=_vNursR();return h.replace('<label class="l">শিক্ষার্থীর নাম</label>',`<label class="l">রোল নম্বর</label><input id="n_roll" inputmode="numeric" placeholder="যেমন ${bn(nurNextRoll(cl))}" value="${esc(tmp.n_roll!=null&&tmp.nrc===cl?tmp.n_roll:bn(nurNextRoll(cl)))}" oninput="tmp.nrc='${cl}'" style="width:100%"><label class="l">শিক্ষার্থীর নাম</label>`)}
+ if(V.sid){const s=nsGet(V.sid);const h=_vNursR();if(!s)return h;return h.replace('<label class="l">শিক্ষার্থীর নাম</label>',`<label class="l">রোল নম্বর</label><input inputmode="numeric" value="${esc(s.roll||'')}" onchange="nsSet('${s.id}','roll',this.value);render()" style="width:100%"><label class="l">শিক্ষার্থীর নাম</label>`)}
+ const left=s=>DOCS_N.filter(x=>!(s.docs||{})[x]).length;
+ const cur=tmp.ncv||(C.classes.find(c=>nurStOf(c.id).length)||C.classes[0]).id;const L=nurStOf(cur);const cn=(nurCls(cur)||{}).name||'';
+ return nurCss+nurTop('ভর্তি ও শিক্ষার্থী তথ্য','নূরানী বিভাগ',nurHomeBack())+`<div class="wrap">
+ <button class="btn pri w" style="margin-bottom:12px;padding:13px;font-size:16px" onclick="go('nurs',{add:1});tmp.ncl='${cur}';render()">+ নতুন শিক্ষার্থী ভর্তি</button>
+ <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">${C.classes.map(c=>{const n=nurStOf(c.id).length,on=c.id===cur;return `<div onclick="tmp.ncv='${c.id}';render()" style="cursor:pointer;text-align:center;border-radius:12px;padding:10px 4px;border:2px solid ${on?'#0F6E56':'#D4E2DC'};background:${on?'#0F6E56':'#fff'};color:${on?'#fff':'#085041'}"><b style="font-size:17px">${esc(c.name)}</b><div style="font-size:12px;${on?'color:#CFE3DC':'color:#6b7772'}">${bn(n)} জন</div></div>`}).join('')}</div>
+ <div class="sec">${esc(cn)} শ্রেণি · ${bn(L.length)} জন</div><div class="card">${L.map(s=>{const l=left(s);return `<div class="li" style="cursor:pointer" onclick="tmp={};go('nurs',{sid:'${s.id}'})"><span style="flex:0 0 34px;height:34px;border-radius:10px;background:#E1F5EE;color:#085041;display:flex;align-items:center;justify-content:center;font-weight:700;margin-right:10px">${s.roll?esc(s.roll):'–'}</span><div class="n"><b>${esc(s.name)}</b><small>${l?`<span style="color:#A32D2D">${bn(l)}টি কাগজ বাকি</span>`:'<span style="color:#0F6E56">সব কাগজ জমা</span>'}${s.wa?'':' · <span style="color:#A32D2D">WhatsApp নম্বর নেই</span>'}</small></div><span>›</span></div>`}).join('')||'<div class="mut">এই শ্রেণিতে এখনো কেউ নেই</div>'}</div></div>`};
+VIEWS.nurs=vNurs;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
