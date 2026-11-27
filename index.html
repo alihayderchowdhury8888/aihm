@@ -2678,6 +2678,32 @@ ICMAP.unshift(['নূরানীর রিপোর্ট','chart'],['শি�
 /* "ক্লাস হয়নি" সব জায়গায় "ক্লাস স্থগিত" (২৭ নভেম্বর) */
 ['nocls','les','news','g','dtoday','dtrep','trep'].forEach(v=>{const f=VIEWS[v];if(!f)return;VIEWS[v]=function(){return String(f.apply(this,arguments)).replace(/ক্লাস হয়নি/g,'ক্লাস স্থগিত')}});
 {const f=newsMsg;newsMsg=function(){return String(f.apply(this,arguments)).replace(/ক্লাস হয়নি/g,'ক্লাস স্থগিত')}}
+/* সারাংশ প্রতিবেদন: শ্রেণি/গ্রুপভিত্তিক খাড়া স্তম্ভ, আজ · সপ্তাহ · মাস (২৭ নভেম্বর) */
+function srRange(pd){const k=today();if(pd==='d')return [k,k];if(pd==='w'){let f=k;for(let i=0;i<7;i++){if(dow(f)===6)break;f=addD(f,-1)}return [f,k]}return [k.slice(0,8)+'01',k]}
+function srRows(dep,f,t){if(dep==='n'){nurInit();return S.nurCfg.classes.map(c=>{const L=nurStOf(c.id);const R={n:c.name+' শ্রেণি',tot:L.length,P:0,D:0,ok:0,no:0};L.forEach(s=>{const r=nrStat(s,f,t);R.P+=r.P;R.D+=r.days;R.ok+=r.mo;R.no+=r.mn});return R}).filter(r=>r.tot)}
+ return ['ক','খ','both'].filter(g=>onlyG(g).length).map(g=>{const L=onlyG(g);const tc=g==='both'?null:gTeacher(g);const R={n:g==='both'?'তাকমিল':'গ্রুপ '+g,sub:tc?tc.name:'',tot:L.length,P:0,D:0,ok:0,no:0};
+  L.forEach(s=>{const o=stat(s.id,f,t);R.P+=o.P;R.D+=o.P+o.A+o.L+o.S;['sabak','sat','amu','tk','kp','sp'].forEach(x=>{R.ok+=o.les[x].ok;R.no+=o.les[x].no})});return R})}
+function vSreport(){const dep=V.dep||'n',pd=V.pd||'d';const [f,t]=srRange(pd);let R=[];try{R=srRows(dep,f,t)}catch(e){}
+ const pc=(a,b)=>b?Math.round(a/b*100):null;const col=p=>p==null?'#C9CFCC':p>=80?'#0F6E56':p>=50?'#C9A227':'#E24B4A';
+ const T={tot:0,P:0,D:0,ok:0,no:0};R.forEach(r=>Object.keys(T).forEach(k=>T[k]+=r[k]));const ap=pc(T.P,T.D),lp=pc(T.ok,T.ok+T.no);
+ const nav=o=>`go('sreport',${JSON.stringify(Object.assign({dep,pd},o)).replace(/"/g,"'")})`;
+ const tab=(v,n,k)=>`<span class="ch ${(k==='pd'?pd:dep)===v?'on-g':''}" onclick="${nav({[k]:v})}">${n}</span>`;
+ const pil=(p,c,lab)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0"><b style="font-size:13px;color:${p==null?'#8a948f':c}">${p==null?'—':bn(p)+'%'}</b><div style="width:70%;max-width:34px;height:170px;background:#EEF2F0;border-radius:8px 8px 4px 4px;display:flex;align-items:flex-end;overflow:hidden"><div style="width:100%;height:${p||0}%;background:${c};border-radius:8px 8px 0 0;transition:height .3s"></div></div><small style="font-size:10.5px;color:#5b6b66;text-align:center">${lab}</small></div>`;
+ const box=(v,n,c)=>`<div style="flex:1;background:#fff;border:1px solid #D4E2DC;border-radius:12px;padding:10px 4px;text-align:center"><b style="font-size:22px;color:${c||'#085041'}">${v}</b><div style="font-size:12px;color:#5b6b66">${n}</div></div>`;
+ const per=pd==='d'?'আজ':pd==='w'?'এই সপ্তাহ':'এই মাস';
+ return `<div class="top noprint"><button class="btn s" onclick="go('dhub',{h:'${dep==='n'?'nur':'rep'}'})">‹ ফিরুন</button><div class="t"><b>${dep==='n'?'নূরানী':'হিফয'} বিভাগের প্রতিবেদন</b><span>${per} · ${dShort(f)}${f!==t?' থেকে '+dShort(t):''}</span></div></div><div class="wrap" style="max-width:900px">
+ <div class="row noprint" style="margin-bottom:8px;gap:6px">${tab('n','নূরানী','dep')}${tab('h','হিফয','dep')}</div>
+ <div class="row noprint" style="margin-bottom:12px;gap:6px">${tab('d','আজ','pd')}${tab('w','এই সপ্তাহ','pd')}${tab('m','এই মাস','pd')}</div>
+ <div style="display:flex;gap:8px;margin-bottom:12px">${box(bn(T.tot),'মোট শিক্ষার্থী')}${box(ap==null?'—':bn(ap)+'%','উপস্থিতি',col(ap))}${box(lp==null?'—':bn(lp)+'%','পড়া পেরেছে',col(lp))}</div>
+ ${pd==='d'?`<div style="display:flex;gap:8px;margin-bottom:12px">${box(bn(T.P),'আজ উপস্থিত','#0F6E56')}${box(bn(Math.max(0,T.D-T.P)),'আজ অনুপস্থিত','#A32D2D')}</div>`:''}
+ <div class="card"><b style="color:#085041">${dep==='n'?'শ্রেণিভিত্তিক':'গ্রুপভিত্তিক'} হিসাব</b><div style="display:flex;gap:14px;font-size:12px;color:#5b6b66;margin:4px 0 10px"><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#085041;margin-right:4px"></i>উপস্থিতি</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C9A227;margin-right:4px"></i>পড়া পেরেছে</span><span>· ৫০%-এর কম হলে লাল</span></div>
+ ${R.length?`<div style="display:flex;gap:6px;align-items:flex-start;overflow-x:auto;padding-bottom:4px">${R.map(r=>{const a=pc(r.P,r.D),l=pc(r.ok,r.ok+r.no);return `<div style="flex:1 0 96px;display:flex;flex-direction:column;align-items:center;border-left:1px dashed #E1ECE7;padding:0 4px"><div style="display:flex;gap:6px;width:100%">${pil(a,a==null?'#C9CFCC':a>=50?'#085041':'#E24B4A','উপস্থিতি')}${pil(l,l==null?'#C9CFCC':l>=50?'#C9A227':'#E24B4A','পড়া')}</div><b style="margin-top:8px;font-size:14px;color:#085041;text-align:center">${esc(r.n)}</b><small style="color:#5b6b66;text-align:center">${r.sub?esc(r.sub)+' · ':''}${bn(r.tot)} জন</small></div>`}).join('')}</div>`:'<div class="mut">এখনো কোনো শিক্ষার্থী নেই</div>'}</div>
+ <div class="card"><table style="width:100%;border-collapse:collapse;font-size:13.5px"><tr style="color:#5b6b66"><th style="text-align:left;padding:6px">${dep==='n'?'শ্রেণি':'গ্রুপ'}</th><th>মোট</th><th>${pd==='d'?'উপস্থিত':'উপস্থিতি'}</th><th>${pd==='d'?'অনুপস্থিত':'পড়া পেরেছে'}</th></tr>${R.map(r=>{const a=pc(r.P,r.D),l=pc(r.ok,r.ok+r.no);return `<tr style="border-top:1px solid #EEF2F0"><td style="padding:7px 6px">${esc(r.n)}</td><td style="text-align:center">${bn(r.tot)}</td><td style="text-align:center;color:#0F6E56;font-weight:600">${pd==='d'?bn(r.P):(a==null?'—':bn(a)+'%')}</td><td style="text-align:center;color:${pd==='d'?'#A32D2D':col(l)};font-weight:600">${pd==='d'?bn(Math.max(0,r.D-r.P)):(l==null?'—':bn(l)+'%')}</td></tr>`}).join('')}</table></div>
+ <button class="btn w noprint" style="padding:12px" onclick="window.print()">প্রিন্ট / ডাউনলোড</button></div>`}
+VIEWS.sreport=vSreport;
+DHUB.rep.it.unshift(['হিফয বিভাগের প্রতিবেদন',"go('sreport',{dep:'h',pd:'d'})"]);
+DHUB.nur.it.unshift(['নূরানী বিভাগের প্রতিবেদন',"go('sreport',{dep:'n',pd:'d'})"]);
+ICMAP.unshift(['বিভাগের প্রতিবেদন','chart']);
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
