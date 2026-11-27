@@ -2510,6 +2510,34 @@ const _vNurexB=vNurex;vNurex=function(){nurInit();if(V.e&&!V.c){const c=S.nurCfg
 ['nurrt','nurrep','nurta','nurdr'].forEach(v=>{const f=VIEWS[v];if(!f)return;VIEWS[v]=function(){const h=f.apply(this,arguments);return h.replace(`onclick="go('nur')"`,`onclick="${nurHomeBack()}"`)}});
 {const f=VIEWS.nurrt;VIEWS.nurrt=function(){return f.apply(this,arguments).replace(`onclick="tmp={};go('nur')"`,`onclick="tmp={};${nurHomeBack()}"`)}}
 {const f=VIEWS.nurrep;VIEWS.nurrep=function(){const h=f.apply(this,arguments);return V.tch?h.replace(/(<div class="top[^"]*"><button class="btn s" onclick=")[^"]*(")/,`$1${nurHomeBack()}$2`):h}}
+/* পরিচালকের পাতা: নতুন করে লেখা (২৭ নভেম্বর) — এক পর্দায় */
+const DHUB={
+ rep:{n:'হিফযের রিপোর্ট',c:'b',it:[['মাসিক রিপোর্ট',"go('drep',{mode:'m'})"],['বাৎসরিক রিপোর্ট',"go('drep',{mode:'y'})"],['উস্তাদদের হিসাব',"go('dtrep',{mode:'m'})"],['পরীক্ষার ফলাফল',"go('exam')"],['পরীক্ষা প্রস্তুতি প্রশ্নপত্র',"go('dprepq')"]]},
+ dis:{n:'শৃঙ্খলা',c:'y',it:[['জরিমানা',"go('dfine')"],['আচরণ',"go('dbeh')"]]},
+ time:{n:'ক্যালেন্ডার ও রুটিন',c:'g',it:[['ক্যালেন্ডার',"go('dcal')"],['রুটিন',"go('routine')"],['শিক্ষাবর্ষ',"go('dyear')"]]},
+ rule:{n:'নিয়ম ও গ্রেড',c:'g',it:[['পাঠ ও ছুটি নীতিমালা',"go('drules')"],['গ্রেড নির্ধারণ ও বোর্ড পরীক্ষা',"go('dgrade')"]]},
+ set:{n:'ব্যবস্থাপনা',c:'b',it:[['পিন ব্যবস্থাপনা',"go('dtch')"],['মাদ্রাসার তথ্য',"go('dinfo')"],['প্রবেশের খাতা',"go('dlog')"],['ব্যাকআপ',"go('dbak')"]]}};
+vDir=function(){const al=liveAlerts().filter(a=>a[0]==='r').length+(function(){try{return useMiss(today()).length}catch(e){return 0}})();const dueF=S.fines.filter(f=>!f.paid).length;
+ const ic=c=>`<div class="ic" style="background:${GPCOL[c][0]};color:${GPCOL[c][1]}"></div>`;
+ const cell=(n,sm,on,c,pr)=>`<div class="gpc${pr?' pr':''}" onclick="${on}">${ic(c)}<b style="${pr?'':'color:'+GPCOL[c][1]}">${n}</b>${sm?`<small>${sm}</small>`:''}</div>`;
+ const t1=gTeacher('ক')||{},t2=gTeacher('খ')||{};
+ const cells=[cell('গ্রুপ ক',esc(t1.name||''),"ses={role:'dir',g:'ক'};tmp={};D=today();go('g')",'g',1),cell('গ্রুপ খ',esc(t2.name||''),"ses={role:'dir',g:'খ'};tmp={};D=today();go('g')",'g',1),
+  cell('অফিস সহকারী','নূরানী বিভাগ ও দাপ্তরিক রিপোর্ট',"go('office')",'g'),cell('হিফযের রিপোর্ট','মাসিক, বাৎসরিক, উস্তাদ, পরীক্ষা',"go('dhub',{h:'rep'})",'b'),
+  cell('শৃঙ্খলা',dueF?`<span style="color:#A32D2D">${bn(dueF)}টি জরিমানা বাকি</span>`:'জরিমানা ও আচরণ',"go('dhub',{h:'dis'})",'y'),cell('ভর্তি ও শিক্ষার্থী তথ্য','হিফয বিভাগ',"go('dstu')",'y'),
+  cell('ক্যালেন্ডার ও রুটিন','ছুটি, রুটিন, শিক্ষাবর্ষ',"go('dhub',{h:'time'})",'g'),cell('নোটিশ বোর্ড','উস্তাদদের জন্য বিজ্ঞপ্তি',"go('dspec')",'g'),
+  cell('নিয়ম ও গ্রেড','নীতিমালা ও গ্রেড',"go('dhub',{h:'rule'})",'b'),cell('ব্যবস্থাপনা','পিন, তথ্য, খাতা, ব্যাকআপ',"go('dhub',{h:'set'})",'b')];
+ return GPCSS+`<div class="gpw"><div class="gph"><button class="bk" onclick="ses=null;go('home')">বের হন</button><div class="tt"><b>কর্তৃপক্ষ</b><span>${dBn(today())}</span></div></div>
+ <div class="gpb"><div class="gpt" onclick="D=today();go('dtoday')" style="${al?'background:#FCEBEB;border-color:#F3B9B9;border-left-color:#E24B4A':''}"><div class="ic" style="${al?'background:#E24B4A':''}"></div><div><b style="${al?'color:#791F1F':''}">আজকের অবস্থা</b><small style="${al?'color:#A32D2D':''}">${al?bn(al)+'টি সতর্কতা · ':''}হিফয ও নূরানীর হিসাব</small></div></div>
+ <div class="gpg g5">${cells.join('')}</div></div><div class="gpf">${esc(S.settings.madrasa)}</div></div>`};
+VIEWS.dir=vDir;
+function vDhub(){const H=DHUB[V.h]||DHUB.rep;const c=GPCOL[H.c];const n=H.it.length;
+ return GPCSS+`<div class="gpw"><div class="gph"><button class="bk" onclick="go('dir')">‹ ফিরুন</button><div class="tt"><b>${H.n}</b><span>কর্তৃপক্ষ</span></div></div>
+ <div class="gpb"><div class="gpg hb" style="--n:${n>3?3:n};grid-template-columns:${n>2?'1fr 1fr':'1fr'}">${H.it.map(([t,on])=>`<div class="gpc" onclick="${on}"${n===3||n===5?'':''}><div class="ic" style="background:${c[0]};color:${c[1]}"></div><b style="color:${c[1]}">${t}</b></div>`).join('')}</div></div>
+ <div class="gpf">${esc(S.settings.madrasa)}</div></div>`}
+VIEWS.dhub=vDhub;
+ICMAP.unshift(['গ্রুপ ক','layers'],['গ্রুপ খ','layers'],['হিফযের রিপোর্ট','chart'],['শৃঙ্খলা','shield'],['ক্যালেন্ডার ও রুটিন','cal'],['নোটিশ বোর্ড','bell'],['নিয়ম ও গ্রেড','file'],['ব্যবস্থাপনা','gear'],['পিন','key'],['মাদ্রাসার তথ্য','file'],['প্রবেশের খাতা','hist'],['ব্যাকআপ','box'],['ক্যালেন্ডার','cal'],['রুটিন','clock'],['শিক্ষাবর্ষ','cal'],['পাঠ ও ছুটি','file'],['গ্রেড','award'],['জরিমানা','coin'],['আচরণ','star'],['প্রস্তুতি','file'],['পরীক্ষার ফলাফল','award']);
+
+document.head.insertAdjacentHTML('beforeend','<style>@media (min-width:900px){.gpg.g5{grid-template-columns:repeat(5,1fr)!important}}</style>');
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
