@@ -2102,7 +2102,7 @@ const HOMECSS=`<style>
 vHome=function(){const t1=gTeacher('ক')||{},t2=gTeacher('খ')||{};
  const T=(n,sm,on,bg,col)=>`<div class="tile" onclick="${on}" style="border-top:4px solid ${col}"><div class="ic" style="background:${bg};color:${col}"></div><b style="color:${col}">${n}</b>${sm?`<small>${esc(sm)}</small>`:''}</div>`;
  return HOMECSS+`<div class="hmw"><div class="hmh"><div class="lg"><img src="logo.webp" alt=""></div><div class="nm">${esc(S.settings.madrasa)}</div><div class="hdt">${dBn(today())}</div></div>
- <div class="hmg">${T('কর্তৃপক্ষ','পরিচালক',"go('pin',{to:'dir'})",'#FAEEDA','#854F0B')}${T('অফিস সহকারী','নূরানী ও দাপ্তরিক কাজ',"go('pin',{to:'office'})",'#EEEDFE','#534AB7')}${T('গ্রুপ ক',t1.name,"go('pin',{to:'g',g:'ক'})",'#E1F5EE','#0F6E56')}${T('গ্রুপ খ',t2.name,"go('pin',{to:'g',g:'খ'})",'#E6F1FB','#185FA5')}</div>
+ <div class="hmg">${T('কর্তৃপক্ষ','পরিচালক',"go('pin',{to:'dir'})",'#FAEEDA','#854F0B')}${T('অফিস সহকারী','নূরানী শিট, প্রতিবেদন ও রিপোর্ট',"go('pin',{to:'office'})",'#EEEDFE','#534AB7')}${T('গ্রুপ ক',t1.name,"go('pin',{to:'g',g:'ক'})",'#E1F5EE','#0F6E56')}${T('গ্রুপ খ',t2.name,"go('pin',{to:'g',g:'খ'})",'#E6F1FB','#185FA5')}</div>
  <div class="hmf">প্রতিষ্ঠিত ২০২২ · কায়স্থগ্রাম, হেতিমগঞ্জ, গোলাপগঞ্জ, সিলেট</div></div>`};
 VIEWS.home=vHome;
 /* আজকের অবস্থা: নতুন করে লেখা (২৭ নভেম্বর) */
@@ -2159,8 +2159,8 @@ function useMiss(k){const isT=k===today(),t=hm(),past=x=>!isT||t>=x,wd=dow(k);co
  const who=g=>{if(g==='both')return 'তাকমিল';const tc=gTeacher(g);return 'গ্রুপ '+g+(tc?' · '+tc.name:'')};
  if(!hHol){const A=S.att[k]||{};
   const SD=wd===5?{f:'07:00',jb:'13:00',ja:'14:30',m:'19:30',n:'23:00'}:{f:'07:00',z:'14:00',a:'17:00',m:'19:30',n:'23:00'};
-  slotsFor(k).forEach(([sk,n])=>{if(!past(SD[sk]))return;if(sk==='n'){if(!(A.n||{}).all)add('হিফয বিভাগ',n+'র হাজিরা নেওয়া হয়নি');return}
-   ['ক','খ'].forEach(g=>{if(onlyG(g).length&&!((A[sk]||{})[g]))add(who(g),n+'ের হাজিরা নেননি')})});
+  slotsFor(k).forEach(([sk,n])=>{if(!past(SD[sk]))return;if(sk==='n'){if(!(A.n||{}).all)add('হিফয বিভাগ','রাতে ঘুমের সময়ের হাজিরা নেওয়া হয়নি');return}
+   ['ক','খ'].forEach(g=>{if(onlyG(g).length&&!((A[sk]||{})[g]))add(who(g),({z:'জোহরের',ja:'জুমার পরের',jb:'জুমার আগের'}[sk]||n)+' হাজিরা নেননি')})});
   if(wd!==5){const W=lwin();const E={sabak:W.sabak[1],sat:W.sat[1],sp:W.sat[1],amu:W.amu[1],tk:W.amu[1],kp:W.amu[1]};
    const F=(wd===4?['sabak','sat','sp']:Object.keys(E)).filter(x=>past(E[x]));
    if(F.length)['ক','খ','both'].filter(g=>onlyG(g).length).forEach(g=>{const R=dsCount(g,k,F);['sabak','sat','sp','amu','tk','kp'].forEach(x=>{if(R[x]&&R[x].nh)add(who(g),bn(R[x].nh)+' জনের '+(KN[x]||x)+' শোনেননি')})});
@@ -2348,6 +2348,41 @@ VIEWS.pin=vPin;
 /* সব পাতার নিচে সবুজ ফিতা ও পুরো পর্দা (২৭ নভেম্বর) */
 document.head.insertAdjacentHTML('beforeend',`<style>#app{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}#app>.wrap{width:100%;box-sizing:border-box}.apf{margin-top:auto;background:#085041;color:#CFE3DC;text-align:center;font-size:12px;padding:6px 12px;border-top:3px solid #C9A227}@media print{.apf,.gpf,.lsf,.lonv,.hmf{display:none!important}}</style>`);
 const _renderF=render;render=function(){const r=_renderF.apply(this,arguments);try{const a=document.getElementById('app');if(a&&!a.querySelector('.hmf,.gpf,.lsf,.lonv,.apf')&&a.querySelector('.top'))a.insertAdjacentHTML('beforeend',`<div class="apf">${esc(S.settings.madrasa)}</div>`)}catch(e){}return r};
+/* অফিস সহকারীর পাতা: নতুন করে লেখা (২৭ নভেম্বর) */
+const _vOfficeOld=vOffice;
+vOffice=function(){if(V.mode||V.dep)return _vOfficeOld();
+ const pend=otList().filter(k=>k.d<=today()&&!k.done).length;
+ const ic=c=>`<div class="ic" style="background:${GPCOL[c][0]};color:${GPCOL[c][1]}"></div>`;
+ const cell=(n,sm,on,c,pr)=>`<div class="gpc${pr?' pr':''}" onclick="${on}">${ic(c)}<b style="${pr?'':'color:'+GPCOL[c][1]}">${n}</b>${sm?`<small>${esc(sm)}</small>`:''}</div>`;
+ const dr=(S.nurDR||{})[today()];
+ const cells=[
+  cell('দৈনিক পাঠ মূল্যায়ন','শ্রেণির শিট তোলা',"go('nur')",'g',1),
+  cell('দৈনিক প্রতিবেদন',dr&&dr.sub?'আজ জমা হয়েছে':'আজ জমা হয়নি',"D=today();go('nurdr')",'g',1),
+  cell('উস্তাদদের হাজিরা','নূরানী বিভাগ',"D=today();go('nurta')",'g'),
+  cell('বাড়তি পাঠ সময়','',"D=today();go('nurx')",'g'),
+  cell('ছুটি ও দরখাস্ত','',"tmp={};go('nurlv')",'y'),
+  cell('ভর্তি ও শিক্ষার্থী তথ্য','নূরানী বিভাগ',"tmp={};go('nurs')",'y'),
+  cell('পরীক্ষা ও ফলাফল','',"go('nurex')",'b'),
+  cell('ক্লাস রুটিন','',"tmp={};go('nurrt')",'b'),
+  cell('মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থীদের',"go('nurrep')",'b'),
+  cell('উস্তাদদের হিসাব','ক্লাস, হাজিরা ও ফল',"go('nurrep',{tch:1,mode:'m'})",'b'),
+  `<div class="gpc wd" style="border-color:#B5D4F4;background:#F3F8FD" onclick="go('ohub')">${ic('b')}<div class="tx"><b style="color:#185FA5">হিফয বিভাগ</b><small>মাসিক ও বাৎসরিক রিপোর্ট, শিক্ষার্থী তথ্য, পর্যবেক্ষণ</small></div></div>`];
+ return GPCSS+`<div class="gpw"><div class="gph"><button class="bk" onclick="ses=null;go('home')">বের হন</button><div class="tt"><b>অফিস সহকারী</b><span>${dBn(today())}</span></div></div>
+ <div class="gpb"><div class="gpt" onclick="go('otasks')"><div class="ic"></div><div><b>আজকের কাজ</b><small>${pend?bn(pend)+'টি কাজ বাকি':'কোনো কাজ বাকি নেই'}</small></div></div>
+ <div class="gpg">${cells.join('')}</div></div><div class="gpf">${esc(S.settings.madrasa)}</div></div>`};
+VIEWS.office=vOffice;
+function vOhub(){const c=GPCOL.b;const L=[['মাসিক রিপোর্ট',"go('office',{dep:'h',mode:'m'})"],['বাৎসরিক রিপোর্ট',"go('office',{dep:'h',mode:'y'})"],['ভর্তি ও শিক্ষার্থী তথ্য',"tmp={};go('dstu')"],['পর্যবেক্ষণ রিপোর্ট',"go('pbrep')"]];
+ return GPCSS+`<div class="gpw"><div class="gph"><button class="bk" onclick="go('office')">‹ ফিরুন</button><div class="tt"><b>হিফয বিভাগ</b><span>অফিস সহকারী</span></div></div>
+ <div class="gpb"><div class="gpg hb" style="--n:2;grid-template-columns:1fr 1fr">${L.map(([n,on])=>`<div class="gpc" onclick="${on}"><div class="ic" style="background:${c[0]};color:${c[1]}"></div><b style="color:${c[1]}">${n}</b></div>`).join('')}</div></div>
+ <div class="gpf">${esc(S.settings.madrasa)}</div></div>`}
+VIEWS.ohub=vOhub;
+function vOtasks(){return `<div class="top"><button class="btn s" onclick="go('office')">‹ ফিরুন</button><div class="t"><b>আজকের কাজ</b><span>পরিচালকের দেওয়া কাজ</span></div></div><div class="wrap">${otBox('office')||'<div class="card mut">কোনো কাজ নেই</div>'}</div>`}
+VIEWS.otasks=vOtasks;
+ICMAP.unshift(['আজকের কাজ','tasks'],['দৈনিক পাঠ মূল্যায়ন','bookopen'],['দৈনিক প্রতিবেদন','file'],['উস্তাদদের হাজিরা','list'],['বাড়তি পাঠ','hour'],['ছুটি ও দরখাস্ত','door'],['ভর্তি ও শিক্ষার্থী','card'],['পরীক্ষা ও ফলাফল','award'],['ক্লাস রুটিন','clock'],['মাসিক ও বাৎসরিক','chart'],['উস্তাদদের হিসাব','clip'],['হিফয বিভাগ','layers'],['মাসিক রিপোর্ট','chart'],['বাৎসরিক রিপোর্ট','chart'],['পর্যবেক্ষণ','eye']);
+/* পরিচালকের দেওয়া কাজ অফিস সহকারী না করলে সতর্কতায় (২৭ নভেম্বর) */
+const _useMissO=useMiss;useMiss=function(k){const out=_useMissO(k);try{const isT=k===today(),late=!isT||hm()>='18:00';
+ const L=otList().filter(x=>!x.done&&(x.d<k||(x.d===k&&late)));
+ if(L.length){const txt='দেওয়া কাজ বাকি: '+L.map(x=>x.t+(x.d<k?' ('+dShort(x.d)+' থেকে)':'')).join(', ');const i=out.findIndex(x=>x[1].startsWith('অফিস সহকারী: '));if(i>=0)out[i][1]+=', '+txt;else out.push(['u','অফিস সহকারী: '+txt])}}catch(e){}return out};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
