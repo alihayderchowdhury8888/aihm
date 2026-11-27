@@ -645,11 +645,11 @@ function rpHead(title,c){return `<div class="h"><div class="a">বিসমি�
 function d2(n,u){return bn(n)+(u?' '+u:'')}
 function stuReport(sid,mode,key){
  const s=SID(sid);let from,to,lab;
- if(mode==='m'){const [y,m]=key.split('-').map(Number);from=key+'-01'<S.year.from&&key===S.year.from.slice(0,7)?S.year.from:key+'-01';to=key+'-'+pad(new Date(y,m,0).getDate());lab=MON[m-1]+' '+bn(y)}else{from=S.year.from;to=S.year.to;lab=S.year.name||''}
+ if(mode==='r'){[from,to]=key.split('~');lab=rngLab(key)}else if(mode==='m'){const [y,m]=key.split('-').map(Number);from=key+'-01'<S.year.from&&key===S.year.from.slice(0,7)?S.year.from:key+'-01';to=key+'-'+pad(new Date(y,m,0).getDate());lab=MON[m-1]+' '+bn(y)}else{from=S.year.from;to=S.year.to;lab=S.year.name||''}
  const o=stat(sid,from,to);const g=s.group==='both'?'ক':s.group;const tc=s.group==='both'?S.teachers.map(t=>t.name).join(' ও '):(gTeacher(g)||{}).name;
  const th=thc('g');const C=s.type==='takmil';
  S.cmtOv=S.cmtOv||{};const ck=mode+key+sid;const cm=S.cmtOv[ck]!=null?S.cmtOv[ck]:autoCmt(o);
- const tg=mode==='m'?((S.target[key]||{})[sid]||{}):((S.target.year||{})[sid]||{});
+ const tg=mode==='r'?{}:mode==='m'?((S.target[key]||{})[sid]||{}):((S.target.year||{})[sid]||{});
  const absent=o.A+o.L+o.S;
  const lrow=(n,x)=>`<tr><td>${n}</td><td class="ok">${d2(x.ok,'দিন')}</td><td class="bad">${d2(x.no,'দিন')}</td><td>${d2(x.off,'দিন')}</td><td>${d2(x.nc,'দিন')}</td></tr>`;
  let n=0;
@@ -681,7 +681,7 @@ function stuReport(sid,mode,key){
  ${mode==='m'?'<div class="nt" style="text-align:center;margin-top:10px">স্বাক্ষর করে ছুটি শেষে ফেরার দিনই উস্তাদের কাছে জমা দিন</div>':''}</div>`;
  return h}
 function tchReport(tid,mode,key){
- const t=T(tid);let from,to,lab;if(mode==='m'){const [y,m]=key.split('-').map(Number);from=key+'-01'<S.year.from&&key===S.year.from.slice(0,7)?S.year.from:key+'-01';to=key+'-'+pad(new Date(y,m,0).getDate());lab=MON[m-1]+' '+bn(y)}else{from=S.year.from;to=S.year.to;lab=S.year.name||''}
+ const t=T(tid);let from,to,lab;if(mode==='r'){[from,to]=key.split('~');lab=rngLab(key)}else if(mode==='m'){const [y,m]=key.split('-').map(Number);from=key+'-01'<S.year.from&&key===S.year.from.slice(0,7)?S.year.from:key+'-01';to=key+'-'+pad(new Date(y,m,0).getDate());lab=MON[m-1]+' '+bn(y)}else{from=S.year.from;to=S.year.to;lab=S.year.name||''}
  const o=tstat(tid,from,to);const th=thc('y');let n=0;S.tcmt=S.tcmt||{};const ck=mode+key+tid;
  const lv=(S.tleave||[]).filter(l=>l.tid===tid&&l.to>=from&&l.from<=to);
  return `<div class="rp">${rpHead(mode==='m'?'উস্তাদের মাসিক হিসাব':'উস্তাদের বাৎসরিক হিসাব','y')}
@@ -1776,10 +1776,10 @@ const NRT='border:1px solid #cfd8d4;padding:5px;font-size:13px;text-align:center
 function nrTbl(head,rows){return `<table style="width:100%;border-collapse:collapse"><tr>${head.map((h,i)=>`<th style="${NRT};background:#F1F5F3;${i?'':'text-align:left'}">${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map((c,i)=>`<td style="${NRT};${i?'':'text-align:left'}">${c}</td>`).join('')}</tr>`).join('')}</table>`}
 const N0=n=>bn(n||0);
 function nrStuPage(s,mode,key){const cn=(S.nurCfg.classes.find(c=>c.id===s.cls)||{}).name||'';const sig=`<div class="sig"><div>উস্তাদের স্বাক্ষর</div><div>পরিচালকের স্বাক্ষর</div><div>অভিভাবকের স্বাক্ষর</div></div>`;
- const info=`<div class="s"><table>${[['শিক্ষার্থীর নাম',esc(s.name)],['শ্রেণি',esc(cn)],['পিতার নাম',esc(s.father||'')],[mode==='m'?'মাস':'বছর',mode==='m'?MON[+key.slice(5,7)-1]+' '+bn(key.slice(0,4)):bn(key)]].map(([a,b])=>`<tr><td style="padding:4px;border:1px solid #e3e8e6;width:38%">${a}</td><td style="padding:4px;border:1px solid #e3e8e6;text-align:left">${b}</td></tr>`).join('')}</table></div>`;
+ const info=`<div class="s"><table>${[['শিক্ষার্থীর নাম',esc(s.name)],['শ্রেণি',esc(cn)],['পিতার নাম',esc(s.father||'')],[mode==='r'?'সময়':mode==='m'?'মাস':'বছর',mode==='r'?rngLab(key):mode==='m'?MON[+key.slice(5,7)-1]+' '+bn(key.slice(0,4)):bn(key)]].map(([a,b])=>`<tr><td style="padding:4px;border:1px solid #e3e8e6;width:38%">${a}</td><td style="padding:4px;border:1px solid #e3e8e6;text-align:left">${b}</td></tr>`).join('')}</table></div>`;
  const st=(t)=>`<div class="s"><div class="st" style="border-color:#0F6E56;color:#085041">${t}</div>`;
- if(mode==='m'){const [f,t]=nrMonthRange(key);const r=nrStat(s,f,t);
-  return `<div class="rp" style="page-break-after:always">${nrHead('মাসিক রিপোর্ট')}${info}
+ if(mode==='m'||mode==='r'){const [f,t]=mode==='r'?key.split('~'):nrMonthRange(key);const r=nrStat(s,f,t);
+  return `<div class="rp" style="page-break-after:always">${nrHead(mode==='r'?'নির্দিষ্ট সময়ের রিপোর্ট':'মাসিক রিপোর্ট')}${info}
   ${st('হাজিরা')}${nrTbl(['কার্যদিবস','উপস্থিত','না জানিয়ে অনুপস্থিত','ছুটি','অসুস্থ'],[[N0(r.days),N0(r.P),N0(r.A),N0(r.L),N0(r.S)]].map(x=>x))}</div>
   ${st('পড়া ও লেখা (দিন)')}${nrTbl(['বিষয়','পড়া পেরেছে','পারেনি','লেখা দিয়েছে','দেয়নি'],r.sub.map(q=>[esc(q.n),N0(q.mo),N0(q.mn),q.w?N0(q.wo):'—',q.w?N0(q.wn):'—']).concat([['<b>মোট</b>',`<b>${N0(r.mo)}</b>`,`<b>${N0(r.mn)}</b>`,`<b>${N0(r.wo)}</b>`,`<b>${N0(r.wn)}</b>`]]))}</div>
   ${st('আচরণ')}${nrTbl(['জরিমানা','দুষ্টুমি','বড় সতর্কতা'],[[r.bf?bn(r.bf)+' বার':'নেই',r.bd?bn(r.bd)+' বার':'নেই',r.bw?bn(r.bw)+' বার':'নেই']])}${r.bwhy.length?`<div class="mut" style="font-size:12px;margin-top:4px">${r.bwhy.map(esc).join('<br>')}</div>`:''}</div>
@@ -1790,9 +1790,9 @@ function nrStuPage(s,mode,key){const cn=(S.nurCfg.classes.find(c=>c.id===s.cls)|
  rows.push(['<b>মোট</b>'].concat(['days','P','A','L','S','mo','mn','wo','wn','x','bh'].map(k=>`<b>${N0(tot[k])}</b>`)));
  const pct=tot.days?Math.round(tot.P*100/tot.days):0;
  return `<div class="rp" style="page-break-after:always">${nrHead('বাৎসরিক রিপোর্ট')}${info}${st('১২ মাসের হিসাব')}<div style="overflow-x:auto">${nrTbl(['মাস','কার্যদিবস','উপস্থিত','না জানিয়ে অনুপস্থিত','ছুটি','অসুস্থ','পড়া পেরেছে','পারেনি','লেখা দিয়েছে','দেয়নি','বাড়তি পাঠ','আচরণ'],rows)}</div><div style="margin-top:6px;font-size:14px">বছরে উপস্থিতি: <b>${bn(pct)}%</b></div></div>${st('উস্তাদের মন্তব্য')}<div style="height:48px;border-bottom:1px dotted #9aa"></div></div>${sig}</div>`}
-function nrTeachPage(mode,key){const [f,t]=mode==='m'?nrMonthRange(key):[key+'-01-01',key+'-12-31'];const L=nrTeach(f,t);
+function nrTeachPage(mode,key){const [f,t]=mode==='r'?key.split('~'):mode==='m'?nrMonthRange(key):[key+'-01-01',key+'-12-31'];const L=nrTeach(f,t);
  const why=L.filter(r=>r.why.length);
- return `<div class="rp">${nrHead(mode==='m'?'উস্তাদদের মাসিক হিসাব':'উস্তাদদের বাৎসরিক হিসাব')}<div style="text-align:center;font-weight:600;margin-bottom:8px">${mode==='m'?MON[+key.slice(5,7)-1]+' '+bn(key.slice(0,4)):bn(key)}</div>
+ return `<div class="rp">${nrHead(mode==='m'?'উস্তাদদের মাসিক হিসাব':'উস্তাদদের বাৎসরিক হিসাব')}<div style="text-align:center;font-weight:600;margin-bottom:8px">${mode==='r'?rngLab(key):mode==='m'?MON[+key.slice(5,7)-1]+' '+bn(key.slice(0,4)):bn(key)}</div>
  <div style="overflow-x:auto">${nrTbl(['উস্তাদ','উপস্থিত','ছুটি','অনুপস্থিত','ক্লাস নিয়েছেন','ক্লাস হয়নি','পড়া পেরেছে','পারেনি'],L.map(r=>[esc(r.n),N0(r.P),N0(r.L),N0(r.A),N0(r.held),N0(r.nh),N0(r.mo),N0(r.mn)]))}</div>
  ${why.length?`<div class="s"><div class="st" style="border-color:#0F6E56;color:#085041">যেসব ক্লাস হয়নি</div>${why.map(r=>`<div style="font-size:13px;margin:4px 0"><b>${esc(r.n)}</b><div class="mut">${r.why.map(esc).join('<br>')}</div></div>`).join('')}</div>`:''}
  <div class="sig"><div>অফিস সহকারীর স্বাক্ষর</div><div>পরিচালকের স্বাক্ষর</div></div></div>`}
@@ -2366,7 +2366,8 @@ vOffice=function(){if(V.mode||V.dep)return _vOfficeOld();
   cell('ক্লাস রুটিন','',"tmp={};go('nurrt')",'b'),
   cell('মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থীদের',"go('nurrep')",'b'),
   cell('উস্তাদদের হিসাব','ক্লাস, হাজিরা ও ফল',"go('nurrep',{tch:1,mode:'m'})",'b'),
-  `<div class="gpc wd" style="border-color:#B5D4F4;background:#F3F8FD" onclick="go('ohub')">${ic('b')}<div class="tx"><b style="color:#185FA5">হিফয বিভাগ</b><small>মাসিক ও বাৎসরিক রিপোর্ট, শিক্ষার্থী তথ্য, পর্যবেক্ষণ</small></div></div>`];
+  cell('নির্দিষ্ট দিনের প্রিন্ট','যেকোনো তারিখ থেকে যেকোনো তারিখ',"tmp={};go('rprint')",'y'),
+  cell('হিফয বিভাগ','রিপোর্ট, শিক্ষার্থী তথ্য, পর্যবেক্ষণ',"go('ohub')",'b')];
  return GPCSS+`<div class="gpw"><div class="gph"><button class="bk" onclick="ses=null;go('home')">বের হন</button><div class="tt"><b>অফিস সহকারী</b><span>${dBn(today())}</span></div></div>
  <div class="gpb"><div class="gpt" onclick="go('otasks')"><div class="ic"></div><div><b>আজকের কাজ</b><small>${pend?bn(pend)+'টি কাজ বাকি':'কোনো কাজ বাকি নেই'}</small></div></div>
  <div class="gpg">${cells.join('')}</div></div><div class="gpf">${esc(S.settings.madrasa)}</div></div>`};
@@ -2512,7 +2513,7 @@ const _vNurexB=vNurex;vNurex=function(){nurInit();if(V.e&&!V.c){const c=S.nurCfg
 {const f=VIEWS.nurrep;VIEWS.nurrep=function(){const h=f.apply(this,arguments);return V.tch?h.replace(/(<div class="top[^"]*"><button class="btn s" onclick=")[^"]*(")/,`$1${nurHomeBack()}$2`):h}}
 /* পরিচালকের পাতা: নতুন করে লেখা (২৭ নভেম্বর) — এক পর্দায় */
 const DHUB={
- rep:{n:'হিফযের রিপোর্ট',c:'b',it:[['মাসিক রিপোর্ট',"go('drep',{mode:'m'})"],['বাৎসরিক রিপোর্ট',"go('drep',{mode:'y'})"],['উস্তাদদের হিসাব',"go('dtrep',{mode:'m'})"],['পরীক্ষার ফলাফল',"go('exam')"],['পরীক্ষা প্রস্তুতি প্রশ্নপত্র',"go('dprepq')"]]},
+ rep:{n:'হিফযের রিপোর্ট',c:'b',it:[['মাসিক রিপোর্ট',"go('drep',{mode:'m'})"],['বাৎসরিক রিপোর্ট',"go('drep',{mode:'y'})"],['উস্তাদদের হিসাব',"go('dtrep',{mode:'m'})"],['পরীক্ষার ফলাফল',"go('exam')"],['পরীক্ষা প্রস্তুতি প্রশ্নপত্র',"go('dprepq')"],['নির্দিষ্ট দিনের রিপোর্ট',"tmp={};go('rprint')"]]},
  dis:{n:'শৃঙ্খলা',c:'y',it:[['জরিমানা',"go('dfine')"],['আচরণ',"go('dbeh')"]]},
  time:{n:'ক্যালেন্ডার ও রুটিন',c:'g',it:[['ক্যালেন্ডার',"go('dcal')"],['রুটিন',"go('routine')"],['শিক্ষাবর্ষ',"go('dyear')"]]},
  rule:{n:'নিয়ম ও গ্রেড',c:'g',it:[['পাঠ ও ছুটি নীতিমালা',"go('drules')"],['গ্রেড নির্ধারণ ও বোর্ড পরীক্ষা',"go('dgrade')"]]},
@@ -2548,6 +2549,74 @@ const _renderKeep=render;render=function(){const a=document.getElementById('app'
 /* নূরানী উস্তাদ তালিকা থেকে হিফযের দুই উস্তাদ বাদ (২৭ নভেম্বর) — আগের হিসাব নষ্ট না করে লুকানো */
 const NUR_HIDE=/^হাফিজ (শাহাদাত হোসেন চৌধুরী|মাহফুজুর ইসলাম)$/;
 const _nurTeachH=nurTeach;nurTeach=function(){return _nurTeachH().filter(([i,n])=>!NUR_HIDE.test(n))};
+/* নির্দিষ্ট দিনের রিপোর্ট ও প্রিন্ট (২৭ নভেম্বর) */
+function rngLab(k){const [a,b]=k.split('~');return dShort(a)+' থেকে '+dShort(b)}
+function rpFix(h){return h.replace(/বাৎসরিক রিপোর্ট/g,'নির্দিষ্ট সময়ের রিপোর্ট').replace(/উস্তাদের বাৎসরিক হিসাব/g,'উস্তাদের নির্দিষ্ট সময়ের হিসাব').replace(/উস্তাদদের বাৎসরিক হিসাব/g,'উস্তাদদের নির্দিষ্ট সময়ের হিসাব')}
+function vRprint(){nurInit();const f=tmp.rf||today().slice(0,8)+'01',t=tmp.rt||today(),ty=tmp.rty||'ns';const key=f+'~'+t;const C=S.nurCfg;const cid=tmp.rc||(C.classes.find(c=>nurStOf(c.id).length)||C.classes[0]).id;
+ const ch=(v,n)=>`<span class="ch ${ty===v?'on-g':''}" onclick="tmp.rty='${v}';tmp.show=0;render()">${n}</span>`;
+ let out='';if(tmp.show&&f<=t){try{
+  if(ty==='ns')out=nurStOf(cid).map(s=>nrStuPage(s,'r',key)).join('')||'<div class="card mut">এই শ্রেণিতে কেউ নেই</div>';
+  else if(ty==='nt')out=nrTeachPage('r',key);
+  else if(ty==='hs')out=S.students.filter(s=>s.status!=='out').map(s=>stuReport(s.id,'r',key)).join('');
+  else if(ty==='ht')out=S.teachers.filter(x=>x.active).map(x=>tchReport(x.id,'r',key)).join('');
+  out=rpFix(out)}catch(e){out='<div class="err">রিপোর্ট বানাতে সমস্যা: '+esc(e.message)+'</div>'}}
+ return nurCss+RCSS+`<div class="top noprint"><button class="btn s" onclick="${ses&&ses.role==='dir'?"go('dir')":"go('office')"}">‹ ফিরুন</button><div class="t"><b>নির্দিষ্ট দিনের রিপোর্ট</b><span>যেকোনো তারিখ থেকে যেকোনো তারিখ</span></div></div><div class="wrap" style="max-width:900px">
+ <div class="card noprint"><div class="row"><div><label class="l" style="margin-top:0">কবে থেকে</label><input id="rp_f" type="date" value="${f}" onchange="tmp.rf=this.value;tmp.show=0;render()"></div><div><label class="l" style="margin-top:0">কবে পর্যন্ত</label><input id="rp_t" type="date" value="${t}" onchange="tmp.rt=this.value;tmp.show=0;render()"></div></div>
+ <label class="l">কোন রিপোর্ট</label><div class="chs">${ch('ns','নূরানী শিক্ষার্থী')}${ch('nt','নূরানী উস্তাদ')}${ch('hs','হিফয শিক্ষার্থী')}${ch('ht','হিফয উস্তাদ')}</div>
+ ${ty==='ns'?`<label class="l">শ্রেণি</label><div class="chs">${C.classes.map(c=>`<span class="ch ${c.id===cid?'on-b':''}" onclick="tmp.rc='${c.id}';tmp.show=0;render()">${esc(c.name)} (${bn(nurStOf(c.id).length)})</span>`).join('')}</div>`:''}
+ ${f>t?'<div class="err">"কবে থেকে" তারিখ "কবে পর্যন্ত"-এর আগে হতে হবে</div>':''}
+ <button class="btn pri w" style="margin-top:10px;padding:13px;font-size:16px" onclick="tmp.show=1;render()">রিপোর্ট দেখুন</button>
+ ${tmp.show&&out?`<button class="btn w" style="margin-top:8px;padding:12px;font-size:16px" onclick="window.print()">প্রিন্ট / ডাউনলোড</button>`:''}</div>
+ ${out}</div>`}
+VIEWS.rprint=vRprint;
+
+ICMAP.unshift(['নির্দিষ্ট দিনের','file']);
+/* উস্তাদদের মূল্যায়ন: মাসিক ১০০ নম্বর, বছর শেষে সম্মাননা (২৭ নভেম্বর) */
+function tEvalCalc(tid,from,to,mk){const t=T(tid);if(!t)return null;const g=t.group;const days=workDays(from,to).filter(k=>k<=today());const o={days:days.length,P:0,L:0,A:0,heard:0,heardN:0,ok:0,no:0,att:0,attN:0,news:0,newsN:0,sh:0,shN:0};
+ days.forEach(k=>{const lv=(S.tleave||[]).find(l=>l.tid===tid&&k>=l.from&&k<=l.to);const A=S.att[k]||{};
+  const zk=dow(k)===5?'ja':'z';const tookZ=((A[zk]||{})[g]||{}).byId===tid;
+  const R=S.les[k]||{};const heardBy=stOf(g).some(s=>Object.values(R[s.id]||{}).some(x=>x&&(x.byId===tid||x.by===t.name)));
+  if(lv){o.L++;return}if(tookZ||heardBy)o.P++;else{o.A++;return}
+  const C=dsCount(g,k);Object.values(C).forEach(r=>{o.heard+=r.ok+r.no+r.off;o.heardN+=r.ok+r.no+r.off+r.nh;o.ok+=r.ok;o.no+=r.no});
+  o.attN++;if((A[zk]||{})[g])o.att++;if(t.night){o.attN++;if((A.n||{}).all)o.att++}
+  const snt=S.sent[k]||{};const on=stOf(g).filter(s=>!awayOn(s.id,k));o.newsN+=on.length;o.news+=on.filter(s=>snt[s.id]).length;
+  if(dow(k)===4){const Sh=(S.shab[k]||{}).st||{};const L=onlyG(g).filter(s=>!awayOn(s.id,k));o.shN+=L.length;o.sh+=L.filter(s=>Sh[s.id]&&Array.isArray(Sh[s.id].q)&&Sh[s.id].q.some(v=>v!==null&&v!==undefined)).length}});
+ const r=(a,b,w)=>b?Math.round(a/b*w*10)/10:(o.P?w:0);
+ const dir=((S.tEval||{})[mk]||{})[tid];
+ const parts=[['পাঠ গ্রহণ',r(o.heard,o.heardN,25),25],['শিক্ষার্থীদের ফল',r(o.ok,o.ok+o.no,25),25],['হাজিরা নেওয়া',r(o.att,o.attN,15),15],['অভিভাবক বার্তা ও শবিনা',Math.round((r(o.news,o.newsN,10)+r(o.sh,o.shN,5))*10)/10,15],['নিজের উপস্থিতি',o.days?Math.round((o.P+o.L*0.5)/o.days*100)/10:0,10],['পরিচালকের মূল্যায়ন',dir==null?0:+dir,10]];
+ o.parts=parts;o.total=Math.round(parts.reduce((a,x)=>a+x[1],0));o.dirSet=dir!=null;return o}
+function tEvalSet(mk,tid,v){S.tEval=S.tEval||{};S.tEval[mk]=S.tEval[mk]||{};const n=parseFloat(en(String(v)));if(isNaN(n))delete S.tEval[mk][tid];else S.tEval[mk][tid]=Math.max(0,Math.min(10,n));save();render()}
+function mRange(mk){const [y,m]=mk.split('-').map(Number);let f=mk+'-01';if(S.year&&S.year.from&&f<S.year.from&&mk===S.year.from.slice(0,7))f=S.year.from;return [f,mk+'-'+pad(new Date(y,m,0).getDate())]}
+function vTeval(){const mode=V.mode||'m';const mk=V.mk||today().slice(0,7);const TS=S.teachers.filter(t=>t.active&&t.group);
+ const nav=o=>`go('teval',${JSON.stringify(Object.assign({mode,mk},o)).replace(/"/g,"'")})`;
+ const mshift=d=>{const [y,m]=mk.split('-').map(Number);const x=new Date(y,m-1+d,1);return x.getFullYear()+'-'+pad(x.getMonth()+1)};
+ const head=`<div class="top noprint"><button class="btn s" onclick="go('dhub',{h:'rep'})">‹ ফিরুন</button><div class="t"><b>উস্তাদদের মূল্যায়ন</b><span>হিফয বিভাগ · ১০০ নম্বরে</span></div></div><div class="wrap">
+ <div class="row noprint" style="margin-bottom:10px"><span class="ch ${mode==='m'?'on-g':''}" onclick="${nav({mode:'m'})}">মাসিক</span><span class="ch ${mode==='y'?'on-g':''}" onclick="${nav({mode:'y'})}">বাৎসরিক ও সম্মাননা</span></div>`;
+ const bar=(n,v,w)=>`<div style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13.5px"><span style="flex:0 0 150px">${n}</span><div style="flex:1;height:9px;background:#EEF2F0;border-radius:5px;overflow:hidden"><div style="width:${w?Math.round(v/w*100):0}%;height:100%;background:${v/w>=0.8?'#0F6E56':v/w>=0.5?'#C9A227':'#E24B4A'}"></div></div><b style="flex:0 0 58px;text-align:right">${bn(v)}/${bn(w)}</b></div>`;
+ if(mode==='m'){const [f,t]=mRange(mk);const L=TS.map(x=>[x,tEvalCalc(x.id,f,t,mk)]).filter(x=>x[1]);const best=L.length?L.reduce((a,b)=>b[1].total>a[1].total?b:a):null;const [y,m]=mk.split('-').map(Number);
+  return head+`<div class="datebar noprint"><button class="btn s" onclick="${nav({mk:mshift(-1)})}">‹ আগের মাস</button><b>${MON[m-1]} ${bn(y)}</b><button class="btn s" onclick="${nav({mk:mshift(1)})}">পরের মাস ›</button></div>
+  ${L.map(([x,o])=>`<div class="card" style="border-left:5px solid ${best&&best[0].id===x.id&&o.total?'#C9A227':'#0F6E56'}"><div class="row" style="align-items:center"><div><b style="font-size:16px">${esc(x.name)}</b><div class="mut">গ্রুপ ${x.group}${best&&best[0].id===x.id&&o.total?' · <b style="color:#854F0B">এ মাসের সেরা উস্তাদ</b>':''}</div></div><div style="flex:0 0 auto;text-align:center"><b style="font-size:28px;color:#085041">${bn(o.total)}</b><div class="mut">১০০-এর মধ্যে</div></div></div>
+   <div class="mut" style="margin:8px 0 4px">মাদ্রাসা খোলা ${bn(o.days)} দিন · উপস্থিত ${bn(o.P)} · ছুটি ${bn(o.L)} · অনুপস্থিত <span style="${o.A?'color:#A32D2D;font-weight:600':''}">${bn(o.A)}</span></div>
+   ${o.parts.map(p=>bar(p[0],p[1],p[2])).join('')}
+   <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13.5px" class="noprint"><span style="flex:1">আপনার মূল্যায়ন (আচরণ, শৃঙ্খলা, আন্তরিকতা) · ০ থেকে ১০</span><input inputmode="decimal" value="${o.dirSet?bn(((S.tEval||{})[mk]||{})[x.id]):''}" placeholder="—" onchange="tEvalSet('${mk}','${x.id}',this.value)" style="width:70px;text-align:center"></div></div>`).join('')||'<div class="card mut">কোনো উস্তাদ নেই</div>'}
+  <p class="mut">প্রথম পাঁচটি অংশের নম্বর অ্যাপ নিজেই প্রতিদিনের হিসাব থেকে বের করে। শেষ ১০ নম্বর আপনি দেবেন।</p></div>`}
+ // বাৎসরিক
+ const yf=S.year.from,yt=S.year.to<today()?S.year.to:today();const months=[];let c=yf.slice(0,7);while(c<=yt.slice(0,7)){months.push(c);const [y,m]=c.split('-').map(Number);const x=new Date(y,m,1);c=x.getFullYear()+'-'+pad(x.getMonth()+1)}
+ const L=TS.map(x=>{const sc=months.map(mm=>{const [f,t]=mRange(mm);const o=tEvalCalc(x.id,f<yf?yf:f,t>yt?yt:t,mm);return o&&o.days?o.total:null}).filter(v=>v!=null);return [x,sc,sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length):0]});
+ const best=L.length?L.reduce((a,b)=>b[2]>a[2]?b:a):null;
+ return head+`<div class="ban b noprint">শিক্ষাবর্ষ: ${esc(S.year.name||'')} · ${dShort(yf)} থেকে ${dShort(yt)} পর্যন্ত ${bn(months.length)} মাসের গড়</div>
+ ${L.map(([x,sc,av])=>`<div class="card" style="border-left:5px solid ${best&&best[0].id===x.id&&av?'#C9A227':'#0F6E56'}"><div class="row" style="align-items:center"><div><b style="font-size:16px">${esc(x.name)}</b><div class="mut">${bn(sc.length)} মাসের গড়${best&&best[0].id===x.id&&av?' · <b style="color:#854F0B">বছরের সেরা উস্তাদ</b>':''}</div></div><b style="font-size:28px;color:#085041">${bn(av)}</b></div>
+ <div class="mut" style="margin-top:6px">মাসভিত্তিক: ${months.map((mm,i)=>MON[+mm.slice(5,7)-1]+' '+(sc[i]!=null?bn(sc[i]):'—')).join(' · ')}</div></div>`).join('')}
+ ${best&&best[2]?`<button class="btn pri w noprint" style="padding:13px;font-size:16px" onclick="go('tcert',{tid:'${best[0].id}'})">সেরা উস্তাদের সম্মাননাপত্র প্রিন্ট</button>`:''}</div>`}
+VIEWS.teval=vTeval;
+function vTcert(){const t=T(V.tid)||{};return RCSS+`<div class="top noprint"><button class="btn s" onclick="go('teval',{mode:'y'})">‹ ফিরুন</button><div class="t"><b>সম্মাননাপত্র</b><span>${esc(t.name||'')}</span></div></div><div class="wrap" style="max-width:900px"><div class="noprint" style="margin-bottom:10px"><button class="btn pri w" onclick="window.print()">প্রিন্ট / ডাউনলোড</button></div>
+ <div class="rp" style="border:6px double #C9A227;padding:36px 30px;text-align:center"><div style="font-size:18px">বিসমিল্লাহির রাহমানির রাহীম</div><img src="logo.webp" style="width:90px;margin:12px auto;display:block"><div style="font-size:24px;font-weight:700;color:#085041">${esc(S.settings.madrasa)}</div><div style="font-size:13px;color:#555">কায়স্থগ্রাম, হেতিমগঞ্জ-৩১০০, গোলাপগঞ্জ, সিলেট</div>
+ <div style="font-size:30px;font-weight:700;color:#854F0B;margin:26px 0 8px">সম্মাননাপত্র</div><div style="font-size:16px;line-height:2">এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, হিফয বিভাগের সম্মানিত উস্তাদ</div>
+ <div style="font-size:24px;font-weight:700;margin:6px 0">${esc(t.name||'')}</div><div style="font-size:16px;line-height:2">${esc(S.year.name||'')} শিক্ষাবর্ষে পাঠদান, শিক্ষার্থীদের অগ্রগতি, নিয়মানুবর্তিতা ও আন্তরিকতায়<br>সর্বোচ্চ মূল্যায়ন অর্জন করে <b>বছরের সেরা উস্তাদ</b> নির্বাচিত হয়েছেন।<br>আমরা তাঁর উত্তরোত্তর সাফল্য কামনা করি।</div>
+ <div class="sig" style="margin-top:60px"><div>নাজিমে তালিমাত</div><div>পরিচালক</div></div></div></div>`}
+VIEWS.tcert=vTcert;
+DHUB.rep.it.splice(3,0,['উস্তাদদের মূল্যায়ন',"go('teval',{mode:'m'})"]);
+ICMAP.unshift(['উস্তাদদের মূল্যায়ন','award']);
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
