@@ -2675,6 +2675,9 @@ ICMAP.unshift(['নূরানীর রিপোর্ট','chart'],['শি�
 
 /* রুটিন থেকে লুকানো উস্তাদদের খালি সারি বাদ (২৭ নভেম্বর) */
 {const f=VIEWS.nurrt;VIEWS.nurrt=function(){const h=f.apply(this,arguments);const d=document.createElement('div');d.innerHTML=h;d.querySelectorAll('tr').forEach(tr=>{const c=tr.querySelector('td,th');if(c&&NUR_HIDE.test(c.textContent.trim()))tr.remove()});return d.innerHTML}}
+/* "ক্লাস হয়নি" সব জায়গায় "ক্লাস স্থগিত" (২৭ নভেম্বর) */
+['nocls','les','news','g','dtoday','dtrep','trep'].forEach(v=>{const f=VIEWS[v];if(!f)return;VIEWS[v]=function(){return String(f.apply(this,arguments)).replace(/ক্লাস হয়নি/g,'ক্লাস স্থগিত')}});
+{const f=newsMsg;newsMsg=function(){return String(f.apply(this,arguments)).replace(/ক্লাস হয়নি/g,'ক্লাস স্থগিত')}}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
