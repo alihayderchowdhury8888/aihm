@@ -2204,7 +2204,8 @@ function gpOld(){const d=document.createElement('div');d.innerHTML=_vGroupOld();
  const bk=d.querySelector('.top .btn');const sp=d.querySelector('.top .t span');const tb=d.querySelector('.top .t b');const mut=d.querySelector('.wrap .card .mut');const cb=d.querySelector('.wrap .card b');const bans=[...d.querySelectorAll('.wrap > .ban')].map(x=>x.textContent.trim());
  return {T,bk:bk?bk.getAttribute('onclick'):"ses=null;go('home')",bkt:bk?bk.textContent.trim():'বের হন',ttl:tb?tb.textContent.trim():'',sub:sp?sp.textContent.trim():'',dt:cb?cb.textContent.trim():dBn(D),note:[mut?mut.textContent.trim():''].concat(bans).filter(Boolean)}}
 function gpFind(T,nm){if(nm==='PQ')return Object.keys(T).find(k=>k.includes('প্রস্তুতির'));if(nm==='SUB')return Object.keys(T).find(k=>k.includes('বদলি'));const m={att:'হাজিরা',away:'ছুটি ও অসুস্থতা',ret:'ছুটি-পরবর্তী উপস্থিতি',news:'অভিভাবক বার্তা',contact:'যোগাযোগ',texam:'পরীক্ষার নম্বর',nocls:'ক্লাস হয়নি'}[nm];return m?Object.keys(T).find(k=>k.startsWith(m)):null}
-function gpItems(key,T){return GPHUB[key].it.map(([n,on])=>{if(/^go\(/.test(on))return {n,on,sm:''};const k=gpFind(T,on);return k?{n,on:T[k].on,sm:T[k].sm}:null}).filter(Boolean)}
+function gpItems(key,T){return GPHUB[key].it.map(([n,on])=>{if(/^go\(/.test(on))return {n,on,sm:''};const k=gpFind(T,on);return k?{n,on:T[k].on,sm:on==='att'?attSm():T[k].sm}:null}).filter(Boolean)}
+function attSm(){const k=today(),A=S.att[k]||{},sl=slotsFor(k);const n=sl.filter(([x])=>(A[x]||{})[x==='n'?'all':ses.g]).length;return bn(n)+'/'+bn(sl.length)+' বেলা নেওয়া হয়েছে'}
 const _vGroupOld=vGroup;
 vGroup=function(){const O=gpOld(),T=O.T;
  const ic=(c)=>`<div class="ic" style="background:${GPCOL[c][0]};color:${GPCOL[c][1]}"></div>`;
@@ -2217,7 +2218,7 @@ vGroup=function(){const O=gpOld(),T=O.T;
   tg?pr(cell('মাসিক লক্ষ্য','এ মাসে কে কতটুকু শেষ করবে',tg.on,'g')):'',
   pr(hub('plan','কার কতটুকু পাঠ, কোনটি স্থগিত')),
   les?`<div class="gpc wd pr" onclick="${les.on}">${ic('g')}<div class="tx"><b>আজকের পাঠ গ্রহণ</b><small>সবক, সাতসবক ও আমুখতা${les.sm?' · '+esc(les.sm):''}</small></div></div>`:'',
-  hub('att',att?att.sm:''),
+  hub('att',attSm()),
   hub('cls','নামাজে তিলাওয়াতসহ'),
   hub('par',nw?nw.sm:''),
   sh?cell('শবিনা',sh.sm,sh.on,'g'):'',
@@ -2296,6 +2297,17 @@ function lesOnePage(){const s=SID(V.sid);if(!s)return '';let h=vLesOne(s);
   nav=`<div class="lonv">${pv?`<button onclick="${pv.getAttribute('onclick')}">‹ আগের শিক্ষার্থী</button>`:'<span></span>'}<button onclick="go('les')">তালিকা</button>${nx?`<button class="nx" onclick="${nx.getAttribute('onclick')}">পরের শিক্ষার্থী ›</button>`:'<span></span>'}</div>`;nr.remove()}
  return LOCSS+`<div class="low">${d.innerHTML}${nav}</div>`}
 const _vLesL=vLes;vLes=function(){return V.sid?lesOnePage():_vLesL()};VIEWS.les=vLes;
+/* হাজিরা দুই বেলা: জোহর (প্রত্যেক গ্রুপের উস্তাদ) ও রাতে ঘুমের সময় (গ্রুপ ক-এর উস্তাদ, সবার) — ২৭ নভেম্বর */
+slotsFor=function(k){return dow(k)===5?[['ja','জুমার পরে'],['n','রাতে ঘুমের সময়']]:[['z','জোহর'],['n','রাতে ঘুমের সময়']]};
+
+/* হাজিরার পাতা: পুরো পর্দা, নিচে স্থির জমা বোতাম ও গণনা (২৭ নভেম্বর) */
+const _vAttOld=vAtt;vAtt=function(){let h=_vAttOld();const d=document.createElement('div');d.innerHTML=h;const w=d.querySelector('.wrap');if(!w)return h;
+ const bt=w.querySelector('button[onclick^="saveAtt"]');let bar='';
+ if(tmp.a){const v=Object.values(tmp.a);const P=v.filter(x=>x==='P').length,A=v.filter(x=>x==='A').length,O=v.length-P-A;
+  bar=`<div class="lonv" style="align-items:center"><span style="flex:1.4;color:#fff;font-size:13.5px;line-height:1.5">উপস্থিত <b>${bn(P)}</b> · অনুপস্থিত <b style="color:#F7C1C1">${bn(A)}</b>${O?' · ছুটি/অন্যান্য '+bn(O):''}</span>${bt?`<button class="nx" onclick="${bt.getAttribute('onclick')}">জমা দিন</button>`:''}</div>`}
+ if(bt)bt.remove();
+ return LOCSS+`<div class="low">${d.innerHTML}${bar}</div>`};
+VIEWS.att=vAtt;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
