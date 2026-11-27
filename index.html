@@ -2356,7 +2356,7 @@ vOffice=function(){if(V.mode||V.dep)return _vOfficeOld();
  const cell=(n,sm,on,c,pr)=>`<div class="gpc${pr?' pr':''}" onclick="${on}">${ic(c)}<b style="${pr?'':'color:'+GPCOL[c][1]}">${n}</b>${sm?`<small>${esc(sm)}</small>`:''}</div>`;
  const dr=(S.nurDR||{})[today()];
  const cells=[
-  cell('দৈনিক পাঠ মূল্যায়ন','শ্রেণির শিট তোলা',"go('nur')",'g',1),
+  cell('দৈনিক পাঠ মূল্যায়ন','শ্রেণির শিট তোলা',"go('nurpick')",'g',1),
   cell('দৈনিক প্রতিবেদন',dr&&dr.sub?'আজ জমা হয়েছে':'আজ জমা হয়নি',"D=today();go('nurdr')",'g',1),
   cell('উস্তাদদের হাজিরা','নূরানী বিভাগ',"D=today();go('nurta')",'g'),
   cell('বাড়তি পাঠ সময়','',"D=today();go('nurx')",'g'),
@@ -2383,6 +2383,13 @@ ICMAP.unshift(['আজকের কাজ','tasks'],['দৈনিক পাঠ 
 const _useMissO=useMiss;useMiss=function(k){const out=_useMissO(k);try{const isT=k===today(),late=!isT||hm()>='18:00';
  const L=otList().filter(x=>!x.done&&(x.d<k||(x.d===k&&late)));
  if(L.length){const txt='দেওয়া কাজ বাকি: '+L.map(x=>x.t+(x.d<k?' ('+dShort(x.d)+' থেকে)':'')).join(', ');const i=out.findIndex(x=>x[1].startsWith('অফিস সহকারী: '));if(i>=0)out[i][1]+=', '+txt;else out.push(['u','অফিস সহকারী: '+txt])}}catch(e){}return out};
+/* দৈনিক পাঠ মূল্যায়ন: সরাসরি শ্রেণি বাছাই (২৭ নভেম্বর) */
+function vNurpick(){nurInit();const C=S.nurCfg.classes;const k=today();const c=GPCOL.g;
+ const cells=C.map(x=>{const n=nurStOf(x.id).length,has=!!nurPeek(k,x.id);return `<div class="gpc" onclick="D=today();go('nurc',{c:'${x.id}'})" style="border-top:4px solid ${has?'#0F6E56':'#C9CFCC'}"><b style="font-size:clamp(28px,5vh,40px);color:#085041">${esc(x.name)}</b><small style="font-size:14px;color:#085041">শ্রেণি</small><small>${bn(n)} জন শিক্ষার্থী</small><small style="font-weight:600;color:${has?'#0F6E56':(dow(k)===5||nurHolOn(k))?'#854F0B':'#A32D2D'}">${has?'আজকের শিট তোলা হয়েছে':(dow(k)===5||nurHolOn(k))?'আজ ছুটি':'আজকের শিট তোলা হয়নি'}</small></div>`}).join('');
+ return GPCSS+`<div class="gpw"><div class="gph"><button class="bk" onclick="go('office')">‹ ফিরুন</button><div class="tt"><b>দৈনিক পাঠ মূল্যায়ন</b><span>শ্রেণি বেছে নিন · ${dBn(k)}</span></div></div>
+ <div class="gpb"><div class="gpg hb" style="--n:${C.length>4?3:2};grid-template-columns:1fr 1fr">${cells}</div></div><div class="gpf">${esc(S.settings.madrasa)}</div></div>`}
+VIEWS.nurpick=vNurpick;
+const _vNurcP=vNurc;vNurc=function(){const h=_vNurcP();return ses&&ses.role==='office'?h.replace(`onclick="go('nur')"`,`onclick="go('nurpick')"`):h};VIEWS.nurc=vNurc;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
