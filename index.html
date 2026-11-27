@@ -2329,6 +2329,25 @@ const _goG=go;go=function(p,o){if(pgDirty()&&!(p===V.p&&p==='att')){_goPend=[p,o
 /* ফোনের পেছনের বোতাম ও জানালা বন্ধ */
 try{history.pushState({aihm:1},'');window.addEventListener('popstate',()=>{if(pgDirty()){history.pushState({aihm:1},'');_goPend=null;dirtyModal()}else history.back()});
  window.addEventListener('beforeunload',e=>{if(pgDirty()){e.preventDefault();e.returnValue=''}})}catch(e){}
+/* ভেতরের পাতার মাথার নাম, উস্তাদের পাতার ঘরের নামের সাথে মিলিয়ে (২৭ নভেম্বর) */
+const TTLMAP={'ক্লাস হয়নি':'ক্লাস স্থগিত','মাসিক লক্ষ্যমাত্রা':'মাসিক লক্ষ্য','পড়া সাজানো':'পাঠের পরিমাণ ও স্থগিত পাঠ','অভিভাবক বার্তা':'প্রতিদিনের বার্তা','অভিভাবকের সাথে যোগাযোগ':'সতর্কীকরণ ও আলোচনা','তিলাওয়াত ও নাজারা':'তিলাওয়াত, নাজারা ও নামাজে তিলাওয়াত','পরীক্ষার নম্বর প্রদান':'পরীক্ষার নম্বর','দৈনিক পাঠ গ্রহণ':'আজকের পাঠ গ্রহণ','হাজিরা':'হাজিরা'};
+const _topBarT=topBar;topBar=function(t,b){return _topBarT(TTLMAP[t]||t,b)};
+const _dayBanT=dayBanner;dayBanner=function(){return _dayBanT().replace('>ক্লাস হয়নি:','>ক্লাস স্থগিত:')};
+/* PIN-এর পাতা: নতুন করে লেখা, প্রথম পাতার মতো (২৭ নভেম্বর) */
+vPin=function(){const lab=V.to==='dir'?'কর্তৃপক্ষ':V.to==='routine'?'রুটিন':V.to==='office'?'অফিস সহকারী':V.sub?'বদলি ক্লাস · গ্রুপ '+V.g:'গ্রুপ '+V.g;
+ const tc=V.to==='g'&&V.g?gTeacher(V.sub?(V.g):V.g):null;
+ return HOMECSS+`<style>.pnb{flex:1;display:flex;align-items:center;justify-content:center;padding:20px}.pnc{background:#fff;border:1px solid #D4E2DC;border-top:4px solid #C9A227;border-radius:18px;padding:24px 20px;width:100%;max-width:360px;text-align:center;box-sizing:border-box}
+ .pnc .lb{font-size:20px;font-weight:700;color:#085041}.pnc .sb{font-size:13.5px;color:#5b6b66;margin:4px 0 16px}.pnc input{width:100%;box-sizing:border-box;text-align:center;font-size:26px;letter-spacing:12px;padding:12px;border:2px solid #D4E2DC;border-radius:12px}.pnc input:focus{border-color:#0F6E56;outline:0}
+ .pnc .go{width:100%;margin-top:12px;background:#0F6E56;color:#fff;border:0;border-radius:12px;padding:14px;font-size:17px;font-family:inherit;cursor:pointer}.pnc .bk{margin-top:10px;background:none;border:0;color:#5b6b66;font-size:14px;font-family:inherit;cursor:pointer}</style>
+ <div class="hmw"><div class="hmh"><div class="lg"><img src="logo.webp" alt=""></div><div class="nm">${esc(S.settings.madrasa)}</div></div>
+ <div class="pnb"><div class="pnc"><div class="lb">${esc(lab)}</div><div class="sb">${tc?esc(tc.name)+' · ':''}${V.sub?'পরিচালকের দেওয়া বদলি PIN দিন':'আপনার PIN দিন'}</div>
+ <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" onkeydown="if(event.key==='Enter')doPin()">
+ <div class="err" id="perr"></div><button class="go" onclick="doPin()">ঢুকুন</button><br><button class="bk" onclick="go('home')">‹ প্রথম পাতায় ফিরুন</button></div></div>
+ <div class="hmf">প্রতিষ্ঠিত ২০২২ · কায়স্থগ্রাম, হেতিমগঞ্জ, গোলাপগঞ্জ, সিলেট</div></div>`};
+VIEWS.pin=vPin;
+/* সব পাতার নিচে সবুজ ফিতা ও পুরো পর্দা (২৭ নভেম্বর) */
+document.head.insertAdjacentHTML('beforeend',`<style>#app{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}#app>.wrap{width:100%;box-sizing:border-box}.apf{margin-top:auto;background:#085041;color:#CFE3DC;text-align:center;font-size:12px;padding:6px 12px;border-top:3px solid #C9A227}@media print{.apf,.gpf,.lsf,.lonv,.hmf{display:none!important}}</style>`);
+const _renderF=render;render=function(){const r=_renderF.apply(this,arguments);try{const a=document.getElementById('app');if(a&&!a.querySelector('.hmf,.gpf,.lsf,.lonv,.apf')&&a.querySelector('.top'))a.insertAdjacentHTML('beforeend',`<div class="apf">${esc(S.settings.madrasa)}</div>`)}catch(e){}return r};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
