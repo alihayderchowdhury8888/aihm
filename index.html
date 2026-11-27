@@ -2105,6 +2105,54 @@ vHome=function(){const t1=gTeacher('ক')||{},t2=gTeacher('খ')||{};
  <div class="hmg">${T('কর্তৃপক্ষ','পরিচালক',"go('pin',{to:'dir'})",'#FAEEDA','#854F0B')}${T('অফিস সহকারী','নূরানী ও দাপ্তরিক কাজ',"go('pin',{to:'office'})",'#EEEDFE','#534AB7')}${T('গ্রুপ ক',t1.name,"go('pin',{to:'g',g:'ক'})",'#E1F5EE','#0F6E56')}${T('গ্রুপ খ',t2.name,"go('pin',{to:'g',g:'খ'})",'#E6F1FB','#185FA5')}</div>
  <div class="hmf">প্রতিষ্ঠিত ২০২২ · কায়স্থগ্রাম, হেতিমগঞ্জ, গোলাপগঞ্জ, সিলেট</div></div>`};
 VIEWS.home=vHome;
+/* আজকের অবস্থা: নতুন করে লেখা (২৭ নভেম্বর) */
+const DSCSS=`<style>
+.dsc{background:#fff;border:1px solid #D4E2DC;border-radius:14px;margin-bottom:12px;overflow:hidden}
+.dsc .dh{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#F1F7F4;border-bottom:1px solid #E1ECE7}
+.dsc .dh b{font-size:15px;color:#085041}.dsc .dh span{font-size:12.5px;color:#5b6b66;background:#fff;border:1px solid #D4E2DC;border-radius:12px;padding:2px 10px}
+.dsg{padding:10px 14px;border-top:1px solid #EEF2F0}.dsg:first-of-type{border-top:0}
+.dsg .gt{font-weight:700;font-size:14.5px;margin-bottom:6px;border-left:4px solid;padding-left:8px;line-height:1.4}
+.dsl{display:flex;gap:6px;font-size:14px;line-height:1.7;padding-left:12px}.dsl .k{min-width:96px;color:#3d4a46}.dsl .v{flex:1}
+.dsl .ok{color:#0F6E56;font-weight:600}.dsl .no{color:#A32D2D;font-weight:600}.dsl .mu{color:#7a8783}
+.dsw{padding:14px;text-align:center;color:#7a8783;font-size:14px}
+.dsa{display:flex;gap:8px;align-items:flex-start;background:#FCEBEB;border:1px solid #F3B9B9;color:#791F1F;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:14px;line-height:1.5}
+.dsa:before{content:'';flex:0 0 8px;height:8px;margin-top:7px;border-radius:50%;background:#E24B4A}
+.dsn{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px 14px}.dsn div{text-align:center;border-radius:10px;background:#F6F8F7;padding:8px 2px}.dsn b{display:block;font-size:18px}.dsn small{font-size:11.5px;color:#5b6b66}
+</style>`;
+const DSCOL={'ক':'#0F6E56','খ':'#185FA5','both':'#534AB7'};
+function dsCount(g,k,F){const Ds=D;D=k;const Ls=onlyG(g);const R=S.les[k]||{};const rows={};
+ Ls.forEach(s=>{const off=awayOn(s.id,k)||(absentNow(s.id,k)?'A':null);const kp=kpOn(s.id,k);const base=baseKinds(s);const sps=!kp&&base.length?spState(s,k):null;
+  (kp?['kp']:sps?['sp']:base).forEach(kd=>{if(F&&!F.includes(kd))return;const r=rows[kd]=rows[kd]||{ok:0,no:0,off:0,nh:0};if(off){r.off++;return}if(kd!=='kp'&&kd!=='sp'&&planOff(s.id,kd,k)){r.off++;return}const rr=R[s.id]||{};const x=kd==='sp'?([rr.sp,rr.sp2].find(y=>y&&y.st===2&&y.ok)||[rr.sp,rr.sp2].find(y=>y&&y.st)):rr[kd];if(x&&x.st===2)x.ok?r.ok++:r.no++;else if(x&&x.st===3)r.off++;else r.nh++})});
+ D=Ds;return rows}
+function dsGHead(g){const n=onlyG(g).length;const t=g==='both'?null:gTeacher(g);return `<div class="gt" style="border-color:${DSCOL[g]};color:${DSCOL[g]}">${g==='both'?'তাকমিল':'গ্রুপ '+g}${t?' · '+esc(t.name):''} <span style="font-weight:400;color:#5b6b66">(মোট শিক্ষার্থী: ${bn(n)} জন)</span></div>`}
+function dsLine(lb,parts){return `<div class="dsl"><span class="k">${lb}:</span><span class="v">${parts.filter(Boolean).join(' · ')}</span></div>`}
+function dsHifzLes(k,F){return ['ক','খ','both'].filter(g=>onlyG(g).length).map(g=>{const rows=dsCount(g,k,F);
+ const ks=['sabak','sat','sp','amu','tk','kp'].filter(x=>rows[x]);
+ const body=ks.map(x=>{const r=rows[x];return dsLine(KN[x]||x,[r.ok||!(r.no||r.nh||r.off)?`<span class="ok">${bn(r.ok)} জন পেরেছে</span>`:'',r.no?`<span class="no">${bn(r.no)} জন পারেনি</span>`:'',r.nh?`<span class="no">${bn(r.nh)} জন শোনায়নি</span>`:'',r.off?`<span class="mu">${bn(r.off)} জন বন্ধ/অনুপস্থিত</span>`:''])}).join('')||'<div class="dsl mu">আজ পড়া নেই</div>';
+ return `<div class="dsg">${dsGHead(g)}${body}</div>`}).join('')}
+function dsShabina(k){const W=S.shab[k]||{st:{}};return ['ক','খ','both'].filter(g=>onlyG(g).length).map(g=>{const Ls=onlyG(g);let took=0,not=0,off=0,q=0,qok=0;
+ Ls.forEach(s=>{if(awayOn(s.id,k)){off++;return}const x=(W.st||{})[s.id];const a=x&&Array.isArray(x.q)?x.q.filter(v=>v!==null&&v!==undefined):[];if(a.length){took++;q+=a.length;qok+=a.filter(v=>v===1).length}else not++});
+ return `<div class="dsg">${dsGHead(g)}${dsLine('শবিনা',[`<span class="ok">${bn(took)} জন শুনিয়েছে</span>`,not?`<span class="no">${bn(not)} জন শোনায়নি</span>`:'',off?`<span class="mu">${bn(off)} জন ছুটিতে</span>`:''])}${q?dsLine('প্রশ্ন',[`মোট ${bn(q)}টি`,`<span class="ok">${bn(qok)}টি পেরেছে</span>`,q-qok?`<span class="no">${bn(q-qok)}টি পারেনি</span>`:'']):''}</div>`}).join('')}
+function dsNurani(k){try{nurInit();const R=nurDRRows(k).filter(r=>r.n||r.has);if(!R.length)return '<div class="dsw">নূরানী বিভাগের কোনো শ্রেণি নেই</div>';
+ const body=R.map(r=>{const ab=r.L+r.A+r.E+r.S;return `<div class="dsg"><div class="gt" style="border-color:#854F0B;color:#854F0B">${esc(r.c.name)} শ্রেণি <span style="font-weight:400;color:#5b6b66">(মোট শিক্ষার্থী: ${bn(r.n)} জন)</span></div>${r.has?dsLine('উপস্থিতি',[`<span class="ok">${bn(r.P)} জন উপস্থিত</span>`,ab?`<span class="no">${bn(ab)} জন অনুপস্থিত</span>`:''])+dsLine('পড়া',[`<span class="ok">${bn(r.P-r.inc)} জন পেরেছে</span>`,r.inc?`<span class="no">${bn(r.inc)} জন পারেনি</span>`:''])+(r.x?dsLine('বাড়তি পাঠ',[bn(r.x)+' জন']):''):'<div class="dsl no">আজকের শিট তোলা হয়নি</div>'}</div>`}).join('');
+ const dr=(S.nurDR||{})[k];return body+(dr&&dr.sub?`<div style="padding:0 14px 12px"><button class="btn s" onclick="go('nurdr',{v:1,k:'${k}'})">অফিস সহকারীর পুরো প্রতিবেদন</button></div>`:'')}catch(e){return '<div class="dsw">নূরানী হিসাব পাওয়া যায়নি</div>'}}
+function dsCard(ti,at,ready,body,wait){return `<div class="dsc"><div class="dh"><b>${ti}</b><span>${at}</span></div>${ready?body:`<div class="dsw">${wait}</div>`}</div>`}
+vDtoday=function(){const k=D,isT=k===today(),t=hm(),wd=dow(k);const due=x=>!isT||t>=x;
+ const al=(isT?liveAlerts():S.alerts.filter(a=>a.date===k).map(a=>[a.kind,a.txt])).filter(a=>a[0]==='r');
+ let hifz='';
+ if(wd===5)hifz=dsCard('হিফয বিভাগ','শুক্রবার',0,'','আজ সাপ্তাহিক ছুটি, পড়ার হিসাব নেই');
+ else if(wd===4)hifz=dsCard('হিফয বিভাগ · সবক ও সাতসবক','সকাল ১১টা',due('11:00'),dsHifzLes(k,['sabak','sat','sp']),'সকাল ১১টায় এখানে আসবে')+dsCard('হিফয বিভাগ · শবিনা','রাত ১০টা',due('22:00'),dsShabina(k),'রাত ১০টায় এখানে আসবে');
+ else hifz=dsCard('হিফয বিভাগ · পড়ার হিসাব','দুপুর ২টা',due('14:00'),dsHifzLes(k),'দুপুর ২টায় এখানে আসবে');
+ const nur=wd===5?'':dsCard('নূরানী বিভাগ','বিকাল ৪টা',due('16:00'),dsNurani(k),'বিকাল ৪টায় এখানে আসবে');
+ const all=S.students.filter(s=>s.status!=='out');let P=0,L=0,Sk=0,A=0;
+ all.forEach(s=>{const aw=awayOn(s.id,k)||(msickOn(s.id,k)?'S':null);if(aw){aw==='L'?L++:aw==='R'?A++:Sk++;return}let v=null;for(const g of stuGroups(s)){const z=((S.att[k]||{})[wd===5?'ja':'z']||{})[g];if(z&&z.list[s.id]){v=z.list[s.id].v;break}}if(v==='P')P++;else if(v==='A')A++});
+ const att=`<div class="dsc"><div class="dh"><b>হিফয বিভাগ · হাজিরা</b><span>${wd===5?'জুমা':'জোহর'}</span></div><div class="dsn">${[['মোট',all.length,''],['উপস্থিত',P,'#0F6E56'],['ছুটি',L,'#854F0B'],['অসুস্থ',Sk,'#854F0B'],['অনুপস্থিত',A,'#A32D2D']].map(([n,v,c])=>`<div><b style="color:${c||'#1d2b27'}">${bn(v)}</b><small>${n}</small></div>`).join('')}</div></div>`;
+ return dirTop('আজকের অবস্থা')+DSCSS+`<div class="wrap">${dateBar()}${otBox('dir')}
+ <div class="sec" style="color:#A32D2D">সতর্কতা</div>${al.map(a=>`<div class="dsa">${esc(a[1])}</div>`).join('')||'<div class="dsc"><div class="dsw">আলহামদুলিল্লাহ, কোনো খারাপ খবর নেই</div></div>'}
+ <div class="sec">পড়ার হিসাব</div>${hifz}${nur}${att}</div>`};
+VIEWS.dtoday=vDtoday;
+/* পরিচালকের পাতা: আলাদা নূরানী ঘর বাদ, সব খবর আজকের অবস্থায় */
+const _vDirN=vDir;vDir=function(){return _vDirN().replace(/<div class="big" style="background:#E6F1FB[^\n]*?নূরানী বিভাগ<\/b>[^\n]*?›<\/span><\/div>/,'').replace('পড়ার হিসাব, হাজিরা, উস্তাদ','হিফয ও নূরানীর হিসাব')};VIEWS.dir=vDir;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
