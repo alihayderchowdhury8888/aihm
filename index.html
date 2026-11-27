@@ -2153,6 +2153,26 @@ vDtoday=function(){const k=D,isT=k===today(),t=hm(),wd=dow(k);const due=x=>!isT|
 VIEWS.dtoday=vDtoday;
 /* পরিচালকের পাতা: আলাদা নূরানী ঘর বাদ, সব খবর আজকের অবস্থায় */
 const _vDirN=vDir;vDir=function(){return _vDirN().replace(/<div class="big" style="background:#E6F1FB[^\n]*?নূরানী বিভাগ<\/b>[^\n]*?›<\/span><\/div>/,'').replace('পড়ার হিসাব, হাজিরা, উস্তাদ','হিফয ও নূরানীর হিসাব')};VIEWS.dir=vDir;
+/* সতর্কতা: কে কোন কাজ অ্যাপে করেননি (২৭ নভেম্বর) */
+function useMiss(k){const isT=k===today(),t=hm(),past=x=>!isT||t>=x,wd=dow(k);const P={};const add=(who,txt)=>{(P[who]=P[who]||[]).push(txt)};
+ const c=calOn(k);const hHol=c&&['holiday','monthly','eid','examh'].includes(c.type);
+ const who=g=>{if(g==='both')return 'তাকমিল';const tc=gTeacher(g);return 'গ্রুপ '+g+(tc?' · '+tc.name:'')};
+ if(!hHol){const A=S.att[k]||{};
+  const SD=wd===5?{f:'07:00',jb:'13:00',ja:'14:30',m:'19:30',n:'23:00'}:{f:'07:00',z:'14:00',a:'17:00',m:'19:30',n:'23:00'};
+  slotsFor(k).forEach(([sk,n])=>{if(!past(SD[sk]))return;if(sk==='n'){if(!(A.n||{}).all)add('হিফয বিভাগ',n+'র হাজিরা নেওয়া হয়নি');return}
+   ['ক','খ'].forEach(g=>{if(onlyG(g).length&&!((A[sk]||{})[g]))add(who(g),n+'ের হাজিরা নেননি')})});
+  if(wd!==5){const W=lwin();const E={sabak:W.sabak[1],sat:W.sat[1],sp:W.sat[1],amu:W.amu[1],tk:W.amu[1],kp:W.amu[1]};
+   const F=(wd===4?['sabak','sat','sp']:Object.keys(E)).filter(x=>past(E[x]));
+   if(F.length)['ক','খ','both'].filter(g=>onlyG(g).length).forEach(g=>{const R=dsCount(g,k,F);['sabak','sat','sp','amu','tk','kp'].forEach(x=>{if(R[x]&&R[x].nh)add(who(g),bn(R[x].nh)+' জনের '+(KN[x]||x)+' শোনেননি')})});
+   if(wd===4&&past('22:00')){const Sh=(S.shab[k]||{}).st||{};['ক','খ','both'].filter(g=>onlyG(g).length).forEach(g=>{const n=onlyG(g).filter(s=>!awayOn(s.id,k)&&!(Sh[s.id]&&Array.isArray(Sh[s.id].q)&&Sh[s.id].q.some(v=>v!==null&&v!==undefined))).length;if(n)add(who(g),bn(n)+' জনের শবিনা লেখেননি')})}}}
+ try{if(wd!==5&&S.nurCfg&&!nurHolOn(k)&&past('16:00')){const R=nurDRRows(k);R.filter(r=>r.n&&!r.has).forEach(r=>add('অফিস সহকারী','নূরানী '+r.c.name+' শ্রেণির শিট তোলেননি'));if(R.some(r=>r.n)&&!(((S.nurDR||{})[k]||{}).sub))add('অফিস সহকারী','দৈনিক প্রতিবেদন জমা দেননি')}}catch(e){}
+ return Object.entries(P).map(([w,a])=>['u',w+': '+a.join(', ')])}
+const _vDtodayU=vDtoday;vDtoday=function(){const k=D;const h=_vDtodayU();const U=useMiss(k);
+ let out=h.replace(/<div class="dsa">[^<]*জোহরের হাজিরা নেওয়া হয়নি<\/div>/g,'');
+ if(!U.length)return out;const box=`<div class="dsc" style="border-color:#F3B9B9"><div class="dh" style="background:#FCEBEB;border-color:#F3B9B9"><b style="color:#791F1F">অ্যাপে যে কাজ হয়নি</b><span>${bn(U.length)} জন</span></div>${U.map(u=>{const i=u[1].indexOf(': ');return `<div class="dsg"><div class="gt" style="border-color:#E24B4A;color:#791F1F">${esc(u[1].slice(0,i))}</div><div class="dsl"><span class="v no" style="font-weight:400">${esc(u[1].slice(i+2))}</span></div></div>`}).join('')}</div>`;
+ out=out.replace('<div class="dsc"><div class="dsw">আলহামদুলিল্লাহ, কোনো খারাপ খবর নেই</div></div>','');
+ return out.replace('<div class="sec">পড়ার হিসাব</div>',box+'<div class="sec">পড়ার হিসাব</div>')};
+VIEWS.dtoday=vDtoday;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
