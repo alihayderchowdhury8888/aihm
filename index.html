@@ -2545,6 +2545,9 @@ const _renderKeep=render;render=function(){const a=document.getElementById('app'
  const r=_renderKeep.apply(this,arguments);_rfKey=JSON.stringify(V);_rfTmp=tmp;
  try{Object.keys(keep).forEach(id=>{const e=document.getElementById(id);if(e&&e.value!==keep[id])e.value=keep[id]});if(foc){const e=document.getElementById(foc);if(e)e.focus()}}catch(e){}
  return r};
+/* নূরানী উস্তাদ তালিকা থেকে হিফযের দুই উস্তাদ বাদ (২৭ নভেম্বর) — আগের হিসাব নষ্ট না করে লুকানো */
+const NUR_HIDE=/^হাফিজ (শাহাদাত হোসেন চৌধুরী|মাহফুজুর ইসলাম)$/;
+const _nurTeachH=nurTeach;nurTeach=function(){return _nurTeachH().filter(([i,n])=>!NUR_HIDE.test(n))};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
