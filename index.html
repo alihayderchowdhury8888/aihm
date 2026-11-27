@@ -2271,6 +2271,31 @@ vLes=function(){if(V.sid)return _vLes2();const g=ses.g,L=stOf(g);const les=S.les
  <div class="lss"><span class="bg">${bn(dn)}/${bn(tot)}</span><span class="tx">${tot?(dn===tot?'আলহামদুলিল্লাহ, সবার পাঠ গ্রহণ শেষ হয়েছে':bn(tot)+' জনের মধ্যে '+bn(dn)+' জনের পাঠ গ্রহণ শেষ, বাকি '+bn(tot-dn)+' জন'):'আজ কারও পাঠ নেই'}</span></div>
  <div class="lsk"><span><i style="background:#5DCAA5"></i>পেরেছে</span><span><i style="background:#F09595"></i>পারেনি</span><span><i style="background:#D5DAD8"></i>বাকি</span><span><i style="background:#E9C46A"></i>স্থগিত/ছুটি</span></div><div class="lsl">${rows}</div><div class="lsn">নামে টিপে পাঠ লিখুন</div></div><div class="lsf">${esc(S.settings.madrasa)}</div></div>`};
 VIEWS.les=vLes;
+/* শিক্ষার্থীর পাঠের পাতা: নতুন সাজ (২৭ নভেম্বর) — হিসাবের নিয়ম আগের মতোই */
+const LOCSS=`<style>
+.low{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;background:#EAF3EF}
+.low .wrap{flex:1;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;padding-bottom:12px}
+.low .card{border-radius:14px;border:1px solid #D4E2DC}
+.low .card.ls-ok{border-left:6px solid #0F6E56}.low .card.ls-no{border-left:6px solid #E24B4A}.low .card.ls-nh{border-left:6px solid #C9CFCC}.low .card.ls-of{border-left:6px solid #C9A227;background:#FDFAF1}
+.low .card.ls-ok>.row b:first-child,.low .card.ls-no>.row b:first-child,.low .card.ls-nh>.row b:first-child{font-size:16px}
+.low [onclick^="lesFin"]{padding:14px 8px!important;font-size:16px!important;border-radius:12px!important;border-width:2px!important}
+.low [onclick^="lesStart"]{padding:13px!important;font-size:16px!important;border-radius:12px!important}
+.low .cnt .bt{width:40px;height:40px;font-size:20px}
+.lonv{position:sticky;bottom:0;display:flex;gap:10px;padding:10px 12px;background:#085041;border-top:3px solid #C9A227}
+.lonv button{flex:1;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;padding:11px 6px;font-size:15px;font-family:inherit;cursor:pointer}
+.lonv button.nx{background:#C9A227;border-color:#C9A227;color:#3d2e00;font-weight:700}
+.lonv span{flex:1}
+</style>`;
+function lesOnePage(){const s=SID(V.sid);if(!s)return '';let h=vLesOne(s);
+ h=h.replace(/<span class="ch [^"]*" onclick="SID\('[^']*'\)\.weak=!SID\('[^']*'\)\.weak;save\(\);render\(\)">দুর্বল শিক্ষার্থী<\/span>/g,'');
+ const d=document.createElement('div');d.innerHTML=h;const w=d.querySelector('.wrap');if(!w)return h;
+ w.querySelectorAll(':scope > .card').forEach((c,i)=>{if(i===0&&c.classList.contains('row'))return;const t=c.innerHTML;
+  let st='ls-nh';if(c.querySelector('.ban.y'))st='ls-of';else if(/color:#0F6E56">পেরেছে|✓ পেরেছে/.test(t))st='ls-ok';else if(/color:#A32D2D">পারেনি|✓ পারেনি/.test(t))st='ls-no';c.classList.add(st)});
+ let nav='';const rows=[...w.querySelectorAll(':scope > .row')];const nr=rows.find(r=>/শিক্ষার্থী/.test(r.textContent));
+ if(nr){const bs=[...nr.querySelectorAll('button')];const pv=bs.find(b=>/আগের/.test(b.textContent)),nx=bs.find(b=>/পরের/.test(b.textContent));
+  nav=`<div class="lonv">${pv?`<button onclick="${pv.getAttribute('onclick')}">‹ আগের শিক্ষার্থী</button>`:'<span></span>'}<button onclick="go('les')">তালিকা</button>${nx?`<button class="nx" onclick="${nx.getAttribute('onclick')}">পরের শিক্ষার্থী ›</button>`:'<span></span>'}</div>`;nr.remove()}
+ return LOCSS+`<div class="low">${d.innerHTML}${nav}</div>`}
+const _vLesL=vLes;vLes=function(){return V.sid?lesOnePage():_vLesL()};VIEWS.les=vLes;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
