@@ -2217,7 +2217,7 @@ vGroup=function(){const O=gpOld(),T=O.T;
  const cells=[
   tg?pr(cell('মাসিক লক্ষ্য','এ মাসে কে কতটুকু শেষ করবে',tg.on,'g')):'',
   pr(hub('plan','কার কতটুকু পাঠ, কোনটি স্থগিত')),
-  les?`<div class="gpc wd pr" onclick="${les.on}">${ic('g')}<div class="tx"><b>আজকের পাঠ গ্রহণ</b><small>সবক, সাতসবক ও আমুখতা${les.sm?' · '+esc(les.sm):''}</small></div></div>`:'',
+  les?`<div class="gpc wd pr" onclick="${les.on}">${ic('g')}<div class="tx"><b>আজকের পাঠ গ্রহণ</b><small>সবক, সাতসবক ও আমুখতা · ${lesSm()}</small></div></div>`:'',
   hub('att',attSm()),
   hub('cls','নামাজে তিলাওয়াতসহ'),
   hub('par',nw?nw.sm:''),
@@ -2423,6 +2423,27 @@ vNurx=function(){nurInit();const C=S.nurCfg,X=(S.nurX||{})[D]||{};const cls=C.cl
  <div class="sec">শিক্ষার্থী বেছে নিন</div><input id="nxq" placeholder="নাম খুঁজুন" value="${esc(q)}" oninput="tmp.nq=this.value;render();const e=document.getElementById('nxq');e.focus();e.setSelectionRange(e.value.length,e.value.length)" style="width:100%;margin:0 0 10px;font-size:16px;box-sizing:border-box">
  ${secs}</div>`};
 VIEWS.nurx=vNurx;
+/* উস্তাদের পাতায় "আজ বাকি" পট্টি (২৭ নভেম্বর) */
+function tchPending(){const k=today(),t=hm(),g=ses&&ses.g;if(!g)return [];const wd=dow(k);const out=[];
+ const c=calOn(k);if(c&&['holiday','monthly','eid','examh'].includes(c.type))return out;
+ const A=S.att[k]||{};const me_=T(ses.tid)||{};
+ const SD=wd===5?{ja:'14:00',n:'21:00'}:{z:'13:00',n:'21:00'};const NM={z:'জোহরের হাজিরা',ja:'জুমার পরের হাজিরা',n:'রাতে ঘুমের সময়ের হাজিরা'};
+ slotsFor(k).forEach(([sk])=>{if(t<SD[sk])return;if(sk==='n'){if(me_.night&&!(A.n||{}).all)out.push([NM.n,"go('att',{slot:'n'})"]);return}if(!((A[sk]||{})[g]))out.push([NM[sk],"go('att',{slot:'"+sk+"'})"])});
+ if(wd!==5){const W=lwin();const F=(wd===4?['sabak','sat']:['sabak','sat','amu']).filter(x=>W[x]&&t>=W[x][0]);const FK=[];F.forEach(x=>{FK.push(x);if(x==='sat')FK.push('sp');if(x==='amu')FK.push('tk','kp')});
+  if(FK.length){const R=dsCount(g,k,FK);let n=0;const parts=[];['sabak','sat','sp','amu','tk','kp'].forEach(x=>{if(R[x]&&R[x].nh)parts.push(bn(R[x].nh)+' জনের '+(KN[x]||x))});if(parts.length)out.push([parts.join(', ')+' শোনা',"go('les')"])}
+  if(t>='18:00'){const on=onlyG(g).concat(g==='ক'?[]:[]).filter(s=>!(awayOn(s.id,k)||absentNow(s.id,k)));const sn=Object.keys(S.sent[k]||{});const left=on.filter(s=>!sn.includes(s.id)).length;if(left)out.push([bn(left)+' জনের অভিভাবক বার্তা',"go('news')"])}
+  if(wd===4&&t>='20:00'){const Sh=(S.shab[k]||{}).st||{};const n=onlyG(g).filter(s=>!awayOn(s.id,k)&&!(Sh[s.id]&&Array.isArray(Sh[s.id].q)&&Sh[s.id].q.some(v=>v!==null&&v!==undefined))).length;if(n)out.push([bn(n)+' জনের শবিনা',"go('shab')"])}}
+ return out}
+const _vGroupB=vGroup;vGroup=function(){const h=_vGroupB();if(!ses||ses.role==='dir')return h;let P=[];try{P=tchPending()}catch(e){}
+ const band=P.length?`<div onclick="${P[0][1]}" style="cursor:pointer;background:#FCEBEB;color:#791F1F;border-bottom:1px solid #F3B9B9;padding:7px 12px;font-size:13.5px;line-height:1.5;text-align:center"><b>আজ বাকি:</b> ${P.map(x=>esc(x[0])).join(' · ')} <span style="white-space:nowrap">›</span></div>`
+  :`<div style="background:#E1F5EE;color:#085041;padding:6px 12px;font-size:13.5px;text-align:center">আলহামদুলিল্লাহ, এখন পর্যন্ত কোনো কাজ বাকি নেই</div>`;
+ return h.replace('<div class="gpb">',band+'<div class="gpb">')};
+VIEWS.g=vGroup;
+document.head.insertAdjacentHTML('beforeend',`<style>@media (max-height:800px){.gpb{gap:5px!important;padding:5px 8px!important}.gpg{gap:5px!important}.gpc{gap:2px!important;padding:3px!important}.gpc .ic{width:26px!important;height:26px!important}.gpc.wd .ic{width:34px!important;height:34px!important}.gpc small{font-size:11px!important}.gph{padding:6px 12px!important}.gpn{padding:2px 8px!important;font-size:12px!important}}</style>`);
+
+function lesSm(){try{const k=today(),g=ses.g,les=S.les[k]||{},nc=((S.nocls[k]||{})[g]||{items:[]}).items;const Ds=D;D=k;let tot=0,dn=0;
+ stOf(g).forEach(s=>{if(offNow(s.id))return;const ks=visKinds(s);if(!ks.length)return;tot++;const r=les[s.id]||{};if(ks.every(x=>(r[x]&&r[x].st>=2)||nc.includes(KN[x])))dn++});D=Ds;
+ return tot?bn(dn)+'/'+bn(tot)+' জনের শেষ':'আজ পাঠ নেই'}catch(e){return ''}}
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
