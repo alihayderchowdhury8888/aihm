@@ -2236,6 +2236,41 @@ function vGhub(){if(!GPHUB[V.h])V.h='cls';const O=gpOld();const H=GPHUB[V.h];con
  <div class="gpf">${esc(S.settings.madrasa)}</div></div>`}
 VIEWS.ghub=vGhub;
 ICMAP.unshift(['মাসিক লক্ষ্য','target'],['পাঠের পরিমাণ','sliders'],['আজকের পাঠ','bookopen'],['হাজিরা ও ছুটি','list'],['অভিভাবকের সাথে','send'],['প্রতিদিনের বার্তা','send'],['সতর্কীকরণ','phone'],['ক্লাস স্থগিত','x'],['এ মাসের লক্ষ্য','target'],['পড়ার পরিমাণ','sliders'],['আজকের পড়া শোনা','bookopen'],['মশক, তিলাওয়াত','pen'],['নাজারা','eye'],['নামাজে তিলাওয়াত','mic'],['অভিভাবক বার্তা ও','send'],['ক্লাস হয়নি ও','x'],['পরীক্ষা','award'],['পরীক্ষার নম্বর','award'],['প্রস্তুতির প্রশ্ন','file']);
+/* সব ভেতরের পাতার মাথা: প্রথম পাতার মতো সবুজ পট্টি ও সোনালি রেখা (২৭ নভেম্বর) */
+document.head.insertAdjacentHTML('beforeend',`<style>
+.top{background:#085041!important;border-bottom:3px solid #C9A227!important;color:#fff}
+.top .t b{color:#fff}.top .t span{color:#CFE3DC!important}
+.top .btn{background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.35)!important;color:#fff!important}
+</style>`);
+/* আজকের পাঠ গ্রহণ: শিক্ষার্থীর তালিকা নতুন করে লেখা (২৭ নভেম্বর) */
+const LSCSS=`<style>
+.lsw{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;background:#EAF3EF}
+.lsb{flex:1;padding:8px 12px;max-width:900px;width:100%;margin:0 auto;box-sizing:border-box;display:flex;flex-direction:column}
+.lss{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #D4E2DC;border-left:5px solid #0F6E56;border-radius:14px;padding:8px 14px;margin-bottom:8px}
+.lss .bg{font-size:22px;font-weight:700;color:#0F6E56}.lss .tx{flex:1;font-size:14px;color:#3d4a46;line-height:1.5}
+.lsl{flex:1;display:flex;flex-direction:column;gap:6px}.lsk{display:flex;gap:10px;justify-content:center;font-size:12px;color:#5b6b66;margin:-4px 0 8px}.lsk i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.lsr{flex:1 1 0;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #D4E2DC;border-radius:12px;padding:5px 12px;cursor:pointer;min-height:40px}
+.lsr.dn{border-left:5px solid #0F6E56}.lsr.pd{border-left:5px solid #C9CFCC}.lsr.of{border-left:5px solid #C9A227;background:#FDFAF1}
+.lsr .nm{flex:1;min-width:0}.lsr .nm b{display:block;font-size:15px;color:#1d2b27}.lsr .nm small{display:block;font-size:12px;color:#6b7772}
+.lsc{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end;max-width:62%}
+.lsc span{font-size:12.5px;border-radius:10px;padding:3px 9px;white-space:nowrap}
+.lsc .ok{background:#E1F5EE;color:#0F6E56;font-weight:600}.lsc .no{background:#FCEBEB;color:#A32D2D;font-weight:600}.lsc .nh{background:#F1F3F2;color:#6b7772}.lsc .of{background:#FAEEDA;color:#854F0B}
+.lsr .ar{color:#9aa5a1;font-size:20px}
+.lsn{font-size:12px;color:#6b7772;text-align:center;margin-top:6px}.lsw .datebar{margin-bottom:6px}.lsw .ban{margin-bottom:6px;padding:6px 10px}
+.lsf{background:#085041;color:#CFE3DC;text-align:center;font-size:12px;padding:6px 12px;border-top:3px solid #C9A227}
+</style>`;
+vLes=function(){if(V.sid)return _vLes2();const g=ses.g,L=stOf(g);const les=S.les[D]||{};const nc=((S.nocls[D]||{})[g]||{items:[]}).items;
+ let tot=0,dn=0;
+ const rows=L.map(s=>{const aw=offNow(s.id),r=les[s.id]||{},ks=aw?[]:visKinds(s);
+  const ch=ks.map(k=>{const x=r[k],nm=({sp:'সবকের পারা',sp2:'পারা (আমুখতা)'})[k]||KN[k]||k;if(nc.includes(nm))return `<span class="of">${nm}</span>`;
+   if(!x||!x.st)return `<span class="nh">${nm}</span>`;if(x.st===2)return x.ok?`<span class="ok">${nm}</span>`:`<span class="no">${nm}</span>`;if(x.st===3)return `<span class="of">${nm}</span>`;return `<span class="nh">${nm}</span>`});
+  const done=ks.length&&ks.every(k=>(r[k]&&r[k].st>=2)||nc.includes(KN[k]));if(!aw&&ks.length){tot++;if(done)dn++}
+  const cl=aw||!ks.length?'of':done?'dn':'pd';
+  return `<div class="lsr ${cl}" onclick="go('les',{sid:'${s.id}'})"><div class="nm"><b>${esc(s.name)}</b><small>${s.id}${s.type==='takmil'?' · তাকমিল':''}${aw?' · '+awL(aw):''}</small></div><div class="lsc">${aw?`<span class="of">${awL(aw)}</span>`:ch.join('')||'<span class="nh">আজ পাঠ নেই</span>'}</div><span class="ar">›</span></div>`}).join('');
+ return LSCSS+`<div class="lsw">${topBar('আজকের পাঠ গ্রহণ')}<div class="lsb">${dateBar()}${dayBanner()}${lesWinBan()}
+ <div class="lss"><span class="bg">${bn(dn)}/${bn(tot)}</span><span class="tx">${tot?(dn===tot?'আলহামদুলিল্লাহ, সবার পাঠ গ্রহণ শেষ হয়েছে':bn(tot)+' জনের মধ্যে '+bn(dn)+' জনের পাঠ গ্রহণ শেষ, বাকি '+bn(tot-dn)+' জন'):'আজ কারও পাঠ নেই'}</span></div>
+ <div class="lsk"><span><i style="background:#5DCAA5"></i>পেরেছে</span><span><i style="background:#F09595"></i>পারেনি</span><span><i style="background:#D5DAD8"></i>বাকি</span><span><i style="background:#E9C46A"></i>স্থগিত/ছুটি</span></div><div class="lsl">${rows}</div><div class="lsn">নামে টিপে পাঠ লিখুন</div></div><div class="lsf">${esc(S.settings.madrasa)}</div></div>`};
+VIEWS.les=vLes;
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
