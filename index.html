@@ -2079,7 +2079,7 @@ const _vDtoday2=vDtoday;vDtoday=function(){const h=_vDtoday2();return h.replace(
 VIEWS.dtoday=vDtoday;
 /* দাপ্তরিক কাগজপত্র: আলাদা পাতা kagoj.html */
 ICMAP.unshift(['দাপ্তরিক','file']);
-function kagojTile(){return `<div class="sec">দাপ্তরিক কাগজপত্র</div><div class="dts">${OT_('','দাপ্তরিক কাগজপত্র','',"location.href='kagoj.html'",'p')}</div>`}
+function kagojTile(){return ''} /* দাপ্তরিক কাগজপত্র অ্যাপ থেকে সরানো হলো (২৭ নভেম্বর) */
 const _vOffice3=vOffice;vOffice=function(){const h=_vOffice3();if(V.mode||V.dep)return h;return h.replace(/<\/div>\s*$/,kagojTile()+'</div>')};VIEWS.office=vOffice;
 const _vDirK=vDir;vDir=function(){const h=_vDirK();return h.replace(/<\/div>\s*$/,kagojTile()+'</div>')};VIEWS.dir=vDir;
 ICMAP.unshift(['উস্তাদদের হিসাব','clip']);
