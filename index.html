@@ -1265,7 +1265,7 @@ function vDir(){
  <div class="big" style="background:#E6F1FB;border-color:#85B7EB;margin-top:8px" onclick="go('nur')"><div class="ic" style="background:#185FA5">📗</div><div style="flex:1"><b style="color:#0C447C">নূরানী বিভাগ</b><div style="font-size:12px;color:#185FA5">ক্লাসের দৈনিক পাঠ মূল্যায়ন শিট</div></div><span style="color:#185FA5">›</span></div>
  <div class="sec">হিফয বিভাগ · গ্রুপের পাতা</div><div class="row" style="margin-bottom:4px"><button class="btn" onclick="ses={role:'dir',g:'ক'};tmp={};D=today();go('g')">গ্রুপ ক</button><button class="btn" onclick="ses={role:'dir',g:'খ'};tmp={};D=today();go('g')">গ্রুপ খ</button></div>
  <div class="sec">রিপোর্ট ও হিসাব</div><div class="dts">
- ${T_('📋','মাসিক রিপোর্ট','প্রত্যেক শিক্ষার্থীর মাসের হিসাব',"go('drep',{mode:'m'})",'g')}${T_('📊','বাৎসরিক রিপোর্ট','সারা বছরের অগ্রগতি',"go('drep',{mode:'y'})",'g')}
+ ${T_('📋','মাসিক রিপোর্ট','প্রত্যেক শিক্ষার্থীর মাসের হিসাব',"go('drep',{mode:'m'})",'g')}${T_('📊','বাৎসরিক রিপোর্ট','সারা বছরের অগ্রগতি',"go('drep',{mode:'y'})",'g')+T_('📑','উস্তাদদের হিসাব','হাজিরা, পড়া শোনা ও বদলি',"go('dtrep',{mode:'m'})",'g')}
  ${T_('🏆','পরীক্ষার ফলাফল','গ্রেড ও মেধাতালিকা',"go('exam')",'g')}
  ${T_('💰','জরিমানা','বাকি ও আদায়',"go('dfine')",'g',dueF?bn(dueF)+'টি বাকি':'')}${T_('⭐','আচরণ','শিক্ষার্থীদের আচরণের খাতা',"go('dbeh')",'g')}
  ${T_('📝','পরীক্ষা প্রস্তুতি প্রশ্নপত্র','পরীক্ষার আগে অনুশীলনের প্রশ্ন',"go('dprepq')",'g')}${T_('🗄️','অফিস সহকারী','রিপোর্ট প্রিন্ট ও স্বাক্ষর ফেরত',"go('office')",'g')}</div>
@@ -1628,9 +1628,7 @@ function vNurx(){nurInit();const C=S.nurCfg,X=(S.nurX||{})[D]||{};const cls=C.cl
 VIEWS.nurx=vNurx;
 const _vNur0=vNur;vNur=function(){return _vNur0().replace('<div class="sec">ক্লাস</div>',`<div class="card" style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px" onclick="D=today();go('nurx')"><div style="flex:1"><b>বাড়তি পাঠ সময়</b><div class="mut">ছুটির পর ২০ বা ৪০ মিনিট · অভিভাবককে WhatsApp</div></div><span>›</span></div><div class="sec">ক্লাস</div>`)};
 VIEWS.nur=vNur;
-/* উস্তাদদের হিসাব সরানো (তথ্য থাকবে, পাতা থাকবে না) */
-VIEWS.dtrep=function(){setTimeout(()=>go('dir'),0);return ''};
-const _vDtch0=vDtch;vDtch=function(){return _vDtch0().replace(/<button class="btn s" style="margin-top:8px" onclick="go\('dtrep'[^"]*">হিসাব দেখুন<\/button>/g,'')};VIEWS.dtch=vDtch;
+/* উস্তাদদের হিসাব: ২৭ নভেম্বর আবার ফিরিয়ে আনা হলো */
 /* ভর্তির কাগজপত্র: জমা হয়েছে কি না */
 const DOCS_H=['ভর্তি ফরম সম্পূর্ণ পূরণ','পিতার জাতীয় পরিচয়পত্রের কপি','মাতার জাতীয় পরিচয়পত্রের কপি','শিক্ষার্থীর জন্মনিবন্ধনের কপি','শিক্ষার্থীর ছবি'];
 const DOCS_N=DOCS_H.concat(['ভর্তি পরীক্ষার খাতা']);
@@ -1644,7 +1642,7 @@ const _doAdmit1=doAdmit;doAdmit=function(){const n=S.students.length,d=tmp.adocs
 /* নূরানী বিভাগ: হিফযের মতো ছোট ঘর */
 function nurSoon(n){nurModal(`<b>${n}</b><div class="mut" style="margin-top:8px">এই অংশ শীঘ্রই আসছে।</div><div style="margin-top:12px"><button class="btn" onclick="nurModal('')">ঠিক আছে</button></div>`)}
 vNur=function(){let h=_vNur0();
- const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','কে ছুটিতে, কার দরখাস্ত বাকি',"tmp={};go('nurlv')",'y')}${OT_('উ','উস্তাদদের হাজিরা','উপস্থিত, ছুটি, অনুপস্থিত',"D=today();go('nurta')",'g')}${OT_('প','পরীক্ষা ও ফলাফল','নম্বর, মেধাস্থান ও ৮৫% হাজিরা',"go('nurex')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থী ও উস্তাদদের হিসাব',"go('nurrep')",'g')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
+ const t=OTCSS+`<div class="dts" style="margin-bottom:14px">${OT_('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${OT_('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}${OT_('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}${OT_('ছু','ছুটি ও দরখাস্ত','কে ছুটিতে, কার দরখাস্ত বাকি',"tmp={};go('nurlv')",'y')}${OT_('উ','উস্তাদদের হাজিরা','উপস্থিত, ছুটি, অনুপস্থিত',"D=today();go('nurta')",'g')}${OT_('প','পরীক্ষা ও ফলাফল','নম্বর, মেধাস্থান ও ৮৫% হাজিরা',"go('nurex')",'b')}${OT_('রি','মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থীদের হিসাব',"go('nurrep')",'g')}${OT_('উহি','উস্তাদদের হিসাব','ক্লাস, হাজিরা ও বিষয়ের ফল',"go('nurrep',{tch:1,mode:'m'})",'p')}</div><div class="sec">দৈনিক পাঠ মূল্যায়ন · ক্লাস বেছে নিন</div>`;
  h=h.replace('<div class="sec">ক্লাস</div>',t);return h.replace(/<p class="mut" style="margin-top:14px">ভর্তি, উস্তাদ হাজিরা[^<]*<\/p>/,'')};
 VIEWS.nur=vNur;
 /* নূরানী: ভর্তি ও শিক্ষার্থী তথ্য */
@@ -1938,7 +1936,7 @@ vNur=function(){let h=_vNur0();h=h.replace(/<p class="mut" style="margin-top:14p
  const pre=OTCSS+`<div class="sec" style="margin-top:4px">প্রতিদিন</div><div class="dts" style="margin-bottom:6px">${T('উ','উস্তাদদের হাজিরা','উপস্থিত, ছুটি, অনুপস্থিত',"D=today();go('nurta')",'g')}${T('বা','বাড়তি পাঠ সময়','২০/৪০ মিনিট · WhatsApp',"D=today();go('nurx')",'y')}${T('ছু','ছুটি ও দরখাস্ত','কে ছুটিতে, কার দরখাস্ত বাকি',"tmp={};go('nurlv')",'y')}</div>
  <div class="sec">দৈনিক পাঠ মূল্যায়ন · শ্রেণি বেছে নিন</div>`;
  const post=`<div class="sec">শিক্ষার্থী</div><div class="dts">${T('ভ','ভর্তি ও শিক্ষার্থী তথ্য','ভর্তি, কাগজপত্র ও তালিকা',"tmp={};go('nurs')",'g')}</div>
- <div class="sec">পরীক্ষা ও রিপোর্ট</div><div class="dts">${T('প','পরীক্ষা ও ফলাফল','নম্বর, মেধাস্থান ও ৮৫% হাজিরা',"go('nurex')",'b')}${T('রি','মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থী ও উস্তাদদের হিসাব',"go('nurrep')",'g')}</div>
+ <div class="sec">পরীক্ষা ও রিপোর্ট</div><div class="dts">${T('প','পরীক্ষা ও ফলাফল','নম্বর, মেধাস্থান ও ৮৫% হাজিরা',"go('nurex')",'b')}${T('রি','মাসিক ও বাৎসরিক রিপোর্ট','শিক্ষার্থীদের হিসাব',"go('nurrep')",'g')}${T('উহি','উস্তাদদের হিসাব','ক্লাস, হাজিরা ও বিষয়ের ফল',"go('nurrep',{tch:1,mode:'m'})",'p')}</div>
  <div class="sec">ব্যবস্থাপনা</div><div class="dts">${T('রু','ক্লাস রুটিন','রুটিন ও ছুটির ক্যালেন্ডার',"tmp={};go('nurrt')",'b')}</div>`;
  h=h.replace('<div class="sec">ক্লাস</div>',pre);const k=h.lastIndexOf('</div>');return h.slice(0,k)+post+h.slice(k)};
 VIEWS.nur=vNur;
@@ -2025,7 +2023,7 @@ function otBox(role){const L=otList().filter(k=>role==='office'?(k.d<=today()&&(
 const _vOffice2=vOffice;vOffice=function(){
  if(!V.mode&&!V.dep){const T=(ic,n,sm,on,c)=>OT_('',n,'',on,c);
   return offTop('অফিস সহকারী')+OTCSS+`<div class="wrap">${otBox('office')}
-  <div class="sec" style="margin-top:4px">নূরানী বিভাগ</div><div class="dts">${T(0,'দৈনিক প্রতিবেদন','',"D=today();go('nurdr')",'y')}${T(0,'দৈনিক পাঠ মূল্যায়ন','',"go('nur')",'g')}${T(0,'উস্তাদদের হাজিরা','',"D=today();go('nurta')",'g')}${T(0,'বাড়তি পাঠ সময়','',"D=today();go('nurx')",'y')}${T(0,'ছুটি ও দরখাস্ত','',"tmp={};go('nurlv')",'y')}${T(0,'ভর্তি ও শিক্ষার্থী তথ্য','',"tmp={};go('nurs')",'b')}${T(0,'পরীক্ষা ও ফলাফল','',"go('nurex')",'b')}${T(0,'মাসিক ও বাৎসরিক রিপোর্ট','',"go('nurrep')",'p')}${T(0,'ক্লাস রুটিন','',"tmp={};go('nurrt')",'p')}</div>
+  <div class="sec" style="margin-top:4px">নূরানী বিভাগ</div><div class="dts">${T(0,'দৈনিক প্রতিবেদন','',"D=today();go('nurdr')",'y')}${T(0,'দৈনিক পাঠ মূল্যায়ন','',"go('nur')",'g')}${T(0,'উস্তাদদের হাজিরা','',"D=today();go('nurta')",'g')}${T(0,'বাড়তি পাঠ সময়','',"D=today();go('nurx')",'y')}${T(0,'ছুটি ও দরখাস্ত','',"tmp={};go('nurlv')",'y')}${T(0,'ভর্তি ও শিক্ষার্থী তথ্য','',"tmp={};go('nurs')",'b')}${T(0,'পরীক্ষা ও ফলাফল','',"go('nurex')",'b')}${T(0,'মাসিক ও বাৎসরিক রিপোর্ট','',"go('nurrep')",'p')}${T(0,'উস্তাদদের হিসাব','',"go('nurrep',{tch:1,mode:'m'})",'p')}${T(0,'ক্লাস রুটিন','',"tmp={};go('nurrt')",'p')}</div>
   <div class="sec">হিফয বিভাগ</div><div class="dts">${T(0,'মাসিক রিপোর্ট','',"go('office',{dep:'h',mode:'m'})",'g')}${T(0,'বাৎসরিক রিপোর্ট','',"go('office',{dep:'h',mode:'y'})",'g')}${T(0,'ভর্তি ও শিক্ষার্থী তথ্য','',"tmp={};go('dstu')",'b')}${T(0,'পর্যবেক্ষণ রিপোর্ট','',"go('pbrep')",'y')}</div></div>`}
  let h=_vOffice2();const a=h.indexOf(OTCSS+'<div class="dts" style="margin-bottom:10px">');if(a>=0){const b=h.indexOf('</div></div></div>',h.indexOf('পর্যবেক্ষণ রিপোর্ট',a))+18;h=h.slice(0,a)+h.slice(b)}return h};
 VIEWS.office=vOffice;
@@ -2084,6 +2082,7 @@ ICMAP.unshift(['দাপ্তরিক','file']);
 function kagojTile(){return `<div class="sec">দাপ্তরিক কাগজপত্র</div><div class="dts">${OT_('','দাপ্তরিক কাগজপত্র','',"location.href='kagoj.html'",'p')}</div>`}
 const _vOffice3=vOffice;vOffice=function(){const h=_vOffice3();if(V.mode||V.dep)return h;return h.replace(/<\/div>\s*$/,kagojTile()+'</div>')};VIEWS.office=vOffice;
 const _vDirK=vDir;vDir=function(){const h=_vDirK();return h.replace(/<\/div>\s*$/,kagojTile()+'</div>')};VIEWS.dir=vDir;
+ICMAP.unshift(['উস্তাদদের হিসাব','clip']);
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
