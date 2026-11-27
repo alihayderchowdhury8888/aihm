@@ -1658,7 +1658,7 @@ function nsAdd(){nsKeep();const n=(tmp.n_name||'').trim();if(!n){document.getEle
 function nsRmAsk(sid){const w=(tmp.rmw||'').trim();if(!w){const e=document.getElementById('rmerr');if(e)e.textContent='কেন সরাচ্ছেন, লিখুন';return}tmp.rmc=sid;render()}
 function nsRm(sid){const s=nsGet(sid);if(!s)return;s.status='out';s.outWhy=(tmp.rmw||'').trim();s.outDate=today();save();tmp={};go('nurs')}
 function nsBack(sid){const s=nsGet(sid);if(!s)return;s.status='in';delete s.outWhy;delete s.outDate;save();tmp={};go('nurs')}
-function vNurs(){nurInit();const C=S.nurCfg;const left=s=>DOCS_N.filter(x=>!(s.docs||{})[x]).length;
+function vNurs(){nurInit();const C=S.nurCfg;const left=s=>docLeft(s.docs);
  const chs=(cur,fn)=>`<div class="chs">${C.classes.map(c=>`<span class="ch ${cur===c.id?'on-g':''}" onclick="${fn.replace('#',c.id)}">${esc(c.name)}</span>`).join('')}</div>`;
  const I=(f,lab,val,on,ty,ph)=>`<label class="l">${lab}</label><input ${f?`id="${f}"`:''} ${ty?`type="${ty}"`:''} placeholder="${ph||''}" value="${esc(val||'')}" ${on?`onchange="${on}"`:''} style="width:100%">`;
  if(V.add){const cl=tmp.ncl||C.classes[0].id;
@@ -2480,13 +2480,22 @@ const _nsAddR=nsAdd;nsAdd=function(){nsKeep();const r=(tmp.n_roll||'').trim();co
 const _vNursR=vNurs;vNurs=function(){nurInit();const C=S.nurCfg;
  if(V.add){const cl=tmp.ncl||C.classes[0].id;const h=_vNursR();return h.replace('<label class="l">শিক্ষার্থীর নাম</label>',`<label class="l">রোল নম্বর</label><input id="n_roll" inputmode="numeric" placeholder="যেমন ${bn(nurNextRoll(cl))}" value="${esc(tmp.n_roll!=null&&tmp.nrc===cl?tmp.n_roll:bn(nurNextRoll(cl)))}" oninput="tmp.nrc='${cl}'" style="width:100%"><label class="l">শিক্ষার্থীর নাম</label>`)}
  if(V.sid){const s=nsGet(V.sid);const h=_vNursR();if(!s)return h;return h.replace('<label class="l">শিক্ষার্থীর নাম</label>',`<label class="l">রোল নম্বর</label><input inputmode="numeric" value="${esc(s.roll||'')}" onchange="nsSet('${s.id}','roll',this.value);render()" style="width:100%"><label class="l">শিক্ষার্থীর নাম</label>`)}
- const left=s=>DOCS_N.filter(x=>!(s.docs||{})[x]).length;
+ const left=s=>docLeft(s.docs);
  const cur=tmp.ncv||(C.classes.find(c=>nurStOf(c.id).length)||C.classes[0]).id;const L=nurStOf(cur);const cn=(nurCls(cur)||{}).name||'';
  return nurCss+nurTop('ভর্তি ও শিক্ষার্থী তথ্য','নূরানী বিভাগ',nurHomeBack())+`<div class="wrap">
  <button class="btn pri w" style="margin-bottom:12px;padding:13px;font-size:16px" onclick="go('nurs',{add:1});tmp.ncl='${cur}';render()">+ নতুন শিক্ষার্থী ভর্তি</button>
  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">${C.classes.map(c=>{const n=nurStOf(c.id).length,on=c.id===cur;return `<div onclick="tmp.ncv='${c.id}';render()" style="cursor:pointer;text-align:center;border-radius:12px;padding:10px 4px;border:2px solid ${on?'#0F6E56':'#D4E2DC'};background:${on?'#0F6E56':'#fff'};color:${on?'#fff':'#085041'}"><b style="font-size:17px">${esc(c.name)}</b><div style="font-size:12px;${on?'color:#CFE3DC':'color:#6b7772'}">${bn(n)} জন</div></div>`}).join('')}</div>
  <div class="sec">${esc(cn)} শ্রেণি · ${bn(L.length)} জন</div><div class="card">${L.map(s=>{const l=left(s);return `<div class="li" style="cursor:pointer" onclick="tmp={};go('nurs',{sid:'${s.id}'})"><span style="flex:0 0 34px;height:34px;border-radius:10px;background:#E1F5EE;color:#085041;display:flex;align-items:center;justify-content:center;font-weight:700;margin-right:10px">${s.roll?esc(s.roll):'–'}</span><div class="n"><b>${esc(s.name)}</b><small>${l?`<span style="color:#A32D2D">${bn(l)}টি কাগজ বাকি</span>`:'<span style="color:#0F6E56">সব কাগজ জমা</span>'}${s.wa?'':' · <span style="color:#A32D2D">WhatsApp নম্বর নেই</span>'}</small></div><span>›</span></div>`}).join('')||'<div class="mut">এই শ্রেণিতে এখনো কেউ নেই</div>'}</div></div>`};
 VIEWS.nurs=vNurs;
+/* কাগজপত্রের তালিকা ভর্তি ফরম অনুযায়ী, নূরানী ও হিফয (২৭ নভেম্বর) */
+const DOCS_NEW=['ছাত্রের জন্মসনদের ফটোকপি','পিতার এনআইডির ফটোকপি','মাতার এনআইডির ফটোকপি','অভিভাবকের এনআইডির ফটোকপি (অন্য কেউ হলে)','ছাত্রের পাসপোর্ট সাইজ ছবি (২ কপি)','আগের প্রতিষ্ঠানের ছাড়পত্র (যদি থাকে)','ভর্তি পরীক্ষার ফরম সংযুক্ত','বাৎসরিক রিপোর্ট সংযুক্ত'];
+const DOC_OPT=['অভিভাবকের এনআইডির ফটোকপি (অন্য কেউ হলে)','আগের প্রতিষ্ঠানের ছাড়পত্র (যদি থাকে)'];
+DOCS_H.splice(0,DOCS_H.length,...DOCS_NEW);DOCS_N.splice(0,DOCS_N.length,...DOCS_NEW);
+function docLeft(d){d=d||{};return DOCS_NEW.filter(x=>!d[x]&&!DOC_OPT.includes(x)).length}
+docBox=function(d,list,fn){d=d||{};const left=list.filter(x=>!d[x]&&!DOC_OPT.includes(x)).length;
+ return `<label class="l">জমা দেওয়া কাগজপত্র ${left?`<span style="color:#A32D2D">· ${bn(left)}টি বাকি</span>`:'<span style="color:#0F6E56">· সব জমা হয়েছে</span>'}</label><div style="display:flex;flex-direction:column;gap:6px">${list.map((x,j)=>{const on=!!d[x],op=DOC_OPT.includes(x);return `<div onclick="${fn.replace('#',j)}" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;border:1px solid ${on?'#5DCAA5':op?'#D4E2DC':'#F3B9B9'};background:${on?'#E1F5EE':'#fff'}"><span style="flex:0 0 22px;height:22px;border-radius:6px;border:2px solid ${on?'#0F6E56':'#B8C4BF'};background:${on?'#0F6E56':'#fff'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px">${on?'✓':''}</span><span style="flex:1;font-size:14px;color:${on?'#085041':op?'#5b6b66':'#791F1F'}">${bn(j+1)}. ${x}</span><span style="font-size:12px;color:${on?'#0F6E56':op?'#8a948f':'#A32D2D'}">${on?'জমা':op?'প্রযোজ্য হলে':'বাকি'}</span></div>`}).join('')}</div>`};
+const DOC_MAP={'পিতার জাতীয় পরিচয়পত্রের কপি':'পিতার এনআইডির ফটোকপি','মাতার জাতীয় পরিচয়পত্রের কপি':'মাতার এনআইডির ফটোকপি','শিক্ষার্থীর জন্মনিবন্ধনের কপি':'ছাত্রের জন্মসনদের ফটোকপি','শিক্ষার্থীর ছবি':'ছাত্রের পাসপোর্ট সাইজ ছবি (২ কপি)','ভর্তি পরীক্ষার খাতা':'ভর্তি পরীক্ষার ফরম সংযুক্ত'};
+const _renderDoc=render;render=function(){try{if(S&&!S.docv2&&Array.isArray(S.students)){[].concat(S.students||[],S.nurSt||[]).forEach(s=>{if(!s.docs)return;Object.keys(DOC_MAP).forEach(o=>{if(s.docs[o]){s.docs[DOC_MAP[o]]=true}delete s.docs[o]});delete s.docs['ভর্তি ফরম সম্পূর্ণ পূরণ']});S.docv2=1;save()}}catch(e){}return _renderDoc.apply(this,arguments)};
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
