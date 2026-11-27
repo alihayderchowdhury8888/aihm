@@ -622,7 +622,7 @@ function tstat(tid,from,to){
   const lv=(S.tleave||[]).find(l=>l.tid===tid&&k>=l.from&&k<=l.to);
   const A=S.att[k]||{};const mine=sk=>Object.keys(A[sk]||{}).filter(g=>g!=='all'&&(A[sk][g].byId===tid)).length>0;
   const f=mine('f'),z=mine('z')||mine('ja');
-  if(lv){o.leave++;if(lv.sub)o.subIn++}else if(f&&z)o.pres++;else if(f||z)o.part++;else o.none++;
+  if(lv){o.leave++;if(lv.sub)o.subIn++}else if(z||f||stOf(t.group).some(s=>Object.values((S.les[k]||{})[s.id]||{}).some(x=>x&&(x.byId===tid||x.by===t.name))))o.pres++;else o.none++;
   slotsFor(k).forEach(([sk])=>{if(sk==='n'){if(t.night){o.night++;if(A.n&&A.n.all&&A.n.all.byId===tid)o.nightTaken++}}else{o.slots++;const x=(A[sk]||{})[t.group];if(x&&x.byId===tid)o.taken++;const y=(A[sk]||{})[t.group==='ক'?'খ':'ক'];if(y&&y.byId===tid&&sk==='z')o.subOut++}});
   const L=stOf(t.group);['sabak','sat','amu'].forEach(kd=>{const need=kindsForDay(k).includes(kd);if(!need)return;const any=L.some(s=>{const rr=(S.les[k]||{})[s.id]||{};return [rr[kd],kd==='sat'?rr.sp:kd==='amu'?rr.sp2:kd==='sabak'?(rr.sp||rr.sp2):null].some(x=>x&&(x.byId===tid||x.by===t.name))});if(any)o.les[kd][0]++;else if(!lv)o.les[kd][1]++});
   L.forEach(s=>{const x=((S.les[k]||{})[s.id]||{}).sabak;if(x&&x.st===3&&(x.byId===tid||x.by===t.name)){o.off++;o.offTold++}});
