@@ -2179,27 +2179,27 @@ const GPCSS=`<style>
 .gph{background:#085041;color:#fff;border-bottom:3px solid #C9A227;padding:clamp(8px,1.6vh,14px) 14px;display:flex;align-items:center;gap:10px}
 .gph .bk{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:10px;padding:6px 12px;font-size:14px;cursor:pointer;flex:0 0 auto;font-family:inherit}
 .gph .tt{flex:1;min-width:0}.gph .tt b{display:block;font-size:clamp(16px,2.3vh,19px);line-height:1.3}.gph .tt span{display:block;font-size:13px;color:#CFE3DC;line-height:1.4}
-.gpn{background:#F3E6BE;color:#5C4400;text-align:center;font-size:13px;padding:5px 10px;line-height:1.45}
+.gpn{background:#F3E6BE;color:#5C4400;text-align:center;font-size:12.5px;padding:3px 10px;line-height:1.45}
 .gpb{flex:1;display:flex;flex-direction:column;gap:clamp(6px,1.1vh,12px);padding:clamp(6px,1.2vh,14px);box-sizing:border-box;width:100%;max-width:1100px;margin:0 auto}
 .gpt{display:flex;align-items:center;gap:12px;background:#FBF3DC;border:1px solid #E3CB82;border-left:5px solid #C9A227;border-radius:14px;padding:clamp(8px,1.3vh,12px) 14px;cursor:pointer}
 .gpt .ic{flex:0 0 auto!important;width:clamp(36px,5.2vh,46px)!important;height:clamp(36px,5.2vh,46px)!important;min-height:0!important;max-height:none!important;border-radius:12px;background:#C9A227;color:#fff;display:flex;align-items:center;justify-content:center}
 .gpt b{display:block;font-size:clamp(15px,2.1vh,18px);color:#5C4400}.gpt small{display:block;font-size:12.5px;color:#7A6420}
 .gpg{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:clamp(7px,1.2vh,12px);min-height:0}
 .gpc{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:clamp(3px,.7vh,7px);background:#fff;border:1px solid #D4E2DC;border-radius:14px;padding:6px;cursor:pointer;min-height:0;overflow:hidden}
-.gpc .ic{flex:0 0 auto!important;width:clamp(30px,5vh,50px)!important;height:clamp(30px,5vh,50px)!important;min-height:0!important;max-height:none!important;border-radius:12px;display:flex;align-items:center;justify-content:center}
-.gpc b{font-size:clamp(13.5px,1.9vh,16.5px);line-height:1.3}.gpc small{font-size:12px;color:#5b6b66;line-height:1.3}
-.gpc.pr{background:#0F6E56;border-color:#0F6E56}.gpc.pr b{color:#fff}.gpc.pr small{color:#CFE3DC}.gpc.pr .ic{background:rgba(255,255,255,.16)!important;color:#fff!important}
+.gpc .ic{flex:0 0 auto!important;width:clamp(28px,4.6vh,50px)!important;height:clamp(28px,4.6vh,50px)!important;min-height:0!important;max-height:none!important;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.gpc b{font-size:clamp(13.5px,1.9vh,16.5px);line-height:1.3}.gpc small{font-size:clamp(11px,1.5vh,12px);color:#5b6b66;line-height:1.3}
+.gpc.wd{grid-column:1/-1;flex-direction:row;gap:16px}.gpc.wd .ic{width:clamp(40px,6vh,58px)!important;height:clamp(40px,6vh,58px)!important}.gpc.wd b{font-size:clamp(16px,2.4vh,20px)}.gpc.wd div.tx{text-align:left}.gpc.wd .tx b,.gpc.wd .tx small{display:block}.gpc.wd .tx small{margin-top:3px}.gpc.pr{background:#0F6E56;border-color:#0F6E56}.gpc.pr b{color:#fff}.gpc.pr small{color:#CFE3DC}.gpc.pr .ic{background:rgba(255,255,255,.16)!important;color:#fff!important}
 .gpf{background:#085041;color:#CFE3DC;text-align:center;font-size:12px;padding:clamp(5px,1vh,8px) 12px;border-top:3px solid #C9A227}
-@media (min-width:900px){.gpg{grid-template-columns:repeat(5,1fr)}.gpc b{font-size:17px}}
+@media (min-width:900px){.gpg.hb{grid-template-columns:repeat(var(--n),1fr)!important}.gpg{grid-template-columns:repeat(4,1fr)}.gpc.wd{grid-column:span 2}.gpc b{font-size:17px}}
 </style>`;
 const GPCOL={g:['#E1F5EE','#0F6E56'],y:['#FAEEDA','#854F0B'],b:['#E6F1FB','#185FA5']};
 const GPHUB={
- plan:{n:'পড়ার পরিমাণ ও বিরতি',c:'g',it:[['পড়া সাজানো',"go('plan')"]]},
+ plan:{n:'পাঠের পরিমাণ ও স্থগিত পাঠ',c:'g',it:[['পড়া সাজানো',"go('plan')"]]},
  cls:{n:'মশক, তিলাওয়াত ও কিতাব',c:'g',it:[['মশক',"go('mashq')"],['তিলাওয়াত ও সবকের নাজারা',"go('til',{m:'til'})"],['কিতাব',"go('kitab')"],['নামাজে তিলাওয়াত',"go('til',{m:'namaz'})"]]},
- att:{n:'হাজিরা',c:'g',it:[['হাজিরা','att'],['ছুটি ও অসুস্থতা','away'],['ছুটি-পরবর্তী উপস্থিতি','ret']]},
- par:{n:'অভিভাবক বার্তা ও যোগাযোগ',c:'g',it:[['অভিভাবক বার্তা','news'],['যোগাযোগ','contact']]},
+ att:{n:'হাজিরা ও ছুটি',c:'g',it:[['হাজিরা','att'],['ছুটি ও অসুস্থতা','away'],['ছুটি-পরবর্তী উপস্থিতি','ret']]},
+ par:{n:'অভিভাবকের সাথে যোগাযোগ',c:'g',it:[['প্রতিদিনের বার্তা','news'],['সতর্কীকরণ ও আলোচনা','contact']]},
  exm:{n:'পরীক্ষার নম্বর',c:'b',it:[['পরীক্ষার নম্বর','texam'],['প্রস্তুতির প্রশ্ন','PQ']]},
- nc:{n:'ক্লাস হয়নি ও বদলি ক্লাস',c:'b',it:[['ক্লাস হয়নি','nocls'],['বদলি ক্লাস','SUB']]}};
+ nc:{n:'ক্লাস স্থগিত ও বদলি ক্লাস',c:'b',it:[['ক্লাস স্থগিত','nocls'],['বদলি ক্লাস','SUB']]}};
 function gpOld(){const d=document.createElement('div');d.innerHTML=_vGroupOld();const T={};d.querySelectorAll('.tile').forEach(e=>{const b=e.querySelector('b');if(!b)return;const sm=e.querySelector('small');T[b.textContent.trim()]={on:e.getAttribute('onclick'),sm:sm?sm.textContent.trim():''}});
  const bk=d.querySelector('.top .btn');const sp=d.querySelector('.top .t span');const tb=d.querySelector('.top .t b');const mut=d.querySelector('.wrap .card .mut');const cb=d.querySelector('.wrap .card b');const bans=[...d.querySelectorAll('.wrap > .ban')].map(x=>x.textContent.trim());
  return {T,bk:bk?bk.getAttribute('onclick'):"ses=null;go('home')",bkt:bk?bk.textContent.trim():'বের হন',ttl:tb?tb.textContent.trim():'',sub:sp?sp.textContent.trim():'',dt:cb?cb.textContent.trim():dBn(D),note:[mut?mut.textContent.trim():''].concat(bans).filter(Boolean)}}
@@ -2212,9 +2212,11 @@ vGroup=function(){const O=gpOld(),T=O.T;
  const hub=(k,sm)=>{const L=gpItems(k,T);if(!L.length)return '';const H=GPHUB[k];return cell(H.n,sm!==undefined?sm:'',L.length===1?L[0].on:`go('ghub',{h:'${k}'})`,H.c)};
  const t1=(k)=>{const x=T[Object.keys(T).find(z=>z.startsWith(k))||''];return x};
  const les=t1('দৈনিক পাঠ'),att=t1('হাজিরা'),nw=t1('অভিভাবক বার্তা'),sh=t1('শবিনা'),beh=t1('আচরণ'),fn=t1('জরিমানা'),tg=t1('মাসিক লক্ষ্য');
+ const pr=h=>h.replace('class="gpc"','class="gpc pr"').replace(/<b style="[^"]*">/,'<b>');
  const cells=[
-  (h=>h.replace('class="gpc"','class="gpc pr"').replace(/<b style="[^"]*">/,'<b>'))(hub('plan','কার কোন পড়া কতটুকু, কোনটি বন্ধ')),
-  les?cell('আজকের পড়া শোনা',les.sm,les.on,'g',1):'',
+  tg?pr(cell('মাসিক লক্ষ্য','এ মাসে কে কতটুকু শেষ করবে',tg.on,'g')):'',
+  pr(hub('plan','কার কতটুকু পাঠ, কোনটি স্থগিত')),
+  les?`<div class="gpc wd pr" onclick="${les.on}">${ic('g')}<div class="tx"><b>আজকের পাঠ গ্রহণ</b><small>সবক, সাতসবক ও আমুখতা${les.sm?' · '+esc(les.sm):''}</small></div></div>`:'',
   hub('att',att?att.sm:''),
   hub('cls','নামাজে তিলাওয়াতসহ'),
   hub('par',nw?nw.sm:''),
@@ -2225,16 +2227,15 @@ vGroup=function(){const O=gpOld(),T=O.T;
   hub('nc','')].filter(Boolean);
  return GPCSS+`<div class="gpw"><div class="gph"><button class="bk" onclick="${O.bk}">${esc(O.bkt)}</button><div class="tt"><b>${esc(O.ttl)}${O.sub?' · '+esc(O.sub):''}</b><span>${esc(O.dt)}</span></div></div>
  ${O.note.length?`<div class="gpn">${O.note.map(esc).join(' · ')}</div>`:''}
- <div class="gpb">${tg?`<div class="gpt" onclick="${tg.on}"><div class="ic"></div><div><b>এ মাসের লক্ষ্য</b><small>এই মাসে কে কতটুকু পড়া শেষ করবে</small></div></div>`:''}
- <div class="gpg">${cells.join('')}</div></div>
+ <div class="gpb"><div class="gpg">${cells.join('')}</div></div>
  <div class="gpf">${esc(S.settings.madrasa)}</div></div>`};
 VIEWS.g=vGroup;
 function vGhub(){if(!GPHUB[V.h])V.h='cls';const O=gpOld();const H=GPHUB[V.h];const L=gpItems(V.h,O.T);const c=GPCOL[H.c];
  return GPCSS+`<div class="gpw"><div class="gph"><button class="bk" onclick="go('g')">‹ ফিরুন</button><div class="tt"><b>${H.n}</b><span>${esc(O.ttl)}${O.sub?' · '+esc(O.sub):''}</span></div></div>
- <div class="gpb"><div class="gpg" style="grid-auto-rows:minmax(120px,190px);flex:0 0 auto">${L.map(x=>`<div class="gpc" onclick="${x.on}"><div class="ic" style="background:${c[0]};color:${c[1]}"></div><b style="color:${c[1]}">${x.n}</b>${x.sm?`<small>${esc(x.sm)}</small>`:''}</div>`).join('')}</div></div>
+ <div class="gpb"><div class="gpg hb" style="--n:${L.length===4?2:L.length};grid-template-columns:${L.length===4?"1fr 1fr":"1fr"}">${L.map(x=>`<div class="gpc" onclick="${x.on}"><div class="ic" style="background:${c[0]};color:${c[1]}"></div><b style="color:${c[1]}">${x.n}</b>${x.sm?`<small>${esc(x.sm)}</small>`:''}</div>`).join('')}</div></div>
  <div class="gpf">${esc(S.settings.madrasa)}</div></div>`}
 VIEWS.ghub=vGhub;
-ICMAP.unshift(['এ মাসের লক্ষ্য','target'],['পড়ার পরিমাণ','sliders'],['আজকের পড়া শোনা','bookopen'],['মশক, তিলাওয়াত','pen'],['নাজারা','eye'],['নামাজে তিলাওয়াত','mic'],['অভিভাবক বার্তা ও','send'],['ক্লাস হয়নি ও','x'],['পরীক্ষা','award'],['পরীক্ষার নম্বর','award'],['প্রস্তুতির প্রশ্ন','file']);
+ICMAP.unshift(['মাসিক লক্ষ্য','target'],['পাঠের পরিমাণ','sliders'],['আজকের পাঠ','bookopen'],['হাজিরা ও ছুটি','list'],['অভিভাবকের সাথে','send'],['প্রতিদিনের বার্তা','send'],['সতর্কীকরণ','phone'],['ক্লাস স্থগিত','x'],['এ মাসের লক্ষ্য','target'],['পড়ার পরিমাণ','sliders'],['আজকের পড়া শোনা','bookopen'],['মশক, তিলাওয়াত','pen'],['নাজারা','eye'],['নামাজে তিলাওয়াত','mic'],['অভিভাবক বার্তা ও','send'],['ক্লাস হয়নি ও','x'],['পরীক্ষা','award'],['পরীক্ষার নম্বর','award'],['প্রস্তুতির প্রশ্ন','file']);
 
 /* ===================== Google Sheet-এর সাথে যোগাযোগ (অ্যাপ) ===================== */
 const API='https://script.google.com/macros/s/AKfycbzogn190ol4PYpehM6CL4DeWqaSgqeBR1juqgDI7cQu4y7y3zRRydT2XkEnF09p8pUV/exec';
